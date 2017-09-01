@@ -1,0 +1,3 @@
+recursive-include src *.py *.ogg *.png
+include AUTHORS
+include *.markdown
