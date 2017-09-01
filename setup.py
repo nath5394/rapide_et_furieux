@@ -3,11 +3,13 @@
 from setuptools import find_packages
 from setuptools import setup
 
+
 setup(
     name="rapide-et-furieux",
     # if you change the version, don't forget to:
     # * update the ChangeLog file
     # * update AUTHORS
+    # * update src/rapide_et_furieux/util.py:VERSION
     version="0.1",
     description="Nasty 2D car racing game",
     long_description="2D car racing game with weapons",
