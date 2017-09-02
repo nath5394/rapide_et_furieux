@@ -85,7 +85,16 @@ class Editor(object):
     def on_click(self, event):
         if event.type != pygame.MOUSEBUTTONDOWN:
             return
+        buttons = pygame.mouse.get_pressed()
         position = pygame.mouse.get_pos()
+
+        # right click ? --> cancel current
+        if buttons[2]:
+            if self.selected:
+                util.unregister_drawer(self.selected)
+                self.selected.destroy()
+                self.selected = None
+            return
 
         # control ?
         for (control, offset) in self.element_selector_controls:

@@ -9,9 +9,10 @@ from .tiles import TileGrid
 logger = logging.getLogger(__name__)
 
 
-def draw_track_border(screen, pt_a, pt_b, parent_absolute=(0, 0)):
+def draw_track_border(screen, pt_a, pt_b, parent_absolute=(0, 0),
+                      color=(255, 0, 0)):
     pygame.draw.line(
-        screen, (255, 0, 0),
+        screen, color,
         (
             (pt_a[0] + parent_absolute[0]),
             (pt_a[1] + parent_absolute[1]),
@@ -20,6 +21,7 @@ def draw_track_border(screen, pt_a, pt_b, parent_absolute=(0, 0)):
             (pt_b[0] + parent_absolute[0]),
             (pt_b[1] + parent_absolute[1]),
         ),
+        5
     )
 
 

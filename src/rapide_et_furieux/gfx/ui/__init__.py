@@ -114,4 +114,4 @@ class TrackBorderGenerator(RelativeSprite):
         if self.previous_pt is None:
             return
         draw_track_border(screen, self.previous_pt, self.mouse_position,
-                          self.race_track.absolute)
+                          self.race_track.absolute, color=(128, 0, 0))
