@@ -4,6 +4,7 @@ ARROW_UP = ("rapide_et_furieux.gfx.ui", "arrowUp.png")
 ARROW_DOWN = ("rapide_et_furieux.gfx.ui", "arrowDown.png")
 RED_LINE = ("rapide_et_furieux.gfx.ui", "red_line.png")
 GREEN_RECT = ("rapide_et_furieux.gfx.ui", "green_rect.png")
+BLUE_DOT = ("rapide_et_furieux.gfx.ui", "blue_dot.png")
 
 MUSICS = {
     ("rapide_et_furieux.music", "Mission Plausible.ogg"),

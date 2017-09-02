@@ -27,6 +27,43 @@ def draw_crap_area(screen, pt_a, pt_b, parent_absolute=(0, 0),
     )
 
 
+def draw_checkpoint(screen, checkpoint, next_pt=None,
+                    parent_absolute=(0, 0), color=(0, 0, 255)):
+    # point
+    pygame.draw.circle(
+        screen, color,
+        (
+            checkpoint[0] + parent_absolute[0],
+            checkpoint[1] + parent_absolute[1],
+        ),
+        15
+    )
+
+    # checkpoint number
+    screen.blit(
+        checkpoint[2],
+        (
+            checkpoint[0] + parent_absolute[0] + 20,
+            checkpoint[1] + parent_absolute[1] + 20,
+        )
+    )
+
+    # line to the next checkpoint
+    if next_pt is not None and next_pt[:2] != checkpoint[:2]:
+        pygame.draw.line(
+            screen, color,
+            (
+                (checkpoint[0] + parent_absolute[0]),
+                (checkpoint[1] + parent_absolute[1]),
+            ),
+            (
+                (next_pt[0] + parent_absolute[0]),
+                (next_pt[1] + parent_absolute[1]),
+            ),
+            3
+        )
+
+
 def draw_track_border(screen, pt_a, pt_b, parent_absolute=(0, 0),
                       color=(255, 0, 0)):
     pygame.draw.line(
@@ -44,7 +81,7 @@ def draw_track_border(screen, pt_a, pt_b, parent_absolute=(0, 0),
 
 
 class RaceTrack(RelativeGroup):
-    DELETION_MARGIN = 10
+    DELETION_MARGIN = 15
 
     def __init__(self, grid_margin=0):
         super().__init__()
@@ -55,14 +92,25 @@ class RaceTrack(RelativeGroup):
         self.objects = []
         self.borders = set()  # set of ((pt_a_x, pt_a_y), (pt_b_x, pt_b_y))
         self.crap_areas = set()  # set of pygame.Rect
+        self.checkpoints = []  # list of (pt_x, pt_y, text)
+
+        self.font = pygame.font.Font(None, 42)
 
     def draw(self, screen):
         self.tiles.draw(screen)
         super().draw(screen)
+        absolute = self.absolute
         for crap_area in self.crap_areas:
-            draw_crap_area(screen, crap_area[0], crap_area[1], self.absolute)
+            draw_crap_area(screen, crap_area[0], crap_area[1], absolute)
+        for (idx, checkpoint) in enumerate(self.checkpoints):
+            draw_checkpoint(
+                screen,
+                checkpoint,
+                self.checkpoints[idx + 1]
+                if idx + 1 < len(self.checkpoints) else self.checkpoints[0],
+                absolute)
         for border in self.borders:
-            draw_track_border(screen, border[0], border[1], self.absolute)
+            draw_track_border(screen, border[0], border[1], absolute)
 
     def add_object(self, obj):
         self.objects.append(obj)
@@ -85,6 +133,18 @@ class RaceTrack(RelativeGroup):
             )
         )
 
+    def update_checkpoints(self):
+        for (idx, checkpoint) in enumerate(list(self.checkpoints)):
+            self.checkpoints[idx] = (
+                checkpoint[0],
+                checkpoint[1],
+                self.font.render(str(idx), True, (0, 0, 255))
+            )
+
+    def add_checkpoint(self, pt):
+        self.checkpoints.append(pt)
+        self.update_checkpoints()
+
     def get_track_border(self, position):
         margin = self.DELETION_MARGIN ** 2
         for border in self.borders:
@@ -94,6 +154,16 @@ class RaceTrack(RelativeGroup):
                             ((pt[1] - position[1]) ** 2)
                         ) <= margin:
                     return border
+        return None
+
+    def get_checkpoint(self, position):
+        margin = self.DELETION_MARGIN ** 2
+        for pt in self.checkpoints:
+            if abs(
+                        ((pt[0] - position[0]) ** 2) +
+                        ((pt[1] - position[1]) ** 2)
+                    ) <= margin:
+                return pt
         return None
 
     def get_crap_area(self, position):
@@ -138,6 +208,14 @@ class RaceTrack(RelativeGroup):
             mouse_position[0] - absolute[0],
             mouse_position[1] - absolute[1]
         )
+
+        # position matches a checkpoint ?
+        el = self.get_checkpoint(position)
+        if el is not None:
+            logger.info("Removing check point: %s", el)
+            self.checkpoints.remove(el)
+            self.update_checkpoints()
+            return
 
         # position matches a track border ?
         el = self.get_track_border(position)

@@ -145,3 +145,19 @@ class CrapAreaGenerator(ElementGenerator):
             return
         draw_crap_area(screen, self.previous_pt, self.mouse_position,
                        self.race_track.absolute, color=(0, 128, 0))
+
+
+class CheckpointGenerator(ElementGenerator):
+    def __init__(self, image=None):
+        super().__init__(assets.BLUE_DOT, image)
+
+    def copy(self):
+        return CheckpointGenerator(self.image)
+
+    def add_to_racetrack(self, race_track, mouse_position):
+        absolute = race_track.absolute
+        position = (
+            mouse_position[0] - absolute[0],
+            mouse_position[1] - absolute[1]
+        )
+        race_track.add_checkpoint(position)
