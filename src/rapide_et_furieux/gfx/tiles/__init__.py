@@ -14,6 +14,13 @@ class Tile(RelativeSprite):
     def __init__(self, resource, image=None):
         super().__init__(resource, image)
 
+    def serialize(self):
+        return self.resource
+
+    @staticmethod
+    def unserialize(data):
+        return Tile(data)
+
     def copy(self):
         return Tile(self.resource, self.original)
 
@@ -24,10 +31,6 @@ class Tile(RelativeSprite):
         element = self.copy()
         race_track.tiles.set_tile(grid_position, element)
 
-    def remove_from_racetrack(self, race_track, mouse_position):
-        # TODO
-        pass
-
 
 class TileGrid(RelativeGroup):
     LINE_COLOR = (0, 0, 128)
@@ -37,6 +40,20 @@ class TileGrid(RelativeGroup):
         self.margin = margin
         self.grid = {}  # (pos_x, pos_y) --> Tile
         self.size = (0, 0)
+
+    def serialize(self):
+        return [(k, v.serialize()) for (k, v) in self.grid.items()]
+
+    def unserialize(self, data):
+        elements = {}
+        for (position, rsc) in data:
+            rsc = tuple(rsc)
+            position = tuple(position)
+            if rsc in elements:
+                tile = elements[rsc].copy()
+            else:
+                elements[rsc] = tile = Tile.unserialize(rsc)
+            self.set_tile(position, tile)
 
     def set_tile(self, position, tile):
         if position in self.grid:

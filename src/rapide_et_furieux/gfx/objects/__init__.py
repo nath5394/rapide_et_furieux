@@ -7,10 +7,15 @@ logger = logging.getLogger(__name__)
 
 
 class RaceTrackObject(RelativeSprite):
-    aligned_on_grid = False
-
     def __init__(self, resource, image=None):
         super().__init__(resource, image)
+
+    def serialize(self):
+        return self.resource
+
+    @staticmethod
+    def unserialize(self, data):
+        return RaceTrackObject(data)
 
     def copy(self):
         return RaceTrackObject(self.resource, self.original)

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
+import json
 import logging
+import os
 import sys
 
 import pygame
@@ -28,9 +30,23 @@ logger = logging.getLogger(__name__)
 
 
 class Editor(object):
-    def __init__(self, screen):
+    def __init__(self, screen, file_path):
         self.screen = screen
+        self.file_path = file_path
         self.screen_size = screen.get_size()
+
+        self.game_settings = {
+            # default values
+            'background_color': (0, 0, 0),
+            'acceleration': {
+                'normal': 256,
+                'crap': 64,
+            },
+            'max_speed': {
+                'normal': 512,
+                'crap': 256,
+            },
+        }
 
         elements = []
         elements += [
@@ -83,8 +99,38 @@ class Editor(object):
             util.register_drawer(ELEMENT_SELECTOR_ARROWS_LAYER, control)
         util.register_drawer(RACE_TRACK_LAYER, self.race_track)
         util.register_event_listener(self.on_click)
+        util.register_event_listener(self.on_key)
         util.register_event_listener(self.on_mouse_motion)
         util.register_animator(self.scroll)
+
+    def load(self):
+        logger.info("Loading '%s' ...", self.file_path)
+        with open(self.file_path, 'r') as fd:
+            data = json.load(fd)
+        self.game_settings = data['game_settings']
+        self.race_track.unserialize(data['race_track'])
+        logger.info("Done")
+
+    def save(self):
+        logger.info("Writing '%s' ...", self.file_path)
+        data = {
+            'game_settings': self.game_settings,
+            'race_track': self.race_track.serialize()
+        }
+        with open(self.file_path, 'w') as fd:
+            json.dump(data, fd, indent=4, sort_keys=True)
+        logger.info("Done")
+
+    def on_key(self, event):
+        if event.type != pygame.KEYDOWN:
+            return
+
+        if event.key == pygame.K_F1 or event.key == pygame.K_ESCAPE:
+            self.save()
+            return
+        elif event.key == pygame.K_F5:
+            self.load()
+            return
 
     def on_click(self, event):
         if event.type != pygame.MOUSEBUTTONDOWN:
@@ -184,10 +230,17 @@ def main():
 
     logger.info(CAPTION)
 
+    if len(sys.argv) != 2 or sys.argv[1][0] == "-":
+        print("Usage: {} <file>".format(sys.argv[0]))
+        sys.exit(1)
+
     logger.info("Loading ...")
     pygame.init()
     screen = util.set_default_resolution()
     pygame.display.set_caption(CAPTION)
 
-    Editor(screen)
+    editor = Editor(screen, sys.argv[1])
+    if os.path.exists(sys.argv[1]):
+        editor.load()
+
     util.main_loop(screen)

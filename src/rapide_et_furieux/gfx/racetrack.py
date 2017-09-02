@@ -3,6 +3,7 @@ import logging
 import pygame
 
 from . import RelativeGroup
+from .objects import RaceTrackObject
 from .tiles import TileGrid
 
 
@@ -24,6 +25,16 @@ class CrapArea(object):
             max(pts[0][0], pts[1][0]),
             max(pts[0][1], pts[1][1])
         )
+
+    def serialize(self):
+        return {
+            'a': self.pt_a,
+            'b': self.pt_b,
+        }
+
+    @staticmethod
+    def unserialize(data, parent):
+        return CrapArea(parent, (data['a'], data['b']))
 
     def draw(self, screen):
         self.draw_crap_area(screen, self.pt_a, self.pt_b, self.parent.absolute,
@@ -85,10 +96,22 @@ class Checkpoint(object):
     def __init__(self, parent, font, pt, idx):
         self.parent = parent
         self.pt = pt
+        self.idx = idx
         self.txt = font.render(str(idx), True, self.COLOR)
         self.next_checkpoint = None
 
+    def serialize(self):
+        return {
+            'pt': self.pt,
+            'idx': self.idx,
+        }
+
+    @staticmethod
+    def unserialize(data, parent, font):
+        return Checkpoint(parent, font, data['pt'], data['idx'])
+
     def set_idx(self, font, idx):
+        self.idx = idx
         self.txt = font.render(str(idx), True, self.COLOR)
 
     def draw(self, screen):
@@ -147,6 +170,15 @@ class TrackBorder(object):
     def __init__(self, parent, pts):
         self.parent = parent
         self.pts = pts
+
+    def serialize(self):
+        return {
+            'pts': self.pts,
+        }
+
+    @staticmethod
+    def unserialize(data, parent):
+        return TrackBorder(parent, data['pts'])
 
     def draw(self, screen):
         self.draw_track_border(screen, self.pts,
@@ -213,10 +245,14 @@ class RaceTrack(RelativeGroup):
         self.add(obj)
 
     def add_border(self, border):
-        self.borders.add(TrackBorder(self, border))
+        if not isinstance(border, TrackBorder):
+            border = TrackBorder(self, border)
+        self.borders.add(border)
 
     def add_crap_area(self, crap_area):
-        self.crap_areas.add(CrapArea(self, crap_area))
+        if not isinstance(crap_area, CrapArea):
+            crap_area = CrapArea(self, crap_area)
+        self.crap_areas.add(crap_area)
 
     def update_checkpoints(self):
         for (idx, checkpoint) in enumerate(self.checkpoints):
@@ -228,8 +264,9 @@ class RaceTrack(RelativeGroup):
                 self.checkpoints[idx].next_checkpoint = self.checkpoints[0]
 
     def add_checkpoint(self, pt):
-        self.checkpoints.append(Checkpoint(self, self.font, pt,
-                                           len(self.checkpoints)))
+        if not isinstance(pt, Checkpoint):
+            pt = Checkpoint(self, self.font, pt, len(self.checkpoints))
+        self.checkpoints.append(pt)
         self.update_checkpoints()
 
     def get_track_border(self, position):
@@ -303,3 +340,24 @@ class RaceTrack(RelativeGroup):
 
         logger.info("Unable to find element to remove at %s / %s",
                     mouse_position, position)
+
+    def serialize(self):
+        return {
+            'tiles': self.tiles.serialize(),
+            'objects': [obj.serialize() for obj in self.objects],
+            'borders': [border.serialize() for border in self.borders],
+            'crap_areas': [area.serialize() for area in self.crap_areas],
+            'checkpoints': [cp.serialize() for cp in self.checkpoints],
+        }
+
+    def unserialize(self, data):
+        self.tiles.unserialize(data['tiles'])
+        for obj in data['objects']:
+            self.add_object(RaceTrackObject.unserialize(obj))
+        for border in data['borders']:
+            self.add_border(TrackBorder.unserialize(border, self))
+        for area in data['crap_areas']:
+            self.add_crap_area(CrapArea.unserialize(area, self))
+        for cp in data['checkpoints']:
+            self.add_checkpoint(Checkpoint.unserialize(cp, self, self.font))
+
