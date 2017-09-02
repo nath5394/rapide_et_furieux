@@ -99,7 +99,7 @@ def main_loop(screen):
 
     while g_loop:
         for event in pygame.event.get():
-            for event_listener in g_event_listeners:
+            for event_listener in set(g_event_listeners):
                 event_listener(event)
 
         frame_interval = last_frame - previous_frame

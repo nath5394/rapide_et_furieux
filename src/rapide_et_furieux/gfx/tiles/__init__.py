@@ -11,13 +11,22 @@ logger = logging.getLogger(__name__)
 
 
 class Tile(RelativeSprite):
-    aligned_on_grid = True
-
     def __init__(self, resource, image=None):
         super().__init__(resource, image)
 
     def copy(self):
         return Tile(self.resource, self.original)
+
+    def add_to_racetrack(self, race_track, mouse_position):
+        grid_position = race_track.tiles.get_grid_position(mouse_position)
+        if grid_position[0] < 0 or grid_position[1] < 0:
+            return
+        element = self.copy()
+        race_track.tiles.set_tile(grid_position, element)
+
+    def remove_from_racetrack(self, race_track, mouse_position):
+        # TODO
+        pass
 
 
 class TileGrid(RelativeGroup):

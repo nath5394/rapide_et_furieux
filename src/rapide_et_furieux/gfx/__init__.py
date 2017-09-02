@@ -22,6 +22,9 @@ class RelativeSprite(pygame.sprite.Sprite):
         self.image = self.original = image
         self.size = self.image.get_size()
 
+    def destroy(self):
+        self.image = self.original = None
+
     @property
     def absolute(self):
         if self.parent is None:

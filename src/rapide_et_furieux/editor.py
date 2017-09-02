@@ -32,7 +32,9 @@ class Editor(object):
         self.screen = screen
         self.screen_size = screen.get_size()
 
-        elements = [Tile(tile_rsc) for tile_rsc in assets.TILES]
+        elements = []
+        elements += [ui.TrackBorderGenerator()]
+        elements += [Tile(tile_rsc) for tile_rsc in assets.TILES]
         elements += [RaceTrackObject(obj_rsc) for obj_rsc in assets.OBJECTS]
         elements += [RaceTrackObject(obj_rsc) for obj_rsc in assets.CARS]
         elements += [RaceTrackObject(obj_rsc) for obj_rsc in assets.MOTORCYCLES]
@@ -99,6 +101,7 @@ class Editor(object):
         if selected is not None:
             if self.selected:
                 util.unregister_drawer(self.selected)
+                self.selected.destroy()
             self.selected = selected.copy()
             self.selected.relative = position
             util.register_drawer(MOUSE_CURSOR_LAYER, self.selected)
@@ -109,7 +112,7 @@ class Editor(object):
             return
 
         # place the selected element on the race track
-        self.race_track.add_element(position, self.selected)
+        self.selected.add_to_racetrack(self.race_track, position)
 
     def on_mouse_motion(self, event):
         if event.type != pygame.MOUSEMOTION:
