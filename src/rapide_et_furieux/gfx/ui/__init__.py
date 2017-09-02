@@ -4,8 +4,8 @@ from .. import RelativeGroup
 from .. import RelativeSprite
 from ... import assets
 from ... import util
-from ..racetrack import draw_crap_area
-from ..racetrack import draw_track_border
+from ..racetrack import CrapArea
+from ..racetrack import TrackBorder
 
 import pygame
 
@@ -125,8 +125,10 @@ class TrackBorderGenerator(ElementGenerator):
         super().draw(screen)
         if self.previous_pt is None:
             return
-        draw_track_border(screen, self.previous_pt, self.mouse_position,
-                          self.race_track.absolute, color=(128, 0, 0))
+        TrackBorder.draw_track_border(
+            screen, (self.previous_pt, self.mouse_position),
+            self.race_track.absolute, color=(128, 0, 0)
+        )
 
 
 class CrapAreaGenerator(ElementGenerator):
@@ -143,8 +145,8 @@ class CrapAreaGenerator(ElementGenerator):
         super().draw(screen)
         if self.previous_pt is None:
             return
-        draw_crap_area(screen, self.previous_pt, self.mouse_position,
-                       self.race_track.absolute, color=(0, 128, 0))
+        CrapArea.draw_crap_area(screen, self.previous_pt, self.mouse_position,
+                                self.race_track.absolute, color=(0, 128, 0))
 
 
 class CheckpointGenerator(ElementGenerator):

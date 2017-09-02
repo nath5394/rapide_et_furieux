@@ -8,76 +8,175 @@ from .tiles import TileGrid
 
 logger = logging.getLogger(__name__)
 
+SELECTION_MARGIN = 15 ** 2
 
-def draw_crap_area(screen, pt_a, pt_b, parent_absolute=(0, 0),
-                   color=(0, 255, 0)):
-    pygame.draw.rect(
-        screen, color,
-        pygame.Rect(
+
+class CrapArea(object):
+    COLOR=(0, 255, 0)
+
+    def __init__(self, parent, pts):
+        self.parent = parent
+        self.pt_a = (
+            min(pts[0][0], pts[1][0]),
+            min(pts[0][1], pts[1][1])
+        )
+        self.pt_b = (
+            max(pts[0][0], pts[1][0]),
+            max(pts[0][1], pts[1][1])
+        )
+
+    def draw(self, screen):
+        self.draw_crap_area(screen, self.pt_a, self.pt_b, self.parent.absolute,
+                            self.COLOR)
+
+    @staticmethod
+    def draw_crap_area(screen, pt_a, pt_b, parent_absolute=(0, 0),
+                       color=(0, 255, 0)):
+        pygame.draw.rect(
+            screen, color,
+            pygame.Rect(
+                (
+                    (pt_a[0] + parent_absolute[0]),
+                    (pt_a[1] + parent_absolute[1]),
+                ),
+                (
+                    (pt_b[0] - pt_a[0]),
+                    (pt_b[1] - pt_a[1]),
+                )
+            ),
+            5
+        )
+
+    def __hash__(self):
+        return hash(self.pt_a) ^ hash(self.pt_b)
+
+    def matches(self, position):
+        pts = [
             (
-                (pt_a[0] + parent_absolute[0]),
-                (pt_a[1] + parent_absolute[1]),
+                min(self.pt_a[0], self.pt_b[0]),
+                min(self.pt_a[1], self.pt_b[1]),
             ),
             (
-                (pt_b[0] - pt_a[0]),
-                (pt_b[1] - pt_a[1]),
-            )
-        ),
-        5
-    )
+                min(self.pt_a[0], self.pt_b[0]),
+                max(self.pt_a[1], self.pt_b[1]),
+            ),
+            (
+                max(self.pt_a[0], self.pt_b[0]),
+                min(self.pt_a[1], self.pt_b[1]),
+            ),
+            (
+                max(self.pt_a[0], self.pt_b[0]),
+                max(self.pt_a[1], self.pt_b[1]),
+            ),
+        ]
+        for pt in pts:
+            if abs(
+                        ((pt[0] - position[0]) ** 2) +
+                        ((pt[1] - position[1]) ** 2)
+                    ) <= SELECTION_MARGIN:
+                return True
+        return False
 
 
-def draw_checkpoint(screen, checkpoint, next_pt=None,
-                    parent_absolute=(0, 0), color=(0, 0, 255)):
-    # point
-    pygame.draw.circle(
-        screen, color,
-        (
-            checkpoint[0] + parent_absolute[0],
-            checkpoint[1] + parent_absolute[1],
-        ),
-        15
-    )
 
-    # checkpoint number
-    screen.blit(
-        checkpoint[2],
-        (
-            checkpoint[0] + parent_absolute[0] + 20,
-            checkpoint[1] + parent_absolute[1] + 20,
+class Checkpoint(object):
+    COLOR = (64, 64, 255)
+
+    def __init__(self, parent, font, pt, idx):
+        self.parent = parent
+        self.pt = pt
+        self.txt = font.render(str(idx), True, self.COLOR)
+        self.next_checkpoint = None
+
+    def set_idx(self, font, idx):
+        self.txt = font.render(str(idx), True, self.COLOR)
+
+    def draw(self, screen):
+        self.draw_checkpoint(screen, self.pt, self.txt,
+                             self.next_checkpoint.pt
+                             if self.next_checkpoint is not None else None,
+                             self.parent.absolute, self.COLOR)
+
+    @staticmethod
+    def draw_checkpoint(screen, pt, txt, next_pt=None,
+                        parent_absolute=(0, 0), color=(0, 0, 255)):
+        # point
+        pygame.draw.circle(
+            screen, color,
+            (
+                pt[0] + parent_absolute[0],
+                pt[1] + parent_absolute[1],
+            ),
+            15
         )
-    )
 
-    # line to the next checkpoint
-    if next_pt is not None and next_pt[:2] != checkpoint[:2]:
+        # checkpoint number
+        screen.blit(
+            txt,
+            (
+                pt[0] + parent_absolute[0] + 20,
+                pt[1] + parent_absolute[1] + 20,
+            )
+        )
+
+        # line to the next checkpoint
+        if next_pt is not None and next_pt != pt:
+            pygame.draw.line(
+                screen, color,
+                (
+                    (pt[0] + parent_absolute[0]),
+                    (pt[1] + parent_absolute[1]),
+                ),
+                (
+                    (next_pt[0] + parent_absolute[0]),
+                    (next_pt[1] + parent_absolute[1]),
+                ),
+                3
+            )
+
+    def matches(self, pt):
+        return abs(
+            ((pt[0] - self.pt[0]) ** 2) +
+            ((pt[1] - self.pt[1]) ** 2)
+        ) <= SELECTION_MARGIN
+
+
+class TrackBorder(object):
+    COLOR=(255, 0, 0)
+
+    def __init__(self, parent, pts):
+        self.parent = parent
+        self.pts = pts
+
+    def draw(self, screen):
+        self.draw_track_border(screen, self.pts,
+                               self.parent.absolute, self.COLOR)
+
+    @staticmethod
+    def draw_track_border(screen, pts, parent_absolute=(0, 0),
+                          color=(255, 0, 0)):
         pygame.draw.line(
             screen, color,
             (
-                (checkpoint[0] + parent_absolute[0]),
-                (checkpoint[1] + parent_absolute[1]),
+                (pts[0][0] + parent_absolute[0]),
+                (pts[0][1] + parent_absolute[1]),
             ),
             (
-                (next_pt[0] + parent_absolute[0]),
-                (next_pt[1] + parent_absolute[1]),
+                (pts[1][0] + parent_absolute[0]),
+                (pts[1][1] + parent_absolute[1]),
             ),
-            3
+            5
         )
 
+    def matches(self, position):
+        for pt in self.pts:
+            if abs(
+                        ((pt[0] - position[0]) ** 2) +
+                        ((pt[1] - position[1]) ** 2)
+                    ) <= SELECTION_MARGIN:
+                return True
+        return False
 
-def draw_track_border(screen, pt_a, pt_b, parent_absolute=(0, 0),
-                      color=(255, 0, 0)):
-    pygame.draw.line(
-        screen, color,
-        (
-            (pt_a[0] + parent_absolute[0]),
-            (pt_a[1] + parent_absolute[1]),
-        ),
-        (
-            (pt_b[0] + parent_absolute[0]),
-            (pt_b[1] + parent_absolute[1]),
-        ),
-        5
-    )
 
 
 class RaceTrack(RelativeGroup):
@@ -90,109 +189,65 @@ class RaceTrack(RelativeGroup):
         self.tiles.parent = self
 
         self.objects = []
-        self.borders = set()  # set of ((pt_a_x, pt_a_y), (pt_b_x, pt_b_y))
-        self.crap_areas = set()  # set of pygame.Rect
-        self.checkpoints = []  # list of (pt_x, pt_y, text)
+        self.borders = set()
+        self.crap_areas = set()
+        self.checkpoints = []
+
+        self.to_draw = [
+            self.borders,
+            self.crap_areas,
+            self.checkpoints,
+        ]
 
         self.font = pygame.font.Font(None, 42)
 
     def draw(self, screen):
         self.tiles.draw(screen)
         super().draw(screen)
-        absolute = self.absolute
-        for crap_area in self.crap_areas:
-            draw_crap_area(screen, crap_area[0], crap_area[1], absolute)
-        for (idx, checkpoint) in enumerate(self.checkpoints):
-            draw_checkpoint(
-                screen,
-                checkpoint,
-                self.checkpoints[idx + 1]
-                if idx + 1 < len(self.checkpoints) else self.checkpoints[0],
-                absolute)
-        for border in self.borders:
-            draw_track_border(screen, border[0], border[1], absolute)
+        for el_list in self.to_draw:
+            for el in el_list:
+                el.draw(screen)
 
     def add_object(self, obj):
         self.objects.append(obj)
         self.add(obj)
 
     def add_border(self, border):
-        self.borders.add(border)
+        self.borders.add(TrackBorder(self, border))
 
     def add_crap_area(self, crap_area):
-        self.crap_areas.add(
-            (
-                (
-                    min(crap_area[0][0], crap_area[1][0]),
-                    min(crap_area[0][1], crap_area[1][1]),
-                ),
-                (
-                    max(crap_area[0][0], crap_area[1][0]),
-                    max(crap_area[0][1], crap_area[1][1]),
-                ),
-            )
-        )
+        self.crap_areas.add(CrapArea(self, crap_area))
 
     def update_checkpoints(self):
-        for (idx, checkpoint) in enumerate(list(self.checkpoints)):
-            self.checkpoints[idx] = (
-                checkpoint[0],
-                checkpoint[1],
-                self.font.render(str(idx), True, (0, 0, 255))
-            )
+        for (idx, checkpoint) in enumerate(self.checkpoints):
+            self.checkpoints[idx].set_idx(self.font, idx)
+            if idx + 1 < len(self.checkpoints):
+                self.checkpoints[idx].next_checkpoint = \
+                    self.checkpoints[idx + 1]
+            else:
+                self.checkpoints[idx].next_checkpoint = self.checkpoints[0]
 
     def add_checkpoint(self, pt):
-        self.checkpoints.append(pt)
+        self.checkpoints.append(Checkpoint(self, self.font, pt,
+                                           len(self.checkpoints)))
         self.update_checkpoints()
 
     def get_track_border(self, position):
-        margin = self.DELETION_MARGIN ** 2
         for border in self.borders:
-            for pt in border:
-                if abs(
-                            ((pt[0] - position[0]) ** 2) +
-                            ((pt[1] - position[1]) ** 2)
-                        ) <= margin:
-                    return border
+            if border.matches(position):
+                return border
         return None
 
     def get_checkpoint(self, position):
-        margin = self.DELETION_MARGIN ** 2
         for pt in self.checkpoints:
-            if abs(
-                        ((pt[0] - position[0]) ** 2) +
-                        ((pt[1] - position[1]) ** 2)
-                    ) <= margin:
+            if pt.matches(position):
                 return pt
         return None
 
     def get_crap_area(self, position):
-        margin = self.DELETION_MARGIN ** 2
         for area in self.crap_areas:
-            pts = [
-                (
-                    min(area[0][0], area[1][0]),
-                    min(area[0][1], area[1][1]),
-                ),
-                (
-                    min(area[0][0], area[1][0]),
-                    max(area[0][1], area[1][1]),
-                ),
-                (
-                    max(area[0][0], area[1][0]),
-                    min(area[0][1], area[1][1]),
-                ),
-                (
-                    max(area[0][0], area[1][0]),
-                    max(area[0][1], area[1][1]),
-                ),
-            ]
-            for pt in pts:
-                if abs(
-                            ((pt[0] - position[0]) ** 2) +
-                            ((pt[1] - position[1]) ** 2)
-                        ) <= margin:
-                    return area
+            if area.matches(position):
+                return area
         return None
 
     def get_object(self, position):
