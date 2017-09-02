@@ -22,6 +22,7 @@ ELEMENT_SELECTOR_LAYER = 100
 ELEMENT_SELECTOR_ARROWS_LAYER = 150
 RACE_TRACK_LAYER = 50
 MOUSE_CURSOR_LAYER = 500
+OSD_LAYER = 250
 
 SCROLLING_BORDER = 10
 SCROLLING_SPEED = 256
@@ -66,6 +67,12 @@ class Editor(object):
         ]
 
         self.element_selector = ui.ElementSelector(elements, screen)
+        self.osd_message = ui.OSDMessage(
+            pygame.font.Font(None, 32),
+            (self.element_selector.size[0] + 10, 10)
+        )
+        util.register_drawer(OSD_LAYER, self.osd_message)
+
         self.selected = None
 
         self.arrow_up = ui.Arrow(assets.ARROW_UP)
@@ -105,14 +112,23 @@ class Editor(object):
 
     def load(self):
         logger.info("Loading '%s' ...", self.file_path)
+        self.osd_message.show("Loading '%s' ..." % self.file_path)
+        util.idle_add(self._load)
+
+    def _load(self):
         with open(self.file_path, 'r') as fd:
             data = json.load(fd)
         self.game_settings = data['game_settings']
         self.race_track.unserialize(data['race_track'])
         logger.info("Done")
+        self.osd_message.show("Loading '%s' ... Done" % self.file_path)
 
     def save(self):
         logger.info("Writing '%s' ...", self.file_path)
+        self.osd_message.show("Writing '%s' ..." % self.file_path)
+        util.idle_add(self._save)
+
+    def _save(self):
         data = {
             'game_settings': self.game_settings,
             'race_track': self.race_track.serialize()
@@ -120,6 +136,7 @@ class Editor(object):
         with open(self.file_path, 'w') as fd:
             json.dump(data, fd, indent=4, sort_keys=True)
         logger.info("Done")
+        self.osd_message.show("Writing '%s' ... Done" % self.file_path)
 
     def on_key(self, event):
         if event.type != pygame.KEYDOWN:

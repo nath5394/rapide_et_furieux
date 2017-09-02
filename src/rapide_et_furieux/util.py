@@ -11,6 +11,7 @@ g_animators = set()
 g_drawers = []
 g_loop = True
 g_rnd = 0
+g_on_idle = []
 
 logger = logging.getLogger(__name__)
 
@@ -81,11 +82,17 @@ def unregister_drawer(drawer):
     g_drawers.remove(tup)
 
 
+def idle_add(action):
+    global g_on_idle
+    g_on_idle.append(action)
+
+
 def main_loop(screen):
     global g_animators
     global g_drawers
     global g_event_listeners
     global g_loop
+    global g_on_idle
 
     g_loop = True
 
@@ -98,9 +105,16 @@ def main_loop(screen):
     last_frame = time.time()
 
     while g_loop:
+        idle = True
         for event in pygame.event.get():
+            idle = False
             for event_listener in set(g_event_listeners):
                 event_listener(event)
+
+        if idle:
+            while len(g_on_idle) > 0:
+                action = g_on_idle.pop(0)
+                action()
 
         frame_interval = last_frame - previous_frame
         if frame_interval <= 0.0:

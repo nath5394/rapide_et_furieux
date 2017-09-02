@@ -1,4 +1,5 @@
 import logging
+import time
 
 from .. import RelativeGroup
 from .. import RelativeSprite
@@ -25,6 +26,25 @@ class Background(object):
     def draw(self, screen):
         pygame.draw.rect(screen, (0, 0, 0),
                          ((0, 0), screen.get_size()))
+
+
+class OSDMessage(object):
+    COLOR = (255, 255, 255)
+
+    def __init__(self, font, position=(0, 0)):
+        self.font = font
+        self.position = position
+        self.time = (0, 0)
+        self.surface = None
+
+    def show(self, txt, time_on_display=3.0):
+        self.time = (time.time(), time_on_display)
+        self.surface = self.font.render(str(txt), True, self.COLOR)
+
+    def draw(self, screen):
+        if time.time() - self.time[0] > self.time[1]:
+            return
+        screen.blit(self.surface, self.position)
 
 
 class ElementSelector(RelativeGroup):
