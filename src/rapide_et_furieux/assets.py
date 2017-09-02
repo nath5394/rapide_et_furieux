@@ -1,3 +1,5 @@
+TILE_SIZE = (128, 128)
+
 MUSICS = {
     ("rapide_et_furieux.music", "Mission Plausible.ogg"),
     ("rapide_et_furieux.music", "Game Over.ogg"),
