@@ -97,7 +97,7 @@ OBJECTS = [
 ]
 
 POWERUPS = {
-    ("rapide_et_furieux.gfx.objets", "powerupYellow_bolt.png"),
+    ("rapide_et_furieux.gfx.powerups", "powerupYellow_bolt.png"),
 }
 
 TILES = [

@@ -19,7 +19,7 @@ class RelativeSprite(pygame.sprite.Sprite):
             else:
                 image = image.convert()
 
-        self.image = image
+        self.image = self.original = image
         self.size = self.image.get_size()
 
     @property
@@ -42,7 +42,8 @@ class RelativeSprite(pygame.sprite.Sprite):
         )
 
     def draw(self, screen):
-        screen.blit(self.image, self.absolute)
+        screen.blit(self.image, self.absolute,
+                    ((0, 0), self.size))
 
 
 class RelativeGroup(pygame.sprite.Group):

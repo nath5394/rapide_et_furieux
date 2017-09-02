@@ -1,3 +1,4 @@
+from .. import RelativeGroup
 from .. import RelativeSprite
 from ... import assets
 
@@ -17,3 +18,49 @@ class Background(object):
     def draw(self, screen):
         pygame.draw.rect(screen, (0, 0, 0),
                          ((0, 0), screen.get_size()))
+
+
+class ElementSelector(RelativeGroup):
+    MARGIN = 5
+    COLUMNS = 4
+
+    def __init__(self, elements, screen):
+        super().__init__()
+        for (idx, element) in enumerate(elements):
+            element.relative = (
+                (idx % self.COLUMNS) * (assets.TILE_SIZE[0] + self.MARGIN),
+                int(idx / self.COLUMNS) * (assets.TILE_SIZE[1] + self.MARGIN)
+            )
+            element.parent = self
+            element.image = element.image.subsurface(
+                (
+                    (0, 0),
+                    (
+                        min(element.image.get_size()[0], assets.TILE_SIZE[0]),
+                        min(element.image.get_size()[1], assets.TILE_SIZE[1])
+                    )
+                )
+            )
+            element.size = element.image.get_size()
+        self.add(*elements)
+
+        self.size = (
+            self.COLUMNS * (self.MARGIN + assets.TILE_SIZE[0]),
+            screen.get_size()[1]
+        )
+
+    @property
+    def rect(self):
+        return pygame.Rect((0, 0), self.size)
+
+    def draw(self, screen):
+        pygame.draw.rect(screen, (128, 128, 128), self.rect, 0)
+        super().draw(screen)
+
+    def get_element(self, position):
+        for element in self.sprites():
+            if element.rect.collidepoint(position):
+                return element
+        return None
+
+

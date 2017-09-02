@@ -8,17 +8,17 @@ import pygame
 from . import assets
 from . import util
 from .gfx import ui
+from .gfx.objects import RaceTrackObject
+from .gfx.racetrack import RaceTrack
 from .gfx.tiles import Tile
-from .gfx.tiles import TileGrid
-from .gfx.tiles import TileSelector
 
 
 CAPTION = "Rapide et Furieux - Level editor"
 
 BACKGROUND_LAYER = -1
-TILE_SELECTOR_LAYER = 100
-TILE_SELECTOR_ARROWS_LAYER = 150
-GRID_LAYER = 50
+ELEMENT_SELECTOR_LAYER = 100
+ELEMENT_SELECTOR_ARROWS_LAYER = 150
+RACE_TRACK_LAYER = 50
 MOUSE_CURSOR_LAYER = 500
 
 logger = logging.getLogger(__name__)
@@ -26,36 +26,47 @@ logger = logging.getLogger(__name__)
 
 class Editor(object):
     def __init__(self, screen):
-        tiles = [Tile(tile_rsc) for tile_rsc in assets.TILES]
-        self.tiles = TileSelector(tiles, screen)
+        elements = [Tile(tile_rsc) for tile_rsc in assets.TILES]
+        elements += [RaceTrackObject(obj_rsc) for obj_rsc in assets.OBJECTS]
+        elements += [RaceTrackObject(obj_rsc) for obj_rsc in assets.CARS]
+        elements += [RaceTrackObject(obj_rsc) for obj_rsc in assets.MOTORCYCLES]
+        elements += [RaceTrackObject(obj_rsc) for obj_rsc in assets.POWERUPS]
+        elements += [
+            RaceTrackObject(obj_rsc)
+            for explosion in assets.EXPLOSIONS
+            for obj_rsc in explosion
+        ]
+
+        self.element_selector = ui.ElementSelector(elements, screen)
         self.selected = None
 
         self.arrow_up = ui.Arrow(assets.ARROW_UP)
         self.arrow_up.relative = (
-            (self.tiles.size[0] / 2) - (self.arrow_up.size[0] / 2),
+            (self.element_selector.size[0] / 2) - (self.arrow_up.size[0] / 2),
             0
         )
         self.arrow_down = ui.Arrow(assets.ARROW_DOWN)
         self.arrow_down.relative = (
-            (self.tiles.size[0] / 2) - (self.arrow_down.size[0] / 2),
+            (self.element_selector.size[0] / 2) - (self.arrow_down.size[0] / 2),
             screen.get_size()[1] - self.arrow_down.size[1]
         )
 
-        tiles_offset = (
-            self.tiles.size[1] - (self.tiles.size[1] % assets.TILE_SIZE[1])
+        element_offset = (
+            self.element_selector.size[1] -
+            (self.element_selector.size[1] % assets.TILE_SIZE[1])
         )
-        self.tile_selector_controls = [
-            (self.arrow_down, -tiles_offset),
-            (self.arrow_up, tiles_offset),
+        self.element_selector_controls = [
+            (self.arrow_down, -element_offset),
+            (self.arrow_up, element_offset),
         ]
 
-        self.tile_grid = TileGrid()
+        self.race_track = RaceTrack(grid_margin=5)
 
         util.register_drawer(BACKGROUND_LAYER, ui.Background())
-        util.register_drawer(TILE_SELECTOR_LAYER, self.tiles)
-        for (control, offset) in self.tile_selector_controls:
-            util.register_drawer(TILE_SELECTOR_ARROWS_LAYER, control)
-        util.register_drawer(GRID_LAYER, self.tile_grid)
+        util.register_drawer(ELEMENT_SELECTOR_LAYER, self.element_selector)
+        for (control, offset) in self.element_selector_controls:
+            util.register_drawer(ELEMENT_SELECTOR_ARROWS_LAYER, control)
+        util.register_drawer(RACE_TRACK_LAYER, self.race_track)
         util.register_event_listener(self.on_click)
         util.register_event_listener(self.on_mouse_motion)
 
@@ -65,16 +76,16 @@ class Editor(object):
         position = pygame.mouse.get_pos()
 
         # control ?
-        for (control, offset) in self.tile_selector_controls:
+        for (control, offset) in self.element_selector_controls:
             if control.rect.collidepoint(position):
-                self.tiles.relative = (
-                    self.tiles.relative[0],
-                    min(0, self.tiles.relative[1] + offset)
+                self.element_selector.relative = (
+                    self.element_selector.relative[0],
+                    min(0, self.element_selector.relative[1] + offset)
                 )
                 return
 
-        # tile / object selected ?
-        selected = self.tiles.get_element(position)
+        # Element selected ?
+        selected = self.element_selector.get_element(position)
         if selected is not None:
             if self.selected:
                 util.unregister_drawer(self.selected)
@@ -87,9 +98,8 @@ class Editor(object):
         if self.selected is None:
             return
 
-        # place on the grid ?
-        grid_position = self.tile_grid.get_grid_position(position)
-        self.tile_grid.set_tile(grid_position, self.selected)
+        # place the selected element on the race track
+        self.race_track.add_element(position, self.selected)
         util.unregister_drawer(self.selected)
         self.selected = None
 
