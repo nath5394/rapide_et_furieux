@@ -9,6 +9,7 @@ from . import assets
 from . import util
 from .gfx import ui
 from .gfx.tiles import Tile
+from .gfx.tiles import TileGrid
 from .gfx.tiles import TileSelector
 
 
@@ -48,11 +49,13 @@ class Editor(object):
             (self.arrow_up, tiles_offset),
         ]
 
+        self.tile_grid = TileGrid()
+
         util.register_drawer(BACKGROUND_LAYER, ui.Background())
         util.register_drawer(TILE_SELECTOR_LAYER, self.tiles)
         for (control, offset) in self.tile_selector_controls:
             util.register_drawer(TILE_SELECTOR_ARROWS_LAYER, control)
-        util.register_drawer(GRID_LAYER, ui.Grid())
+        util.register_drawer(GRID_LAYER, self.tile_grid)
         util.register_event_listener(self.on_click)
         util.register_event_listener(self.on_mouse_motion)
 
@@ -80,6 +83,15 @@ class Editor(object):
             util.register_drawer(MOUSE_CURSOR_LAYER, self.selected)
             logger.info("Selected: %s", self.selected)
             return
+
+        if self.selected is None:
+            return
+
+        # place on the grid ?
+        grid_position = self.tile_grid.get_grid_position(position)
+        self.tile_grid.set_tile(grid_position, self.selected)
+        util.unregister_drawer(self.selected)
+        self.selected = None
 
     def on_mouse_motion(self, event):
         if event.type != pygame.MOUSEMOTION:
