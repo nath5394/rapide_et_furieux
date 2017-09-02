@@ -10,6 +10,15 @@ class Arrow(RelativeSprite):
         super().__init__(resource)
 
 
+class Background(object):
+    def __init__(self):
+        pass
+
+    def draw(self, screen):
+        pygame.draw.rect(screen, (0, 0, 0),
+                         ((0, 0), screen.get_size()))
+
+
 class Grid(object):
     LINE_COLOR = (0, 255, 0)
 

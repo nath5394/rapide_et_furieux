@@ -6,8 +6,10 @@ from ... import assets
 
 
 class Tile(RelativeSprite):
-    def __init__(self, resource):
-        super().__init__(resource)
+    fixed_position = True
+
+    def __init__(self, resource, image=None):
+        super().__init__(resource, image)
 
     def copy(self):
         return Tile(self.resource, self.image)
@@ -39,3 +41,9 @@ class TileSelector(RelativeGroup):
     def draw(self, screen):
         pygame.draw.rect(screen, (128, 128, 128), self.rect, 0)
         super().draw(screen)
+
+    def get_element(self, position):
+        for element in self.sprites():
+            if element.rect.collidepoint(position):
+                return element
+        return None

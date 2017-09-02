@@ -1,3 +1,5 @@
+import logging
+
 import pygame
 
 
@@ -7,6 +9,8 @@ g_event_listeners = set()
 g_drawers = []
 g_loop = True
 g_rnd = 0
+
+logger = logging.getLogger(__name__)
 
 
 def get_default_resolution():
@@ -75,7 +79,7 @@ def main_loop(screen):
     if check_exit_event not in g_event_listeners:
         register_event_listener(check_exit_event)
 
-    print("Ready")
+    logger.info("Ready")
 
     while g_loop:
         for event in pygame.event.get():
@@ -86,4 +90,4 @@ def main_loop(screen):
             drawer.draw(screen)
         pygame.display.flip()
 
-    print("Good bye")
+    logger.info("Good bye")
