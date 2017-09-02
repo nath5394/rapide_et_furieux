@@ -30,7 +30,7 @@ class Tile(RelativeSprite):
 
 
 class TileGrid(RelativeGroup):
-    LINE_COLOR = (0, 0, 64)
+    LINE_COLOR = (0, 0, 128)
 
     def __init__(self, margin=0):
         super().__init__()

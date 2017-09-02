@@ -33,7 +33,10 @@ class Editor(object):
         self.screen_size = screen.get_size()
 
         elements = []
-        elements += [ui.TrackBorderGenerator()]
+        elements += [
+            ui.TrackBorderGenerator(),
+            ui.CrapAreaGenerator()
+        ]
         elements += [Tile(tile_rsc) for tile_rsc in assets.TILES]
         elements += [RaceTrackObject(obj_rsc) for obj_rsc in assets.OBJECTS]
         elements += [RaceTrackObject(obj_rsc) for obj_rsc in assets.CARS]
