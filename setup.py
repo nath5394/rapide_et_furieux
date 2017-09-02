@@ -14,7 +14,7 @@ setup(
     description="Nasty 2D car racing game",
     long_description="2D car racing game with weapons",
     keywords="game",
-    license="GPLv3+",
+    license="proprietary",
     author="Jerome Flesch",
     author_email="jflesch@kwain.net",
     install_requires=[
