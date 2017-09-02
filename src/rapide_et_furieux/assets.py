@@ -1,5 +1,8 @@
 TILE_SIZE = (128, 128)
 
+ARROW_UP = ("rapide_et_furieux.gfx.ui", "arrowUp.png")
+ARROW_DOWN = ("rapide_et_furieux.gfx.ui", "arrowDown.png")
+
 MUSICS = {
     ("rapide_et_furieux.music", "Mission Plausible.ogg"),
     ("rapide_et_furieux.music", "Game Over.ogg"),
