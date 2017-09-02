@@ -110,8 +110,6 @@ class Editor(object):
 
         # place the selected element on the race track
         self.race_track.add_element(position, self.selected)
-        util.unregister_drawer(self.selected)
-        self.selected = None
 
     def on_mouse_motion(self, event):
         if event.type != pygame.MOUSEMOTION:

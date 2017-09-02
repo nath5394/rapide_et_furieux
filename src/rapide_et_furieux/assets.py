@@ -100,18 +100,7 @@ POWERUPS = {
     ("rapide_et_furieux.gfx.powerups", "powerupYellow_bolt.png"),
 }
 
-TILES = [
-    ("rapide_et_furieux.gfx.tiles", "land_dirt%02d.png" % idx)
-    for idx in range(1, 15)
-]
-TILES += [
-    ("rapide_et_furieux.gfx.tiles", "land_grass%02d.png" % idx)
-    for idx in range(1, 15)
-]
-TILES += [
-    ("rapide_et_furieux.gfx.tiles", "land_sand%02d.png" % idx)
-    for idx in range(1, 15)
-]
+TILES = []
 TILES += [
     ("rapide_et_furieux.gfx.tiles", "road_asphalt%02d.png" % idx)
     for idx in range(1, 91)
@@ -123,4 +112,16 @@ TILES += [
 TILES += [
     ("rapide_et_furieux.gfx.tiles", "road_sand%02d.png" % idx)
     for idx in range(1, 91)
+]
+TILES += [
+    ("rapide_et_furieux.gfx.tiles", "land_dirt%02d.png" % idx)
+    for idx in range(1, 15)
+]
+TILES += [
+    ("rapide_et_furieux.gfx.tiles", "land_grass%02d.png" % idx)
+    for idx in range(1, 15)
+]
+TILES += [
+    ("rapide_et_furieux.gfx.tiles", "land_sand%02d.png" % idx)
+    for idx in range(1, 15)
 ]
