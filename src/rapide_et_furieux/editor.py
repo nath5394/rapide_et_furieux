@@ -68,8 +68,8 @@ class Editor(object):
             (self.element_selector.size[1] % assets.TILE_SIZE[1])
         )
         self.element_selector_controls = [
-            (self.arrow_down, -element_offset),
-            (self.arrow_up, element_offset),
+            (self.arrow_down, -element_offset, 5),
+            (self.arrow_up, element_offset, 4),
         ]
 
         self.race_track = RaceTrack(grid_margin=5)
@@ -79,7 +79,7 @@ class Editor(object):
 
         util.register_drawer(BACKGROUND_LAYER, ui.Background())
         util.register_drawer(ELEMENT_SELECTOR_LAYER, self.element_selector)
-        for (control, offset) in self.element_selector_controls:
+        for (control, offset, button) in self.element_selector_controls:
             util.register_drawer(ELEMENT_SELECTOR_ARROWS_LAYER, control)
         util.register_drawer(RACE_TRACK_LAYER, self.race_track)
         util.register_event_listener(self.on_click)
@@ -89,11 +89,10 @@ class Editor(object):
     def on_click(self, event):
         if event.type != pygame.MOUSEBUTTONDOWN:
             return
-        buttons = pygame.mouse.get_pressed()
         position = pygame.mouse.get_pos()
 
         # right click ? --> cancel current
-        if buttons[2]:
+        if event.button == 3:
             if self.selected:
                 util.unregister_drawer(self.selected)
                 self.selected.destroy()
@@ -101,19 +100,22 @@ class Editor(object):
             return
 
         # middle click ? --> delete element
-        if buttons[1]:
+        if event.button == 2:
             self.race_track.delete(position)
             return
 
-
         # control ?
-        for (control, offset) in self.element_selector_controls:
-            if control.rect.collidepoint(position):
+        for (control, offset, mouse_button) in self.element_selector_controls:
+            if (mouse_button == event.button or
+                    control.rect.collidepoint(position)):
                 self.element_selector.relative = (
                     self.element_selector.relative[0],
                     min(0, self.element_selector.relative[1] + offset)
                 )
                 return
+
+        if event.button != 1:
+            return
 
         # Element selected ?
         selected = self.element_selector.get_element(position)
