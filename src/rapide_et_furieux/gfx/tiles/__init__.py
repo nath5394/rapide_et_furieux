@@ -17,7 +17,7 @@ class Arrow(RelativeSprite):
 
 class TileSelector(RelativeGroup):
     MARGIN = 2
-    COLUMNS = 3
+    COLUMNS = 4
     TILE_SIZE = (128, 128)
     ARROW_UP = ("rapide_et_furieux.gfx.ui", "arrowUp.png")
     ARROW_DOWN = ("rapide_et_furieux.gfx.ui", "arrowDown.png")
