@@ -46,39 +46,41 @@ class TileGrid(RelativeGroup):
         )
 
     def draw(self, screen):
-        self.size = screen.get_size()
-        position = self.absolute
-        for x in range(
-                    position[0], position[0] + self.size[0],
-                    assets.TILE_SIZE[0] + self.margin
-                ):
+        size = screen.get_size()
+
+        absolute = self.absolute
+        offset = (
+            absolute[0] % (assets.TILE_SIZE[0] + self.margin),
+            absolute[1] % (assets.TILE_SIZE[1] + self.margin),
+        )
+        if absolute[0] > 0:
+            offset = (absolute[0], offset[1])
+        if absolute[1] > 0:
+            offset = (offset[0], absolute[1])
+
+        # draw grid
+        for x in range(offset[0], size[0], assets.TILE_SIZE[0] + self.margin):
             pygame.draw.line(
                 screen, self.LINE_COLOR,
-                (position[0] + x - (self.margin / 2), position[1]),
-                (position[0] + x - (self.margin / 2),
-                 position[1] + self.size[1]),
+                (x - (self.margin / 2), max(0, offset[1])),
+                (x - (self.margin / 2), size[1]),
                 self.margin
             )
-        for y in range(
-                    position[1], position[1] + self.size[1],
-                    assets.TILE_SIZE[1] + self.margin
-                ):
+        for y in range(offset[1], size[1], assets.TILE_SIZE[1] + self.margin):
             pygame.draw.line(
                 screen, self.LINE_COLOR,
-                (position[0], position[1] + y - (self.margin / 2)),
-                (position[0] + self.size[0],
-                 position[1] + y - (self.margin / 2)),
+                (max(0, offset[0]), y - (self.margin / 2)),
+                (size[0], y - (self.margin / 2)),
                 self.margin
             )
+
         super().draw(screen)
 
     def get_grid_position(self, screen_position):
-        parent_pos = (0, 0)
-        if self.parent:
-            parent_pos = self.parent.absolute
+        pos = self.absolute
         return (
-            int((screen_position[0] - parent_pos[0]) /
+            int((screen_position[0] - pos[0]) /
                 (assets.TILE_SIZE[0] + self.margin)),
-            int((screen_position[1] - parent_pos[1]) /
+            int((screen_position[1] - pos[1]) /
                 (assets.TILE_SIZE[1] + self.margin)),
         )

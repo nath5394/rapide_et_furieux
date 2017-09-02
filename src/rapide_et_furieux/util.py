@@ -1,4 +1,5 @@
 import logging
+import time
 
 import pygame
 
@@ -6,6 +7,7 @@ import pygame
 VERSION = "0.1"
 
 g_event_listeners = set()
+g_animators = set()
 g_drawers = []
 g_loop = True
 g_rnd = 0
@@ -50,6 +52,16 @@ def unregister_event_listener(event_listener):
     g_event_listeners.remove(event_listener)
 
 
+def register_animator(animator):
+    global g_animators
+    g_animators.add(animator)
+
+
+def unregister_animator(animator):
+    global g_animators
+    g_animators.remove(animator)
+
+
 def register_drawer(layer, drawer):
     global g_drawers
     global g_rnd
@@ -70,6 +82,7 @@ def unregister_drawer(drawer):
 
 
 def main_loop(screen):
+    global g_animators
     global g_drawers
     global g_event_listeners
     global g_loop
@@ -81,13 +94,26 @@ def main_loop(screen):
 
     logger.info("Ready")
 
+    previous_frame = time.time()
+    last_frame = time.time()
+
     while g_loop:
         for event in pygame.event.get():
             for event_listener in g_event_listeners:
                 event_listener(event)
 
+        frame_interval = last_frame - previous_frame
+        if frame_interval <= 0.0:
+            # avoid divisions by zero
+            frame_interval = 0.00001
+        for animator in g_animators:
+            animator(frame_interval)
+
         for (layer, _, drawer) in g_drawers:
             drawer.draw(screen)
         pygame.display.flip()
+
+        previous_frame = last_frame
+        last_frame = time.time()
 
     logger.info("Good bye")

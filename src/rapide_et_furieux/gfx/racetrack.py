@@ -21,6 +21,8 @@ class RaceTrack(RelativeGroup):
         element = element.copy()
         if element.aligned_on_grid:
             grid_position = self.tiles.get_grid_position(mouse_position)
+            if grid_position[0] < 0 or grid_position[1] < 0:
+                return
             self.tiles.set_tile(grid_position, element)
         else:
             abs_pos = self.absolute
@@ -28,6 +30,8 @@ class RaceTrack(RelativeGroup):
                 mouse_position[0] - abs_pos[0],
                 mouse_position[1] - abs_pos[1]
             )
+            if position[0] < 0 or position[1] < 0:
+                return
             element.parent = self
             element.relative = position
             logger.info("Adding static object: %s --> %s",

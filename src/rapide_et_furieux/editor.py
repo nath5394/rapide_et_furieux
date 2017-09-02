@@ -21,11 +21,17 @@ ELEMENT_SELECTOR_ARROWS_LAYER = 150
 RACE_TRACK_LAYER = 50
 MOUSE_CURSOR_LAYER = 500
 
+SCROLLING_BORDER = 10
+SCROLLING_SPEED = 256
+
 logger = logging.getLogger(__name__)
 
 
 class Editor(object):
     def __init__(self, screen):
+        self.screen = screen
+        self.screen_size = screen.get_size()
+
         elements = [Tile(tile_rsc) for tile_rsc in assets.TILES]
         elements += [RaceTrackObject(obj_rsc) for obj_rsc in assets.OBJECTS]
         elements += [RaceTrackObject(obj_rsc) for obj_rsc in assets.CARS]
@@ -48,7 +54,7 @@ class Editor(object):
         self.arrow_down = ui.Arrow(assets.ARROW_DOWN)
         self.arrow_down.relative = (
             (self.element_selector.size[0] / 2) - (self.arrow_down.size[0] / 2),
-            screen.get_size()[1] - self.arrow_down.size[1]
+            self.screen_size[1] - self.arrow_down.size[1]
         )
 
         element_offset = (
@@ -61,6 +67,9 @@ class Editor(object):
         ]
 
         self.race_track = RaceTrack(grid_margin=5)
+        self.race_track.relative = (self.element_selector.size[0], 0)
+
+        self.scrolling = (0, 0)
 
         util.register_drawer(BACKGROUND_LAYER, ui.Background())
         util.register_drawer(ELEMENT_SELECTOR_LAYER, self.element_selector)
@@ -69,6 +78,7 @@ class Editor(object):
         util.register_drawer(RACE_TRACK_LAYER, self.race_track)
         util.register_event_listener(self.on_click)
         util.register_event_listener(self.on_mouse_motion)
+        util.register_animator(self.scroll)
 
     def on_click(self, event):
         if event.type != pygame.MOUSEBUTTONDOWN:
@@ -106,10 +116,29 @@ class Editor(object):
     def on_mouse_motion(self, event):
         if event.type != pygame.MOUSEMOTION:
             return
+
+        position = pygame.mouse.get_pos()
+        self.scrolling = (0, 0)
+        if position[0] < SCROLLING_BORDER:
+            self.scrolling = (-SCROLLING_SPEED, self.scrolling[1])
+        elif position[0] >= self.screen_size[0] - SCROLLING_BORDER:
+            self.scrolling = (SCROLLING_SPEED, self.scrolling[1])
+        if position[1] < SCROLLING_BORDER:
+            self.scrolling = (self.scrolling[0], -SCROLLING_SPEED)
+        elif position[1] >= self.screen_size[1] - SCROLLING_BORDER:
+            self.scrolling = (self.scrolling[1], SCROLLING_SPEED)
+
         if self.selected is None:
             return
-        position = pygame.mouse.get_pos()
         self.selected.relative = position
+
+    def scroll(self, frame_interval):
+        self.race_track.relative = (
+            int(self.race_track.relative[0] -
+                (self.scrolling[0] * frame_interval)),
+            int(self.race_track.relative[1] -
+                (self.scrolling[1] * frame_interval)),
+        )
 
 
 def on_uncatched_exception_cb(exc_type, exc_value, exc_tb):
