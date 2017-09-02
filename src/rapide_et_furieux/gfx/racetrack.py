@@ -44,6 +44,8 @@ def draw_track_border(screen, pt_a, pt_b, parent_absolute=(0, 0),
 
 
 class RaceTrack(RelativeGroup):
+    DELETION_MARGIN = 10
+
     def __init__(self, grid_margin=0):
         super().__init__()
 
@@ -52,12 +54,12 @@ class RaceTrack(RelativeGroup):
 
         self.objects = []
         self.borders = set()  # set of ((pt_a_x, pt_a_y), (pt_b_x, pt_b_y))
-        self.crap_area = set()  # set of pygame.Rect
+        self.crap_areas = set()  # set of pygame.Rect
 
     def draw(self, screen):
         self.tiles.draw(screen)
         super().draw(screen)
-        for crap_area in self.crap_area:
+        for crap_area in self.crap_areas:
             draw_crap_area(screen, crap_area[0], crap_area[1], self.absolute)
         for border in self.borders:
             draw_track_border(screen, border[0], border[1], self.absolute)
@@ -70,7 +72,7 @@ class RaceTrack(RelativeGroup):
         self.borders.add(border)
 
     def add_crap_area(self, crap_area):
-        self.crap_area.add(
+        self.crap_areas.add(
             (
                 (
                     min(crap_area[0][0], crap_area[1][0]),
@@ -82,3 +84,89 @@ class RaceTrack(RelativeGroup):
                 ),
             )
         )
+
+    def get_track_border(self, position):
+        margin = self.DELETION_MARGIN ** 2
+        for border in self.borders:
+            for pt in border:
+                if abs(
+                            ((pt[0] - position[0]) ** 2) +
+                            ((pt[1] - position[1]) ** 2)
+                        ) <= margin:
+                    return border
+        return None
+
+    def get_crap_area(self, position):
+        margin = self.DELETION_MARGIN ** 2
+        for area in self.crap_areas:
+            pts = [
+                (
+                    min(area[0][0], area[1][0]),
+                    min(area[0][1], area[1][1]),
+                ),
+                (
+                    min(area[0][0], area[1][0]),
+                    max(area[0][1], area[1][1]),
+                ),
+                (
+                    max(area[0][0], area[1][0]),
+                    min(area[0][1], area[1][1]),
+                ),
+                (
+                    max(area[0][0], area[1][0]),
+                    max(area[0][1], area[1][1]),
+                ),
+            ]
+            for pt in pts:
+                if abs(
+                            ((pt[0] - position[0]) ** 2) +
+                            ((pt[1] - position[1]) ** 2)
+                        ) <= margin:
+                    return area
+        return None
+
+    def get_object(self, position):
+        for obj in self.objects:
+            rect = pygame.Rect((obj.relative, obj.size))
+            if rect.collidepoint(position):
+                return obj
+        return None
+
+    def delete(self, mouse_position):
+        absolute = self.absolute
+        position = (
+            mouse_position[0] - absolute[0],
+            mouse_position[1] - absolute[1]
+        )
+
+        # position matches a track border ?
+        el = self.get_track_border(position)
+        if el is not None:
+            logger.info("Removing track border: %s", el)
+            self.borders.remove(el)
+            return
+
+        # position matches a crap area border ?
+        el = self.get_crap_area(position)
+        if el is not None:
+            logger.info("Removing crap area: %s", el)
+            self.crap_areas.remove(el)
+            return
+
+        # position matches an object ?
+        el = self.get_object(position)
+        if el is not None:
+            logger.info("Removing object: %s", el)
+            self.objects.remove(el)
+            self.remove(el)
+            return
+
+        # position matches a tile ?
+        el = self.tiles.get_grid_position(mouse_position)
+        if el is not None:
+            logger.info("Removing tile: %s / %s", mouse_position, el)
+            if self.tiles.remove_tile(el):
+                return
+
+        logger.info("Unable to find element to remove at %s / %s",
+                    mouse_position, position)

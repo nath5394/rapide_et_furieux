@@ -33,10 +33,7 @@ class Editor(object):
         self.screen_size = screen.get_size()
 
         elements = []
-        elements += [
-            ui.TrackBorderGenerator(),
-            ui.CrapAreaGenerator()
-        ]
+        elements += [ui.TrackBorderGenerator(), ui.CrapAreaGenerator()]
         elements += [Tile(tile_rsc) for tile_rsc in assets.TILES]
         elements += [RaceTrackObject(obj_rsc) for obj_rsc in assets.OBJECTS]
         elements += [RaceTrackObject(obj_rsc) for obj_rsc in assets.CARS]
@@ -98,6 +95,12 @@ class Editor(object):
                 self.selected.destroy()
                 self.selected = None
             return
+
+        # middle click ? --> delete element
+        if buttons[1]:
+            self.race_track.delete(position)
+            return
+
 
         # control ?
         for (control, offset) in self.element_selector_controls:
