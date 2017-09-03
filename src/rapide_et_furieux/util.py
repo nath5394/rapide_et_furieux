@@ -1,4 +1,5 @@
 import logging
+import sys
 import time
 
 import pygame
@@ -14,6 +15,26 @@ g_rnd = 0
 g_on_idle = []
 
 logger = logging.getLogger(__name__)
+
+
+def on_uncatched_exception_cb(exc_type, exc_value, exc_tb):
+    logger.error(
+        "=== UNCATCHED EXCEPTION ===",
+        exc_info=(exc_type, exc_value, exc_tb)
+    )
+    logger.error(
+        "==========================="
+    )
+
+
+def init_logging():
+    lg = logging.getLogger()
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter('%(levelname)-6s %(name)-30s %(message)s')
+    handler.setFormatter(formatter)
+    lg.addHandler(handler)
+    sys.excepthook = on_uncatched_exception_cb
+    logging.getLogger().setLevel(logging.DEBUG)
 
 
 def get_default_resolution():

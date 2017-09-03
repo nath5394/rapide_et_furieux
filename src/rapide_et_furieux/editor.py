@@ -248,24 +248,8 @@ class Editor(object):
         )
 
 
-def on_uncatched_exception_cb(exc_type, exc_value, exc_tb):
-    logger.error(
-        "=== UNCATCHED EXCEPTION ===",
-        exc_info=(exc_type, exc_value, exc_tb)
-    )
-    logger.error(
-        "==========================="
-    )
-
-
 def main():
-    lg = logging.getLogger()
-    handler = logging.StreamHandler()
-    formatter = logging.Formatter('%(levelname)-6s %(name)-30s %(message)s')
-    handler.setFormatter(formatter)
-    lg.addHandler(handler)
-    sys.excepthook = on_uncatched_exception_cb
-    logging.getLogger().setLevel(logging.DEBUG)
+    util.init_logging()
 
     logger.info(CAPTION)
 
