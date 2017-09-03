@@ -114,8 +114,6 @@ class TileGrid(RelativeGroup):
     def get_grid_position(self, screen_position):
         pos = self.absolute
         return (
-            int((screen_position[0] - pos[0]) /
-                (assets.TILE_SIZE[0] + self.margin)),
-            int((screen_position[1] - pos[1]) /
-                (assets.TILE_SIZE[1] + self.margin)),
+            int((screen_position[0] - pos[0]) / assets.TILE_SIZE[0]),
+            int((screen_position[1] - pos[1]) / assets.TILE_SIZE[1]),
         )
