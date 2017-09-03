@@ -117,3 +117,10 @@ class TileGrid(RelativeGroup):
             int((screen_position[0] - pos[0]) / assets.TILE_SIZE[0]),
             int((screen_position[1] - pos[1]) / assets.TILE_SIZE[1]),
         )
+
+    def get_spawn_points(self):
+        for (position, tile) in self.grid.items():
+            if tile.resource not in assets.SPAWN_TILES:
+                continue
+            angle = assets.SPAWN_TILES[tile.resource]
+            yield (position, angle)

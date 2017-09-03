@@ -24,9 +24,16 @@ GAME_SETTINGS_TEMPLATE = {
         'crap': 64,
     },
     'max_speed': {
-        'normal': 512,
-        'crap': 256,
+        'normal': {
+            'forward': 512,
+            'reverse': 128,
+        },
+        'crap': {
+            'forward': 256,
+            'reverse': 64,
+        },
     },
+    'engine braking': 256,
 }
 
 

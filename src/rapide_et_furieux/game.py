@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import itertools
 import json
 import logging
 import os
@@ -10,6 +11,8 @@ import pygame
 from . import assets
 from . import util
 from .gfx import ui
+from .gfx.cars.ia import IACar
+from .gfx.cars.player import PlayerCar
 from .gfx.racetrack import RaceTrack
 
 
@@ -39,8 +42,10 @@ class Game(object):
         if DEBUG:
             util.register_drawer(OSD_LAYER, self.osd_message)
 
-        self.background = None
         self.race_track = None
+
+        self.background = ui.Background()
+        util.register_drawer(BACKGROUND_LAYER, self.background)
 
         logger.info("Initializing ...")
         self.osd_message.show("Initializing ...")
@@ -56,11 +61,6 @@ class Game(object):
             util.register_drawer(OSD_LAYER - 1, fps_counter)
             util.register_animator(fps_counter.on_frame)
 
-        self.background = ui.Background()
-        self.race_track = RaceTrack(grid_margin=0, debug=DEBUG)
-
-        util.register_drawer(RACE_TRACK_LAYER, self.race_track)
-
         self.osd_message.show("Done")
 
     def load(self):
@@ -70,12 +70,33 @@ class Game(object):
 
     def _load(self):
         assets.load_resources()
+
+        # instantiate race track
+        if self.race_track is not None:
+            self.unregister_drawer(self.race_track)
+        self.race_track = RaceTrack(grid_margin=0, debug=DEBUG)
+        util.register_drawer(RACE_TRACK_LAYER, self.race_track)
+
+        # load map / race track
         with open(self.track_filepath, 'r') as fd:
             data = json.load(fd)
-        self.game_settings = data['game_settings']
+        self.game_settings.update(data['game_settings'])
         self.race_track.unserialize(data['race_track'])
-        logger.info("Done")
+
+        # instantiate cars
+        tiles = self.race_track.tiles
+        iter_car_rsc = iter(itertools.cycle(assets.CARS))
+        for (idx, (spawn_point, orientation)) \
+                in enumerate(tiles.get_spawn_points()):
+            car = IACar
+            if idx == 0:
+                car = PlayerCar
+            car = car(next(iter_car_rsc), self.race_track, self.game_settings,
+                      spawn_point, orientation)
+            self.race_track.add_car(car)
+
         self.osd_message.show("Done")
+        logger.info("Done")
 
 
 def main():

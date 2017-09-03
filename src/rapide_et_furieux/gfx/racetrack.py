@@ -61,8 +61,15 @@ class CrapArea(object):
     def __hash__(self):
         return hash(self.pt_a) ^ hash(self.pt_b)
 
-    def matches(self, position):
-        pts = [
+    def inside(self, position):
+        return (self.pt_a[0] <= position[0] and
+                self.pt_a[1] <= position[1] and
+                position[0] <= self.pt_b[0] and
+                position[1] <= self.pt_b[1])
+
+    @property
+    def normalized_points(self):
+        return [
             (
                 min(self.pt_a[0], self.pt_b[0]),
                 min(self.pt_a[1], self.pt_b[1]),
@@ -80,6 +87,9 @@ class CrapArea(object):
                 max(self.pt_a[1], self.pt_b[1]),
             ),
         ]
+
+    def matches(self, position):
+        pts = self.normalized_points
         for pt in pts:
             if abs(
                         ((pt[0] - position[0]) ** 2) +
@@ -224,6 +234,7 @@ class RaceTrack(RelativeGroup):
         self.borders = []
         self.crap_areas = []
         self.checkpoints = []
+        self.cars = []
 
         self.font = pygame.font.Font(None, 42)
 
@@ -233,6 +244,7 @@ class RaceTrack(RelativeGroup):
 
         if self.debug:
             to_draw = [
+                self.cars,
                 self.objects,
                 self.borders,
                 self.crap_areas,
@@ -240,6 +252,7 @@ class RaceTrack(RelativeGroup):
             ]
         else:
             to_draw = [
+                self.cars,
                 self.objects,
             ]
 
@@ -260,6 +273,12 @@ class RaceTrack(RelativeGroup):
             crap_area = CrapArea(self, crap_area)
         self.crap_areas.append(crap_area)
 
+    def get_terrain(self, position):
+        for area in self.crap_areas:
+            if area.inside(position):
+                return "crap"
+        return "normal"
+
     def update_checkpoints(self):
         for (idx, checkpoint) in enumerate(self.checkpoints):
             self.checkpoints[idx].set_idx(self.font, idx)
@@ -274,6 +293,9 @@ class RaceTrack(RelativeGroup):
             pt = Checkpoint(self, self.font, pt, len(self.checkpoints))
         self.checkpoints.append(pt)
         self.update_checkpoints()
+
+    def add_car(self, car):
+        self.cars.append(car)
 
     def get_track_border(self, position):
         for border in self.borders:

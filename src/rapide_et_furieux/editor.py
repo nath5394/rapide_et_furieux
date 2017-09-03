@@ -141,7 +141,7 @@ class Editor(object):
     def _load(self):
         with open(self.file_path, 'r') as fd:
             data = json.load(fd)
-        self.game_settings = data['game_settings']
+        self.game_settings.update(data['game_settings'])
         self.race_track.unserialize(data['race_track'])
         logger.info("Done")
         self.osd_message.show("Done")
