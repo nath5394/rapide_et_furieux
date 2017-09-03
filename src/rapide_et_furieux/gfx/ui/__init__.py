@@ -31,20 +31,26 @@ class Background(object):
 class OSDMessage(object):
     COLOR = (255, 255, 255)
 
-    def __init__(self, font, position=(0, 0)):
+    def __init__(self, font, line_size, position=(0, 0)):
         self.font = font
+        self.line_size = line_size
         self.position = position
-        self.time = (0, 0)
-        self.surface = None
+        self.txt = []
 
     def show(self, txt, time_on_display=3.0):
-        self.time = (time.time(), time_on_display)
-        self.surface = self.font.render(str(txt), True, self.COLOR)
+        surface = self.font.render(str(txt), True, self.COLOR)
+        self.txt.append((time.time(), time_on_display, surface))
 
     def draw(self, screen):
-        if time.time() - self.time[0] > self.time[1]:
-            return
-        screen.blit(self.surface, self.position)
+        now = time.time()
+        for (idx, (t, l, surface)) in reversed(list(enumerate(self.txt))):
+            if now - t > l:
+                self.txt.pop(idx)
+        for (idx, (t, l, surface)) in enumerate(self.txt):
+            screen.blit(
+                surface,
+                (self.position[0], self.position[1] + (idx * self.line_size))
+            )
 
 
 class ElementSelector(RelativeGroup):

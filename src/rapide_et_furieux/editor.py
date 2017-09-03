@@ -68,9 +68,10 @@ class Editor(object):
 
         self.element_selector = ui.ElementSelector(elements, screen)
         self.osd_message = ui.OSDMessage(
-            pygame.font.Font(None, 32),
+            pygame.font.Font(None, 32), 42,
             (self.element_selector.size[0] + 10, 10)
         )
+        self.osd_message.show("{} - {}".format(CAPTION, file_path))
         util.register_drawer(OSD_LAYER, self.osd_message)
 
         self.selected = None
@@ -121,7 +122,7 @@ class Editor(object):
         self.game_settings = data['game_settings']
         self.race_track.unserialize(data['race_track'])
         logger.info("Done")
-        self.osd_message.show("Loading '%s' ... Done" % self.file_path)
+        self.osd_message.show("Done")
 
     def save(self):
         logger.info("Writing '%s' ...", self.file_path)
@@ -136,7 +137,7 @@ class Editor(object):
         with open(self.file_path, 'w') as fd:
             json.dump(data, fd, indent=4, sort_keys=True)
         logger.info("Done")
-        self.osd_message.show("Writing '%s' ... Done" % self.file_path)
+        self.osd_message.show("Done")
 
     def on_key(self, event):
         if event.type != pygame.KEYDOWN:
