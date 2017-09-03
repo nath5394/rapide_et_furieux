@@ -92,6 +92,9 @@ class Car(RelativeSprite):
             acceleration = self.game_settings['acceleration'][terrain]
             acceleration *= frame_interval
 
+            if self.controls.brake:
+                acceleration *= -1
+
             # apply to speed
             self.speed = self.speed + acceleration
 
