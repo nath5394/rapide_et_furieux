@@ -1,4 +1,5 @@
 import logging
+import math
 import sys
 import time
 
@@ -27,6 +28,15 @@ GAME_SETTINGS_TEMPLATE = {
         'normal': 512,
         'crap': 128,
     },
+    'lateral_speed_slowdown': {
+        # tires on the road
+        'normal': 512,
+        'crap': 128,
+    },
+    'steering': {
+        'normal': math.pi / 2,
+        'crap': math.pi / 4,
+    },
     'max_speed': {
         'normal': {
             'forward': 512,
@@ -37,7 +47,10 @@ GAME_SETTINGS_TEMPLATE = {
             'reverse': 64,
         },
     },
-    'engine braking': 256,
+    'engine braking': {
+        'normal': 128,
+        'crap': 256,
+    }
 }
 
 
