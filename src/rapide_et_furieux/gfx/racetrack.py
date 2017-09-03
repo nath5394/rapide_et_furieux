@@ -221,8 +221,8 @@ class RaceTrack(RelativeGroup):
         self.tiles.parent = self
 
         self.objects = []
-        self.borders = set()
-        self.crap_areas = set()
+        self.borders = []
+        self.crap_areas = []
         self.checkpoints = []
 
         self.font = pygame.font.Font(None, 42)
@@ -233,28 +233,32 @@ class RaceTrack(RelativeGroup):
 
         if self.debug:
             to_draw = [
+                self.objects,
                 self.borders,
                 self.crap_areas,
                 self.checkpoints,
             ]
+        else:
+            to_draw = [
+                self.objects,
+            ]
 
-            for el_list in to_draw:
-                for el in el_list:
-                    el.draw(screen)
+        for el_list in to_draw:
+            for el in el_list:
+                el.draw(screen)
 
     def add_object(self, obj):
         self.objects.append(obj)
-        self.add(obj)
 
     def add_border(self, border):
         if not isinstance(border, TrackBorder):
             border = TrackBorder(self, border)
-        self.borders.add(border)
+        self.borders.append(border)
 
     def add_crap_area(self, crap_area):
         if not isinstance(crap_area, CrapArea):
             crap_area = CrapArea(self, crap_area)
-        self.crap_areas.add(crap_area)
+        self.crap_areas.append(crap_area)
 
     def update_checkpoints(self):
         for (idx, checkpoint) in enumerate(self.checkpoints):
@@ -330,7 +334,6 @@ class RaceTrack(RelativeGroup):
         if el is not None:
             logger.info("Removing object: %s", el)
             self.objects.remove(el)
-            self.remove(el)
             return
 
         # position matches a tile ?
@@ -357,8 +360,8 @@ class RaceTrack(RelativeGroup):
         for sprite in self.sprites():
             self.remove(sprite)
         self.objects = []
-        self.borders = set()
-        self.crap_areas = set()
+        self.borders = []
+        self.crap_areas = []
         self.checkpoints = []
 
         # loading
