@@ -87,10 +87,7 @@ class Editor(object):
             self.screen_size[1] - self.arrow_down.size[1]
         )
 
-        element_offset = (
-            self.element_selector.size[1] -
-            (self.element_selector.size[1] % assets.TILE_SIZE[1])
-        )
+        element_offset = assets.TILE_SIZE[1]
         self.element_selector_controls = [
             (self.arrow_down, -element_offset, 5),
             (self.arrow_up, element_offset, 4),
