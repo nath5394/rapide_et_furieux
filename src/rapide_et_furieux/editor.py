@@ -66,13 +66,20 @@ class Editor(object):
             for obj_rsc in explosion
         ]
 
+        font = pygame.font.Font(None, 32)
+
         self.element_selector = ui.ElementSelector(elements, screen)
         self.osd_message = ui.OSDMessage(
-            pygame.font.Font(None, 32), 42,
-            (self.element_selector.size[0] + 10, 10)
+            font, 42, (self.element_selector.size[0] + 10, 10)
         )
         self.osd_message.show("{} - {}".format(CAPTION, file_path))
         util.register_drawer(OSD_LAYER, self.osd_message)
+
+        fps_counter = ui.FPSCounter(font, position=(
+            screen.get_size()[0] - 128, 0
+        ))
+        util.register_drawer(OSD_LAYER - 1, fps_counter)
+        util.register_animator(fps_counter.on_frame)
 
         self.selected = None
 

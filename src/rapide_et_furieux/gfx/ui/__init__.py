@@ -53,6 +53,34 @@ class OSDMessage(object):
             )
 
 
+class FPSCounter(object):
+    COLOR = (255, 255, 255)
+
+    def __init__(self, font, position=(0, 0)):
+        self.font = font
+        self.position = position
+        self.surface = None
+        self.last_measure = time.time()
+        self.nb_frames = 0
+
+    def on_frame(self, interval):
+        self.nb_frames += 1
+
+        now = time.time()
+        if now - self.last_measure >= 1.0:
+            self.surface = self.font.render(
+                "%d FPS" % self.nb_frames, True, self.COLOR
+            )
+            self.last_measure = now
+            self.nb_frames = 0
+            return
+
+    def draw(self, screen):
+        if self.surface is None:
+            return
+        screen.blit(self.surface, self.position)
+
+
 class ElementSelector(RelativeGroup):
     MARGIN = 5
     COLUMNS = 4
