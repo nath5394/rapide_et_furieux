@@ -161,12 +161,12 @@ class Car(RelativeSprite):
         if not self.controls.steer_left and not self.controls.steer_right:
             return
 
-        if self.speed[0] == 0:
-            return
+        ref_speed = self.game_settings['steering']['ref_speed']
 
         angle_change = self.game_settings['steering'][terrain] * frame_interval
         if self.controls.steer_left:
             angle_change *= -1
+        angle_change *= min(1.0, abs(self.speed[0]) / ref_speed)
 
         self.radians = self.radians + angle_change
 

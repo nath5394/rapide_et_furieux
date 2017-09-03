@@ -31,9 +31,10 @@ GAME_SETTINGS_TEMPLATE = {
     'lateral_speed_slowdown': {
         # tires on the road
         'normal': 1024,
-        'crap': 1024,
+        'crap': 512,
     },
     'steering': {
+        'ref_speed': 256,  # speed required for full steering
         'normal': math.pi,
         'crap': math.pi / 2,
     },
