@@ -11,11 +11,17 @@ class RaceTrackObject(RelativeSprite):
         super().__init__(resource, image)
 
     def serialize(self):
-        return self.resource
+        return {
+            "rsc": self.resource,
+            "pos": self.relative,
+        }
 
     @staticmethod
-    def unserialize(self, data):
-        return RaceTrackObject(data)
+    def unserialize(data, parent):
+        r = RaceTrackObject(data['rsc'])
+        r.relative = data['pos']
+        r.parent = parent
+        return r
 
     def copy(self):
         return RaceTrackObject(self.resource, self.original)

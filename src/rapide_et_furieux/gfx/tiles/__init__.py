@@ -47,6 +47,7 @@ class TileGrid(RelativeGroup):
     def unserialize(self, data):
         for sprite in self.sprites():
             self.remove(sprite)
+        self.grid = {}
         elements = {}
         for (position, rsc) in data:
             rsc = tuple(rsc)
@@ -74,7 +75,7 @@ class TileGrid(RelativeGroup):
         )
 
     def remove_tile(self, position):
-        if not position in self.grid:
+        if position not in self.grid:
             return False
         self.remove(self.grid[position])
         self.grid.pop(position)

@@ -13,7 +13,7 @@ SELECTION_MARGIN = 15 ** 2
 
 
 class CrapArea(object):
-    COLOR=(0, 255, 0)
+    COLOR = (0, 255, 0)
 
     def __init__(self, parent, pts):
         self.parent = parent
@@ -87,7 +87,6 @@ class CrapArea(object):
                     ) <= SELECTION_MARGIN:
                 return True
         return False
-
 
 
 class Checkpoint(object):
@@ -165,7 +164,7 @@ class Checkpoint(object):
 
 
 class TrackBorder(object):
-    COLOR=(255, 0, 0)
+    COLOR = (255, 0, 0)
 
     def __init__(self, parent, pts):
         self.parent = parent
@@ -210,7 +209,6 @@ class TrackBorder(object):
         return False
 
 
-
 class RaceTrack(RelativeGroup):
     DELETION_MARGIN = 15
 
@@ -225,18 +223,19 @@ class RaceTrack(RelativeGroup):
         self.crap_areas = set()
         self.checkpoints = []
 
-        self.to_draw = [
-            self.borders,
-            self.crap_areas,
-            self.checkpoints,
-        ]
-
         self.font = pygame.font.Font(None, 42)
 
     def draw(self, screen):
         self.tiles.draw(screen)
         super().draw(screen)
-        for el_list in self.to_draw:
+
+        to_draw = [
+            self.borders,
+            self.crap_areas,
+            self.checkpoints,
+        ]
+
+        for el_list in to_draw:
             for el in el_list:
                 el.draw(screen)
 
@@ -351,15 +350,21 @@ class RaceTrack(RelativeGroup):
         }
 
     def unserialize(self, data):
+        # cleanup
         for sprite in self.sprites():
             self.remove(sprite)
+        self.objects = []
+        self.borders = set()
+        self.crap_areas = set()
+        self.checkpoints = []
+
+        # loading
         self.tiles.unserialize(data['tiles'])
         for obj in data['objects']:
-            self.add_object(RaceTrackObject.unserialize(obj))
+            self.add_object(RaceTrackObject.unserialize(obj, self))
         for border in data['borders']:
             self.add_border(TrackBorder.unserialize(border, self))
         for area in data['crap_areas']:
             self.add_crap_area(CrapArea.unserialize(area, self))
         for cp in data['checkpoints']:
             self.add_checkpoint(Checkpoint.unserialize(cp, self, self.font))
-
