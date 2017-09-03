@@ -66,9 +66,16 @@ class Car(RelativeSprite):
         terrain = self.parent.get_terrain(self.position)
 
         if not self.controls.accelerate and not self.controls.brake:
+            if self.speed == 0:
+                return
+
             # --> engine braking
             engine_braking = self.game_settings['engine braking']
             engine_braking *= frame_interval
+
+            if self.speed < 0:
+                engine_braking *= -1
+
             speed = self.speed - engine_braking
 
             # if speed change sign, just stall the car
