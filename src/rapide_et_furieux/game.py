@@ -43,6 +43,7 @@ class Game(object):
             util.register_drawer(OSD_LAYER, self.osd_message)
 
         self.race_track = None
+        self.player = None
 
         self.background = ui.Background()
         util.register_drawer(BACKGROUND_LAYER, self.background)
@@ -60,6 +61,8 @@ class Game(object):
             ))
             util.register_drawer(OSD_LAYER - 1, fps_counter)
             util.register_animator(fps_counter.on_frame)
+
+        util.register_animator(self.track_player_car)
 
         self.osd_message.show("Done")
 
@@ -93,10 +96,20 @@ class Game(object):
                 car = PlayerCar
             car = car(next(iter_car_rsc), self.race_track, self.game_settings,
                       spawn_point, orientation)
+            if idx == 0:
+                self.player = car
             self.race_track.add_car(car)
 
         self.osd_message.show("Done")
         logger.info("Done")
+
+    def track_player_car(self, frame_interval):
+        if not self.player:
+            return
+        self.race_track.relative = (
+            int(self.screen_size[0] / 2 - self.player.position[0]),
+            int(self.screen_size[1] / 2 - self.player.position[1]),
+        )
 
 
 def main():
