@@ -118,7 +118,7 @@ class Editor(object):
             (self.arrow_up, element_offset, 4),
         ]
 
-        self.race_track = RaceTrack(grid_margin=5)
+        self.race_track = RaceTrack(grid_margin=5, debug=True)
         self.race_track.relative = (self.element_selector.size[0], 0)
 
         util.register_drawer(BACKGROUND_LAYER, ui.Background())

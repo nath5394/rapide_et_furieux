@@ -212,8 +212,10 @@ class TrackBorder(object):
 class RaceTrack(RelativeGroup):
     DELETION_MARGIN = 15
 
-    def __init__(self, grid_margin=0):
+    def __init__(self, grid_margin=0, debug=False):
         super().__init__()
+
+        self.debug = debug
 
         self.tiles = TileGrid(margin=grid_margin)
         self.tiles.parent = self
@@ -229,15 +231,16 @@ class RaceTrack(RelativeGroup):
         self.tiles.draw(screen)
         super().draw(screen)
 
-        to_draw = [
-            self.borders,
-            self.crap_areas,
-            self.checkpoints,
-        ]
+        if self.debug:
+            to_draw = [
+                self.borders,
+                self.crap_areas,
+                self.checkpoints,
+            ]
 
-        for el_list in to_draw:
-            for el in el_list:
-                el.draw(screen)
+            for el_list in to_draw:
+                for el in el_list:
+                    el.draw(screen)
 
     def add_object(self, obj):
         self.objects.append(obj)

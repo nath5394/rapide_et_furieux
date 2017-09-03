@@ -67,7 +67,6 @@ class TileGrid(RelativeGroup):
             position[0] * assets.TILE_SIZE[0],
             position[1] * assets.TILE_SIZE[1],
         )
-        logger.info("Adding tile at position %s / %s", position, tile.relative)
         self.add(tile)
         self.size = (
             max(self.size[0], tile.relative[0]),
