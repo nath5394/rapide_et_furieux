@@ -32,14 +32,17 @@ def set_default_resolution():
     return screen
 
 
-def check_exit_event(event):
+def _exit():
     global g_loop
+    g_loop = False
 
+
+def check_exit_event(event):
     if event.type == pygame.QUIT:
-        g_loop = False
+        idle_add(_exit)
         return
     if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-        g_loop = False
+        idle_add(_exit)
         return
 
 
