@@ -23,6 +23,10 @@ GAME_SETTINGS_TEMPLATE = {
         'normal': 256,
         'crap': 64,
     },
+    'braking': {
+        'normal': 512,
+        'crap': 128,
+    },
     'max_speed': {
         'normal': {
             'forward': 512,

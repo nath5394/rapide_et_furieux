@@ -66,7 +66,7 @@ class Car(RelativeSprite):
         terrain = self.parent.get_terrain(self.position)
 
         if not self.controls.accelerate and not self.controls.brake:
-            # compute engine braking
+            # --> engine braking
             engine_braking = self.game_settings['engine braking']
             engine_braking *= frame_interval
             speed = self.speed - engine_braking
@@ -78,12 +78,19 @@ class Car(RelativeSprite):
                 self.speed = 0
             else:
                 self.speed = speed
+        elif self.controls.brake and self.speed > 0:
+            # --> braking
+            acceleration = -self.game_settings['braking'][terrain]
+            acceleration *= frame_interval
+
+            # apply to speed
+            self.speed = self.speed + acceleration
+            if self.speed < 0:
+                self.speed = 0
         else:
-            # compute acceleration
+            # --> accelerate (forward or rear)
             acceleration = self.game_settings['acceleration'][terrain]
             acceleration *= frame_interval
-            if self.controls.brake:
-                acceleration = -acceleration
 
             # apply to speed
             self.speed = self.speed + acceleration
