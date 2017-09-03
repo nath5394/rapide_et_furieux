@@ -21,30 +21,30 @@ GAME_SETTINGS_TEMPLATE = {
     # default values
     'background_color': (0, 0, 0),
     'acceleration': {
-        'normal': 256,
-        'crap': 64,
+        'normal': 512,
+        'crap': 256,
     },
     'braking': {
-        'normal': 512,
-        'crap': 128,
+        'normal': 1024,
+        'crap': 256,
     },
     'lateral_speed_slowdown': {
         # tires on the road
-        'normal': 512,
-        'crap': 128,
+        'normal': 1024,
+        'crap': 1024,
     },
     'steering': {
-        'normal': math.pi / 2,
-        'crap': math.pi / 4,
+        'normal': math.pi,
+        'crap': math.pi / 2,
     },
     'max_speed': {
         'normal': {
-            'forward': 512,
-            'reverse': 128,
+            'forward': 768,
+            'reverse': 256,
         },
         'crap': {
             'forward': 256,
-            'reverse': 64,
+            'reverse': 128,
         },
     },
     'engine braking': {
