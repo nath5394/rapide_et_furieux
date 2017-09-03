@@ -56,14 +56,31 @@ class Editor(object):
             ui.CheckpointGenerator(),
         ]
         elements += [Tile(tile_rsc) for tile_rsc in assets.TILES]
-        elements += [RaceTrackObject(obj_rsc) for obj_rsc in assets.OBJECTS]
-        elements += [RaceTrackObject(obj_rsc) for obj_rsc in assets.CARS]
-        elements += [RaceTrackObject(obj_rsc) for obj_rsc in assets.MOTORCYCLES]
-        elements += [RaceTrackObject(obj_rsc) for obj_rsc in assets.POWERUPS]
         elements += [
-            RaceTrackObject(obj_rsc)
+            RaceTrackObject(obj_rsc, -angle)
+            for obj_rsc in assets.OBJECTS
+            for angle in [0, 90, 180, 270]
+        ]
+        elements += [
+            RaceTrackObject(obj_rsc, -angle)
+            for obj_rsc in assets.CARS
+            for angle in [0, 90, 180, 270]
+        ]
+        elements += [
+            RaceTrackObject(obj_rsc, -angle)
+            for obj_rsc in assets.MOTORCYCLES
+            for angle in [0, 90, 180, 270]
+        ]
+        elements += [
+            RaceTrackObject(obj_rsc, -angle)
+            for obj_rsc in assets.POWERUPS
+            for angle in [0, 90, 180, 270]
+        ]
+        elements += [
+            RaceTrackObject(obj_rsc, -angle)
             for explosion in assets.EXPLOSIONS
             for obj_rsc in explosion
+            for angle in [0, 90, 180, 270]
         ]
 
         font = pygame.font.Font(None, 32)
