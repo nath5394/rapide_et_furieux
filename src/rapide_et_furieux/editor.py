@@ -38,6 +38,27 @@ class Editor(object):
 
         self.game_settings = util.GAME_SETTINGS_TEMPLATE
 
+        self.font = pygame.font.Font(None, 32)
+        self.osd_message = ui.OSDMessage(
+            self.font, 42, (self.screen_size[0] / 3, 10)
+        )
+        self.osd_message.show("{} - {}".format(CAPTION, file_path))
+        util.register_drawer(OSD_LAYER, self.osd_message)
+
+        self.selected = None
+        self.arrow_up = None
+        self.arrow_down = None
+        self.element_selector_controls = None
+        self.race_track = None
+        self.scrolling = (0, 0)
+
+        logger.info("Initializing ...")
+        self.osd_message.show("Initializing ...")
+        util.idle_add(self._init)
+
+    def _init(self):
+        assets.load_resources()
+
         elements = []
         elements += [
             ui.TrackBorderGenerator(),
@@ -46,48 +67,39 @@ class Editor(object):
         ]
         elements += [Tile(tile_rsc) for tile_rsc in assets.TILES]
         elements += [
-            RaceTrackObject(obj_rsc, -angle)
+            RaceTrackObject(obj_rsc, angle)
             for obj_rsc in assets.OBJECTS
             for angle in [0, 90, 180, 270]
         ]
         elements += [
-            RaceTrackObject(obj_rsc, -angle)
+            RaceTrackObject(obj_rsc, angle)
             for obj_rsc in assets.CARS
             for angle in [0, 90, 180, 270]
         ]
         elements += [
-            RaceTrackObject(obj_rsc, -angle)
+            RaceTrackObject(obj_rsc, angle)
             for obj_rsc in assets.MOTORCYCLES
             for angle in [0, 90, 180, 270]
         ]
         elements += [
-            RaceTrackObject(obj_rsc, -angle)
+            RaceTrackObject(obj_rsc, angle)
             for obj_rsc in assets.POWERUPS
             for angle in [0, 90, 180, 270]
         ]
         elements += [
-            RaceTrackObject(obj_rsc, -angle)
+            RaceTrackObject(obj_rsc, angle)
             for explosion in assets.EXPLOSIONS
             for obj_rsc in explosion
             for angle in [0, 90, 180, 270]
         ]
 
-        font = pygame.font.Font(None, 32)
+        self.element_selector = ui.ElementSelector(elements, self.screen)
 
-        self.element_selector = ui.ElementSelector(elements, screen)
-        self.osd_message = ui.OSDMessage(
-            font, 42, (self.element_selector.size[0] + 10, 10)
-        )
-        self.osd_message.show("{} - {}".format(CAPTION, file_path))
-        util.register_drawer(OSD_LAYER, self.osd_message)
-
-        fps_counter = ui.FPSCounter(font, position=(
-            screen.get_size()[0] - 128, 0
+        fps_counter = ui.FPSCounter(self.font, position=(
+            self.screen.get_size()[0] - 128, 0
         ))
         util.register_drawer(OSD_LAYER - 1, fps_counter)
         util.register_animator(fps_counter.on_frame)
-
-        self.selected = None
 
         self.arrow_up = ui.Arrow(assets.ARROW_UP)
         self.arrow_up.relative = (
@@ -109,8 +121,6 @@ class Editor(object):
         self.race_track = RaceTrack(grid_margin=5)
         self.race_track.relative = (self.element_selector.size[0], 0)
 
-        self.scrolling = (0, 0)
-
         util.register_drawer(BACKGROUND_LAYER, ui.Background())
         util.register_drawer(ELEMENT_SELECTOR_LAYER, self.element_selector)
         for (control, offset, button) in self.element_selector_controls:
@@ -120,6 +130,8 @@ class Editor(object):
         util.register_event_listener(self.on_key)
         util.register_event_listener(self.on_mouse_motion)
         util.register_animator(self.scroll)
+
+        self.osd_message.show("Done")
 
     def load(self):
         logger.info("Loading '%s' ...", self.file_path)
@@ -250,10 +262,9 @@ def main():
     pygame.init()
     screen = util.set_default_resolution()
     pygame.display.set_caption(CAPTION)
-    assets.load_resources()
 
     editor = Editor(screen, sys.argv[1])
     if os.path.exists(sys.argv[1]):
-        editor.load()
+        util.idle_add(editor.load)
 
     util.main_loop(screen)
