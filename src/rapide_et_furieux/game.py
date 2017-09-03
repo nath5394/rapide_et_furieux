@@ -64,6 +64,8 @@ class Game(object):
 
         util.register_animator(self.track_player_car)
 
+        pygame.mouse.set_visible(False)
+
         self.osd_message.show("Done")
 
     def load(self):
