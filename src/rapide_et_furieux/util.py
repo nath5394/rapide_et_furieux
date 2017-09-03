@@ -16,6 +16,19 @@ g_on_idle = []
 
 logger = logging.getLogger(__name__)
 
+GAME_SETTINGS_TEMPLATE = {
+    # default values
+    'background_color': (0, 0, 0),
+    'acceleration': {
+        'normal': 256,
+        'crap': 64,
+    },
+    'max_speed': {
+        'normal': 512,
+        'crap': 256,
+    },
+}
+
 
 def on_uncatched_exception_cb(exc_type, exc_value, exc_tb):
     logger.error(

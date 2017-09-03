@@ -15,7 +15,7 @@ from .gfx.racetrack import RaceTrack
 from .gfx.tiles import Tile
 
 
-CAPTION = "Rapide et Furieux - Level editor"
+CAPTION = "Rapide et Furieux - Level editor - {}".format(util.VERSION)
 
 BACKGROUND_LAYER = -1
 ELEMENT_SELECTOR_LAYER = 100
@@ -36,18 +36,7 @@ class Editor(object):
         self.file_path = file_path
         self.screen_size = screen.get_size()
 
-        self.game_settings = {
-            # default values
-            'background_color': (0, 0, 0),
-            'acceleration': {
-                'normal': 256,
-                'crap': 64,
-            },
-            'max_speed': {
-                'normal': 512,
-                'crap': 256,
-            },
-        }
+        self.game_settings = util.GAME_SETTINGS_TEMPLATE
 
         elements = []
         elements += [
@@ -261,6 +250,7 @@ def main():
     pygame.init()
     screen = util.set_default_resolution()
     pygame.display.set_caption(CAPTION)
+    assets.load_resources()
 
     editor = Editor(screen, sys.argv[1])
     if os.path.exists(sys.argv[1]):

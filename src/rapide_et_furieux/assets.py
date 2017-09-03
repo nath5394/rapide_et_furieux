@@ -1,3 +1,10 @@
+#!/usr/bin/env python3
+
+from pkg_resources import resource_filename
+
+import pygame
+
+
 TILE_SIZE = (128, 128)
 
 ARROW_UP = ("rapide_et_furieux.gfx.ui", "arrowUp.png")
@@ -5,6 +12,14 @@ ARROW_DOWN = ("rapide_et_furieux.gfx.ui", "arrowDown.png")
 RED_LINE = ("rapide_et_furieux.gfx.ui", "red_line.png")
 GREEN_RECT = ("rapide_et_furieux.gfx.ui", "green_rect.png")
 BLUE_DOT = ("rapide_et_furieux.gfx.ui", "blue_dot.png")
+
+UI = {
+    ARROW_UP,
+    ARROW_DOWN,
+    RED_LINE,
+    GREEN_RECT,
+    BLUE_DOT,
+}
 
 MUSICS = {
     ("rapide_et_furieux.music", "Mission Plausible.ogg"),
@@ -156,3 +171,36 @@ SPAWN_TILES = {
     ("rapide_et_furieux.gfx.tiles", "road_sand81.png"): 180,
     ("rapide_et_furieux.gfx.tiles", "road_sand82.png"): 270,
 }
+
+g_resources = {}
+
+
+def load_image(rsc):
+    img_path = resource_filename(*rsc)
+    img = pygame.image.load(img_path)
+    if img.get_alpha() is not None:
+        img = img.convert_alpha()
+    else:
+        img = img.convert()
+    return img
+
+
+def load_resources():
+    global g_resources
+    rsc = {}
+    rsc.update({ui_rsc: load_image(ui_rsc) for ui_rsc in UI})
+    rsc.update({tile_rsc: load_image(tile_rsc) for tile_rsc in TILES})
+    rsc.update({obj_rsc: load_image(obj_rsc) for obj_rsc in OBJECTS})
+    rsc.update({obj_rsc: load_image(obj_rsc) for obj_rsc in CARS})
+    rsc.update({obj_rsc: load_image(obj_rsc) for obj_rsc in MOTORCYCLES})
+    rsc.update({obj_rsc: load_image(obj_rsc) for obj_rsc in POWERUPS})
+    rsc.update({
+        obj_rsc: load_image(obj_rsc)
+        for explosions in EXPLOSIONS
+        for obj_rsc in explosions
+    })
+    g_resources = rsc
+
+
+def get_resource(rsc):
+    return g_resources[tuple(rsc)]

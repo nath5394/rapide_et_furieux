@@ -1,6 +1,6 @@
-from pkg_resources import resource_filename
-
 import pygame
+
+from .. import assets
 
 
 class RelativeSprite(pygame.sprite.Sprite):
@@ -12,12 +12,7 @@ class RelativeSprite(pygame.sprite.Sprite):
         self.resource = resource
 
         if image is None:
-            img_path = resource_filename(*resource)
-            image = pygame.image.load(img_path)
-            if image.get_alpha() is not None:
-                image = image.convert_alpha()
-            else:
-                image = image.convert()
+            image = assets.get_resource(resource)
 
         self.image = self.original = image
         self.size = self.image.get_size()
