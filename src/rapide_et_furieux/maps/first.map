@@ -1,10 +1,41 @@
 {
     "game_settings": {
+        "acceleration": {
+            "crap": 256,
+            "normal": 512
+        },
         "background_color": [
             0,
             0,
             0
-        ]
+        ],
+        "braking": {
+            "crap": 256,
+            "normal": 1024
+        },
+        "engine braking": {
+            "crap": 256,
+            "normal": 128
+        },
+        "lateral_speed_slowdown": {
+            "crap": 512,
+            "normal": 1024
+        },
+        "max_speed": {
+            "crap": {
+                "forward": 256,
+                "reverse": 128
+            },
+            "normal": {
+                "forward": 768,
+                "reverse": 256
+            }
+        },
+        "steering": {
+            "crap": 1.5707963267948966,
+            "normal": 3.141592653589793,
+            "ref_speed": 256
+        }
     },
     "race_track": {
         "borders": [
@@ -914,12 +945,12 @@
             },
             {
                 "a": [
-                    2048,
-                    363
+                    2012,
+                    321
                 ],
                 "b": [
-                    2481,
-                    770
+                    2496,
+                    799
                 ]
             }
         ],
@@ -1025,8 +1056,18 @@
             ],
             [
                 [
-                    17,
-                    11
+                    4,
+                    4
+                ],
+                [
+                    "rapide_et_furieux.gfx.tiles",
+                    "road_asphalt27.png"
+                ]
+            ],
+            [
+                [
+                    3,
+                    8
                 ],
                 [
                     "rapide_et_furieux.gfx.tiles",
@@ -1105,12 +1146,12 @@
             ],
             [
                 [
-                    16,
-                    14
+                    3,
+                    7
                 ],
                 [
                     "rapide_et_furieux.gfx.tiles",
-                    "road_asphalt45.png"
+                    "road_asphalt21.png"
                 ]
             ],
             [
@@ -1121,6 +1162,16 @@
                 [
                     "rapide_et_furieux.gfx.tiles",
                     "road_asphalt40.png"
+                ]
+            ],
+            [
+                [
+                    3,
+                    10
+                ],
+                [
+                    "rapide_et_furieux.gfx.tiles",
+                    "road_asphalt21.png"
                 ]
             ],
             [
@@ -1151,26 +1202,6 @@
                 [
                     "rapide_et_furieux.gfx.tiles",
                     "road_asphalt40.png"
-                ]
-            ],
-            [
-                [
-                    17,
-                    12
-                ],
-                [
-                    "rapide_et_furieux.gfx.tiles",
-                    "road_asphalt46.png"
-                ]
-            ],
-            [
-                [
-                    3,
-                    15
-                ],
-                [
-                    "rapide_et_furieux.gfx.tiles",
-                    "road_asphalt21.png"
                 ]
             ],
             [
@@ -1205,16 +1236,6 @@
             ],
             [
                 [
-                    18,
-                    16
-                ],
-                [
-                    "rapide_et_furieux.gfx.tiles",
-                    "road_asphalt04.png"
-                ]
-            ],
-            [
-                [
                     16,
                     3
                 ],
@@ -1235,22 +1256,22 @@
             ],
             [
                 [
-                    7,
-                    4
-                ],
-                [
-                    "rapide_et_furieux.gfx.tiles",
-                    "road_asphalt84.png"
-                ]
-            ],
-            [
-                [
                     19,
                     14
                 ],
                 [
                     "rapide_et_furieux.gfx.tiles",
                     "road_asphalt04.png"
+                ]
+            ],
+            [
+                [
+                    15,
+                    12
+                ],
+                [
+                    "rapide_et_furieux.gfx.tiles",
+                    "road_asphalt08.png"
                 ]
             ],
             [
@@ -1265,16 +1286,6 @@
             ],
             [
                 [
-                    3,
-                    12
-                ],
-                [
-                    "rapide_et_furieux.gfx.tiles",
-                    "road_asphalt21.png"
-                ]
-            ],
-            [
-                [
                     12,
                     17
                 ],
@@ -1285,12 +1296,12 @@
             ],
             [
                 [
-                    17,
-                    4
+                    4,
+                    11
                 ],
                 [
                     "rapide_et_furieux.gfx.tiles",
-                    "road_dirt27.png"
+                    "road_asphalt23.png"
                 ]
             ],
             [
@@ -1305,22 +1316,22 @@
             ],
             [
                 [
+                    4,
+                    5
+                ],
+                [
+                    "rapide_et_furieux.gfx.tiles",
+                    "road_asphalt23.png"
+                ]
+            ],
+            [
+                [
                     15,
                     4
                 ],
                 [
                     "rapide_et_furieux.gfx.tiles",
                     "road_asphalt40.png"
-                ]
-            ],
-            [
-                [
-                    6,
-                    4
-                ],
-                [
-                    "rapide_et_furieux.gfx.tiles",
-                    "road_asphalt84.png"
                 ]
             ],
             [
@@ -1345,6 +1356,16 @@
             ],
             [
                 [
+                    9,
+                    17
+                ],
+                [
+                    "rapide_et_furieux.gfx.tiles",
+                    "road_asphalt40.png"
+                ]
+            ],
+            [
+                [
                     17,
                     5
                 ],
@@ -1361,16 +1382,6 @@
                 [
                     "rapide_et_furieux.gfx.tiles",
                     "road_asphalt04.png"
-                ]
-            ],
-            [
-                [
-                    3,
-                    14
-                ],
-                [
-                    "rapide_et_furieux.gfx.tiles",
-                    "road_asphalt21.png"
                 ]
             ],
             [
@@ -1405,12 +1416,12 @@
             ],
             [
                 [
-                    16,
-                    15
+                    5,
+                    5
                 ],
                 [
                     "rapide_et_furieux.gfx.tiles",
-                    "road_asphalt63.png"
+                    "road_asphalt53.png"
                 ]
             ],
             [
@@ -1461,16 +1472,6 @@
                 [
                     "rapide_et_furieux.gfx.tiles",
                     "road_asphalt40.png"
-                ]
-            ],
-            [
-                [
-                    16,
-                    12
-                ],
-                [
-                    "rapide_et_furieux.gfx.tiles",
-                    "road_asphalt09.png"
                 ]
             ],
             [
@@ -1536,7 +1537,7 @@
             [
                 [
                     3,
-                    7
+                    12
                 ],
                 [
                     "rapide_et_furieux.gfx.tiles",
@@ -1595,12 +1596,22 @@
             ],
             [
                 [
-                    5,
-                    2
+                    17,
+                    14
                 ],
                 [
                     "rapide_et_furieux.gfx.tiles",
-                    "road_asphalt15.png"
+                    "road_asphalt04.png"
+                ]
+            ],
+            [
+                [
+                    16,
+                    14
+                ],
+                [
+                    "rapide_et_furieux.gfx.tiles",
+                    "road_asphalt45.png"
                 ]
             ],
             [
@@ -1631,6 +1642,26 @@
                 [
                     "rapide_et_furieux.gfx.tiles",
                     "road_asphalt23.png"
+                ]
+            ],
+            [
+                [
+                    4,
+                    3
+                ],
+                [
+                    "rapide_et_furieux.gfx.tiles",
+                    "road_asphalt09.png"
+                ]
+            ],
+            [
+                [
+                    3,
+                    9
+                ],
+                [
+                    "rapide_et_furieux.gfx.tiles",
+                    "road_asphalt21.png"
                 ]
             ],
             [
@@ -1671,16 +1702,6 @@
                 [
                     "rapide_et_furieux.gfx.tiles",
                     "road_asphalt04.png"
-                ]
-            ],
-            [
-                [
-                    16,
-                    4
-                ],
-                [
-                    "rapide_et_furieux.gfx.tiles",
-                    "road_dirt39.png"
                 ]
             ],
             [
@@ -1735,12 +1756,12 @@
             ],
             [
                 [
-                    5,
-                    4
+                    18,
+                    13
                 ],
                 [
                     "rapide_et_furieux.gfx.tiles",
-                    "road_asphalt35.png"
+                    "road_asphalt25.png"
                 ]
             ],
             [
@@ -1845,12 +1866,12 @@
             ],
             [
                 [
-                    7,
-                    2
+                    3,
+                    14
                 ],
                 [
                     "rapide_et_furieux.gfx.tiles",
-                    "road_asphalt04.png"
+                    "road_asphalt21.png"
                 ]
             ],
             [
@@ -1885,6 +1906,16 @@
             ],
             [
                 [
+                    3,
+                    13
+                ],
+                [
+                    "rapide_et_furieux.gfx.tiles",
+                    "road_asphalt21.png"
+                ]
+            ],
+            [
+                [
                     13,
                     3
                 ],
@@ -1915,12 +1946,12 @@
             ],
             [
                 [
-                    4,
-                    4
+                    17,
+                    11
                 ],
                 [
                     "rapide_et_furieux.gfx.tiles",
-                    "road_asphalt27.png"
+                    "road_asphalt21.png"
                 ]
             ],
             [
@@ -1945,52 +1976,52 @@
             ],
             [
                 [
-                    4,
-                    5
+                    18,
+                    16
                 ],
                 [
                     "rapide_et_furieux.gfx.tiles",
-                    "road_asphalt23.png"
+                    "road_asphalt04.png"
                 ]
             ],
             [
                 [
-                    12,
-                    4
+                    7,
+                    2
                 ],
                 [
                     "rapide_et_furieux.gfx.tiles",
-                    "road_asphalt34.png"
+                    "road_asphalt04.png"
                 ]
             ],
             [
                 [
-                    9,
-                    17
+                    16,
+                    15
                 ],
                 [
                     "rapide_et_furieux.gfx.tiles",
-                    "road_asphalt40.png"
+                    "road_asphalt63.png"
                 ]
             ],
             [
                 [
                     3,
-                    6
+                    4
                 ],
                 [
                     "rapide_et_furieux.gfx.tiles",
-                    "road_asphalt21.png"
+                    "road_asphalt26.png"
                 ]
             ],
             [
                 [
-                    17,
-                    14
+                    3,
+                    15
                 ],
                 [
                     "rapide_et_furieux.gfx.tiles",
-                    "road_asphalt04.png"
+                    "road_asphalt21.png"
                 ]
             ],
             [
@@ -2005,22 +2036,22 @@
             ],
             [
                 [
-                    15,
-                    12
+                    6,
+                    4
                 ],
                 [
                     "rapide_et_furieux.gfx.tiles",
-                    "road_asphalt08.png"
+                    "road_asphalt84.png"
                 ]
             ],
             [
                 [
-                    18,
-                    13
+                    5,
+                    4
                 ],
                 [
                     "rapide_et_furieux.gfx.tiles",
-                    "road_asphalt25.png"
+                    "road_asphalt35.png"
                 ]
             ],
             [
@@ -2045,12 +2076,12 @@
             ],
             [
                 [
-                    3,
-                    13
+                    16,
+                    4
                 ],
                 [
                     "rapide_et_furieux.gfx.tiles",
-                    "road_asphalt21.png"
+                    "road_dirt39.png"
                 ]
             ],
             [
@@ -2061,16 +2092,6 @@
                 [
                     "rapide_et_furieux.gfx.tiles",
                     "road_asphalt40.png"
-                ]
-            ],
-            [
-                [
-                    15,
-                    16
-                ],
-                [
-                    "rapide_et_furieux.gfx.tiles",
-                    "road_asphalt04.png"
                 ]
             ],
             [
@@ -2091,16 +2112,6 @@
                 [
                     "rapide_et_furieux.gfx.tiles",
                     "road_asphalt23.png"
-                ]
-            ],
-            [
-                [
-                    17,
-                    17
-                ],
-                [
-                    "rapide_et_furieux.gfx.tiles",
-                    "road_asphalt40.png"
                 ]
             ],
             [
@@ -2145,22 +2156,32 @@
             ],
             [
                 [
-                    4,
-                    11
+                    17,
+                    9
                 ],
                 [
                     "rapide_et_furieux.gfx.tiles",
-                    "road_asphalt23.png"
+                    "road_asphalt21.png"
                 ]
             ],
             [
                 [
-                    5,
-                    5
+                    17,
+                    4
                 ],
                 [
                     "rapide_et_furieux.gfx.tiles",
-                    "road_asphalt53.png"
+                    "road_dirt27.png"
+                ]
+            ],
+            [
+                [
+                    16,
+                    12
+                ],
+                [
+                    "rapide_et_furieux.gfx.tiles",
+                    "road_asphalt09.png"
                 ]
             ],
             [
@@ -2235,12 +2256,12 @@
             ],
             [
                 [
-                    3,
-                    4
+                    15,
+                    16
                 ],
                 [
                     "rapide_et_furieux.gfx.tiles",
-                    "road_asphalt26.png"
+                    "road_asphalt04.png"
                 ]
             ],
             [
@@ -2275,8 +2296,8 @@
             ],
             [
                 [
-                    17,
-                    9
+                    3,
+                    6
                 ],
                 [
                     "rapide_et_furieux.gfx.tiles",
@@ -2285,12 +2306,12 @@
             ],
             [
                 [
-                    3,
-                    8
+                    7,
+                    4
                 ],
                 [
                     "rapide_et_furieux.gfx.tiles",
-                    "road_asphalt21.png"
+                    "road_asphalt84.png"
                 ]
             ],
             [
@@ -2305,22 +2326,32 @@
             ],
             [
                 [
-                    3,
-                    9
+                    12,
+                    4
                 ],
                 [
                     "rapide_et_furieux.gfx.tiles",
-                    "road_asphalt21.png"
+                    "road_asphalt34.png"
                 ]
             ],
             [
                 [
-                    4,
-                    3
+                    18,
+                    11
                 ],
                 [
                     "rapide_et_furieux.gfx.tiles",
-                    "road_asphalt09.png"
+                    "road_asphalt23.png"
+                ]
+            ],
+            [
+                [
+                    17,
+                    12
+                ],
+                [
+                    "rapide_et_furieux.gfx.tiles",
+                    "road_asphalt46.png"
                 ]
             ],
             [
@@ -2375,22 +2406,22 @@
             ],
             [
                 [
-                    18,
-                    11
+                    5,
+                    2
                 ],
                 [
                     "rapide_et_furieux.gfx.tiles",
-                    "road_asphalt23.png"
+                    "road_asphalt15.png"
                 ]
             ],
             [
                 [
-                    3,
-                    10
+                    17,
+                    17
                 ],
                 [
                     "rapide_et_furieux.gfx.tiles",
-                    "road_asphalt21.png"
+                    "road_asphalt40.png"
                 ]
             ],
             [
