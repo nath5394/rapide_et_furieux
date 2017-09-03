@@ -45,6 +45,8 @@ class TileGrid(RelativeGroup):
         return [(k, v.serialize()) for (k, v) in self.grid.items()]
 
     def unserialize(self, data):
+        for sprite in self.sprites():
+            self.remove(sprite)
         elements = {}
         for (position, rsc) in data:
             rsc = tuple(rsc)

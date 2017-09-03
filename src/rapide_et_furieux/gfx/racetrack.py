@@ -351,6 +351,8 @@ class RaceTrack(RelativeGroup):
         }
 
     def unserialize(self, data):
+        for sprite in self.sprites():
+            self.remove(sprite)
         self.tiles.unserialize(data['tiles'])
         for obj in data['objects']:
             self.add_object(RaceTrackObject.unserialize(obj))
