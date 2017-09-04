@@ -79,7 +79,7 @@ class Car(RelativeSprite, CollisionObject):
         ]
         pts = [util.to_cartesian(pt) for pt in pts]
         pts = [
-            (x + self.position[0], y + self.position[1])
+            (int(x + self.position[0]), int(y + self.position[1]))
             for (x, y) in pts
         ]
         return pts
@@ -218,6 +218,9 @@ class Car(RelativeSprite, CollisionObject):
         super().draw(screen)
         if not self.parent.debug:
             return
+        # it would be faster to draw the rectangle on the image itself
+        # but this piece of code is actually used to check that the points of
+        # the car are correctly found.
         p = self.parent.absolute
         for (a, b) in util.pairwise(self.pts):
             pygame.draw.line(

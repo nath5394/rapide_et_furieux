@@ -4,6 +4,7 @@ import pygame
 
 from . import RelativeGroup
 from .collisions import CollisionHandler
+from .collisions import CollisionObject
 from .objects import RaceTrackObject
 from .tiles import TileGrid
 from .. import util
@@ -175,12 +176,13 @@ class Checkpoint(object):
         ) <= SELECTION_MARGIN
 
 
-class TrackBorder(object):
+class TrackBorder(CollisionObject):
     COLOR = (255, 0, 0)
 
     def __init__(self, parent, pts):
+        super().__init__()
         self.parent = parent
-        self.pts = pts
+        self.pts = [(int(x), int(y)) for (x, y) in pts]
 
     def serialize(self):
         return {
