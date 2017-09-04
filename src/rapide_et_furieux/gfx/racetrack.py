@@ -222,6 +222,9 @@ class TrackBorder(CollisionObject):
                 return True
         return False
 
+    def __str__(self):
+        return "Border({})".format(self.pts)
+
 
 class RaceTrack(RelativeGroup):
     DELETION_MARGIN = 15

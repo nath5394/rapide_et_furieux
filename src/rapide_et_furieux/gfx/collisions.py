@@ -39,27 +39,30 @@ class CollisionHandler(object):
         Figure out if there is even a remote chance that these line collides
         """
         (rect_a, rect_b) = [pygame.Rect(
+            line[0],
             (
-                min(line[0][0], line[1][0]),
-                min(line[0][1], line[1][1]),
-            ),
-            (
-                max(line[0][0], line[1][0]) - min(line[0][0], line[1][0]),
-                max(line[0][1], line[1][1]) - min(line[0][1], line[1][1]),
+                line[1][0] - line[0][0],
+                line[1][1] - line[0][1],
             ),
         ) for line in [line_a, line_b]]
+        for rect in [rect_a, rect_b]:
+            rect.normalize()
 
         return rect_a.colliderect(rect_b)
 
     @staticmethod
-    def get_collision(line_a, line_b):
+    def get_collision_point(line_a, line_b):
+        return util.get_segment_intersect_point(line_a, line_b)
+
+    @staticmethod
+    def get_collision_angle(line_a, line_b):
         """
-        Returns the angle of the collision if there is any. None else
+        Returns the angle of the collision if there is any
         """
         return None
 
     @staticmethod
-    def cancel_speed(speed, angle):
+    def nullify_speed(speed, angle):
         """
         Cancel part of the speed for the matching angle.
         Only keep the speed that is on the opposite side of the angle.
@@ -74,21 +77,28 @@ class CollisionHandler(object):
         It will cancel/reverse part of its speed if required
         """
         for moving_line in util.pairwise(moving.pts):
-            for obstacle in itertools.chain.from_iterable(
-                        [self.racetrack.borders, self.racetrack.cars]
+            for obstacle in itertools.chain(
+                        self.racetrack.borders, self.racetrack.cars
                     ):
                 if obstacle is moving:
                     # ignore self
                     continue
                 for obstacle_line in util.pairwise(obstacle.pts):
+                    # did we collide ?
                     if not self.can_collide(moving_line, obstacle_line):
                         continue
-                    collision_angle = self.get_collision(
+                    if (self.get_collision_point(moving_line, obstacle_line)
+                            is None):
+                        continue
+
+                    # we did collide --> compute correction
+                    print("{} || {}".format(moving_line, obstacle_line))
+                    collision_angle = self.get_collision_angle(
                         moving_line, obstacle_line
                     )
                     if collision_angle is None:
                         continue
-                    (moving.speed, removed_speed) = self.cancel_speed(
+                    (moving.speed, removed_speed) = self.nullify_speed(
                         moving.speed, collision_angle
                     )
                     # static obstacles will just ignore the new speed

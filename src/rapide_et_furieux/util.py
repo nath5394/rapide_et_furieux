@@ -88,6 +88,129 @@ def to_cartesian(polar):
     )
 
 
+def _calculate_gradient(line):
+    # Ensure that the line is not vertical
+    if (line[0][0] != line[1][0]):
+        return (line[0][1] - line[1][1]) / (line[0][0] - line[1][0])
+    return None
+
+
+def _calculate_y_axis_intersect(p, m):
+    """Compute the point 'b' where line crosses the Y axis"""
+    return  p[1] - (m * p[0])
+
+
+def _get_line_intersect_points(line_a, line_b):
+    """
+    Calc the point where two infinitely long lines (p1 to p2 and p3 to p4)
+    intersect.
+    Handle parallel lines and vertical lines (the later has infinite 'm').
+    Returns a point tuple of points like this ((x,y),...)  or None
+    In non parallel cases the tuple will contain just one point.
+    For parallel lines that lay on top of one another the tuple will contain
+    all four points of the two lines
+    """
+    (p1, p2) = line_a
+    (p3, p4) = line_b
+    m1 = _calculate_gradient(line_a)
+    m2 = _calculate_gradient(line_b)
+
+    # See if the lines are parallel
+    if m1 != m2:
+        # Not parallel
+
+        # See if either line is vertical
+        if (m1 is not None and m2 is not None):
+            # Neither line vertical
+            b1 = _calculate_y_axis_intersect(p1, m1)
+            b2 = _calculate_y_axis_intersect(p3, m2)
+            x = (b2 - b1) / (m1 - m2)
+            y = (m1 * x) + b1
+        elif m1 is None:
+            # Line 1 is vertical so use line 2's values
+            b2 = _calculate_y_axis_intersect(p3, m2)
+            x = p1[0]
+            y = (m2 * x) + b2
+        else:
+            # Line 2 is vertical so use line 1's values
+            b1 = _calculate_y_axis_intersect(p1, m1)
+            x = p3[0]
+            y = (m1 * x) + b1
+        return ((x,y),)
+
+    # Parallel lines with same 'b' value must be the same line so they intersect
+    # everywhere in this case we return the start and end points of both lines
+    # the _calculate_intersect_point method will sort out which of these points
+    # lays on both line segments
+    (b1, b2) = (None, None) # vertical lines have no b value
+    if m1 is not None:
+        b1 = _calculate_y_axis_intersect(p1, m1)
+
+    if m2 is not None:
+        b2 = _calculate_y_axis_intersect(p3, m2)
+
+    # If these parallel lines lay on one another
+    if b1 == b2:
+        return (p1, p2, p3, p4)
+
+    return None
+
+
+def get_segment_intersect_point(line_a, line_b):
+    """
+    For line segments (ie not infinitely long lines) the intersect point
+    may not lay on both lines.
+
+    If the point where two lines intersect is inside both line's bounding
+    rectangles then the lines intersect. Returns intersect point if the line
+    intesect o None if not
+    """
+    (p1, p2) = line_a
+    (p3, p4) = line_b
+    intersects = _get_line_intersect_points(line_a, line_b)
+
+    if intersects is None:
+        return None
+
+    width = p2[0] - p1[0]
+    height = p2[1] - p1[1]
+    r1 = pygame.Rect(p1, (width , height))
+    r1.normalize()
+
+    width = p4[0] - p3[0]
+    height = p4[1] - p3[1]
+    r2 = pygame.Rect(p3, (width, height))
+    r2.normalize()
+
+    # Ensure both rects have a width and height of at least 'tolerance'
+    # else the collidepoint check of the Rect class will fail as it
+    # doesn't include the bottom and right hand side 'pixels' of the
+    # rectangle
+    tolerance = 1
+    if r1.width < tolerance:
+        r1.width = tolerance
+
+    if r1.height < tolerance:
+        r1.height = tolerance
+
+    if r2.width < tolerance:
+        r2.width = tolerance
+
+    if r2.height < tolerance:
+        r2.height = tolerance
+
+    for point in intersects:
+        res1 = r1.collidepoint(point)
+        res2 = r2.collidepoint(point)
+        if res1 and res2:
+            point = [int(pp) for pp in point]
+            return point
+
+    # This is the case where the infinitely long lines crossed but
+    # the line segments didn't
+    return None
+
+
 def on_uncatched_exception_cb(exc_type, exc_value, exc_tb):
     logger.error(
         "=== UNCATCHED EXCEPTION ===",
