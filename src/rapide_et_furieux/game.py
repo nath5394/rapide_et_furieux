@@ -73,19 +73,24 @@ class Game(object):
         self.osd_message.show("Loading '%s' ..." % self.track_filepath)
         util.idle_add(self._load)
 
+    def unload(self):
+        if self.race_track is not None:
+            self.unregister_drawer(self.race_track)
+            self.race_track = None
+
     def _load(self):
         assets.load_resources()
 
-        # instantiate race track
-        if self.race_track is not None:
-            self.unregister_drawer(self.race_track)
-        self.race_track = RaceTrack(grid_margin=0, debug=DEBUG)
-        util.register_drawer(RACE_TRACK_LAYER, self.race_track)
+        self.unload()
 
         # load map / race track
         with open(self.track_filepath, 'r') as fd:
             data = json.load(fd)
         self.game_settings.update(data['game_settings'])
+        self.race_track = RaceTrack(grid_margin=0, debug=DEBUG,
+                                    game_settings=self.game_settings)
+        util.register_drawer(RACE_TRACK_LAYER, self.race_track)
+
         self.race_track.unserialize(data['race_track'])
 
         # instantiate cars
