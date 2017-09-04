@@ -62,6 +62,7 @@ GAME_SETTINGS_TEMPLATE = {
 def pairwise(iterable):
     a, b = itertools.tee(iterable)
     next(b, None)
+    nb = 0
     first = None
     last = None
     for x in zip(a, b):
@@ -69,7 +70,9 @@ def pairwise(iterable):
             first = x[0]
         last = x[1]
         yield x
-    yield (last, first)
+        nb += 1
+    if nb > 2:
+        yield (last, first)
 
 
 def to_polar(coord):

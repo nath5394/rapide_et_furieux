@@ -3,6 +3,7 @@
 import collections
 import itertools
 import logging
+import math
 
 import pygame
 
@@ -70,11 +71,34 @@ class CollisionHandler(object):
         return util.get_segment_intersect_point(line_a, line_b)
 
     @staticmethod
-    def get_collision_angle(line_moving, line_obstacle, collision_pt):
+    def get_collision_angle(line_moving, line_obstacle, car_position):
         """
         Returns the angle of the collision if there is any
         """
-        return None
+        angle = math.atan2(
+            - (line_obstacle[1][1] - line_obstacle[0][1]),
+            (line_obstacle[1][0] - line_obstacle[0][0])
+        )
+        # the collision angle is at 90 degrees from the obstacle
+        angle += math.pi / 2
+
+        # cross product will tell us if the angle is on the same side
+        # than the cat or not
+        v1 = (
+            line_obstacle[1][0] - line_obstacle[0][0],
+            line_obstacle[1][1] - line_obstacle[0][1]
+        )
+        v2 = (
+            line_obstacle[1][0] - car_position[0],
+            line_obstacle[1][1] - car_position[1]
+        )
+        xp = (v1[0] * v2[1]) - (v1[1] * v2[0])
+        if xp < 0:
+            # cross product tells us the angle is on the other side
+            angle += math.pi
+
+        angle %= 2 * math.pi
+        return angle
 
     @staticmethod
     def nullify_speed(speed, angle):
@@ -124,9 +148,10 @@ class CollisionHandler(object):
 
             # we did collide --> compute correction
             collision_angle = self.get_collision_angle(
-                moving_line, obstacle_line, collision_pt
+                moving_line, obstacle_line, moving.position
             )
-            # assert(collision_angle)
+            print ("COLLISION ANGLE: {}".format(collision_angle))
+
             (speed, removed_speed) = self.nullify_speed(
                 speed, collision_angle
             )
