@@ -142,14 +142,12 @@ class Car(RelativeSprite):
         # so we switch to polar coordinates, change the angle, and switch
         # back to cartesian coordinates
 
-        speed = (
-            math.sqrt((self.speed[0] ** 2) + (self.speed[1] ** 2)),
-            math.atan2(-self.speed[1], self.speed[0])
-        )
+        speed = util.to_polar(self.speed)
         speed = (speed[0], speed[1] + self.radians)
+        speed = util.to_cartesian(speed)
         speed = (
-            speed[0] * math.cos(speed[1]) * frame_interval,
-            speed[0] * math.sin(speed[1]) * frame_interval,
+            speed[0] * frame_interval,
+            speed[1] * frame_interval,
         )
 
         self.position = (
@@ -175,14 +173,12 @@ class Car(RelativeSprite):
         # cars turns, but not its speed / momentum
         # turn the speed into polar coordinates --> change the angle,
         # switch back
+        speed = util.to_polar(self.speed)
         speed = (
-            math.sqrt(self.speed[0] ** 2 + self.speed[1] ** 2),
-            math.atan2(self.speed[1], self.speed[0]) + angle_change
+            speed[0],
+            speed[1] + angle_change,
         )
-        self.speed = (
-            speed[0] * math.cos(speed[1]),
-            speed[0] * math.sin(speed[1]),
-        )
+        self.speed = util.to_cartesian(speed)
 
     def move(self, frame_interval):
         terrain = self.parent.get_terrain(self.position)

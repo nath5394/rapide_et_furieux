@@ -55,6 +55,23 @@ GAME_SETTINGS_TEMPLATE = {
 }
 
 
+
+def to_polar(coord):
+    # coord are from the top-left of the screen
+    return (
+        math.sqrt((coord[0] ** 2) + (coord[1] ** 2)),
+        math.atan2(-coord[1], coord[0])
+    )
+
+
+def to_cartesian(polar):
+    # coord are from the top-left of the screen
+    return (
+        polar[0] * math.cos(polar[1]),
+        polar[0] * math.sin(polar[1]),
+    )
+
+
 def on_uncatched_exception_cb(exc_type, exc_value, exc_tb):
     logger.error(
         "=== UNCATCHED EXCEPTION ===",
