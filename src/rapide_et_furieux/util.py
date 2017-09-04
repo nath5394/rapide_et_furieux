@@ -22,7 +22,8 @@ GAME_SETTINGS_TEMPLATE = {
     # default values
     'background_color': (0, 0, 0),
     'collision': {
-        'reverse_factor': 0.3,
+        'reverse_factor': 1.1,
+        'angle_transmission': 0.0,
     },
     'acceleration': {
         'normal': 512,
@@ -79,15 +80,15 @@ def to_polar(coord):
     # coord are from the top-left of the screen
     return (
         math.sqrt((coord[0] ** 2) + (coord[1] ** 2)),
-        math.atan2(-coord[1], coord[0])
+        math.atan2(coord[1], coord[0])
     )
 
 
 def to_cartesian(polar):
     # coord are from the top-left of the screen
     return (
-        int(polar[0] * math.cos(polar[1])),
-        int(polar[0] * math.sin(polar[1])),
+        polar[0] * math.cos(polar[1]),
+        polar[0] * math.sin(polar[1]),
     )
 
 

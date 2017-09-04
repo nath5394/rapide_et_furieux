@@ -101,14 +101,76 @@ class CollisionHandler(object):
         return angle
 
     @staticmethod
-    def nullify_speed(speed, angle):
+    def nullify_speed(speed_car_cart_rel, car_angle, collision_angle,
+                      reverse_factor, angle_transmission):
         """
         Cancel part of the speed for the matching angle.
         Only keep the speed that is on the opposite side of the angle.
 
         Return the new speed, and the removed part.
         """
-        return ((0, 0), (0, 0))
+        speed_car_cart_rel = (speed_car_cart_rel[0], -speed_car_cart_rel[1])
+        speed_car_pol_rel = util.to_polar(speed_car_cart_rel)
+
+        speed_car_pol = (
+            speed_car_pol_rel[0],
+            speed_car_pol_rel[1] + car_angle,
+        )
+
+        speed_car_cart = util.to_cartesian(speed_car_pol)
+        speed_car_cart = (speed_car_cart[0], -speed_car_cart[1])
+
+        # collision angle is the opposite force ; we reverse it here
+        collision_angle += math.pi
+        collision_angle %= 2 * math.pi
+
+        new_angle = (speed_car_pol[1] - collision_angle)
+        new_angle *= angle_transmission
+        new_angle += car_angle
+        new_angle %= (math.pi * 2)
+
+        to_nullify_pol = (speed_car_pol[0] *
+                          math.cos(speed_car_pol[1] - collision_angle) *
+                          reverse_factor,
+                          collision_angle)
+
+        to_nullify_cart = util.to_cartesian(to_nullify_pol)
+
+        speed_car_cart = (
+            speed_car_cart[0] - to_nullify_cart[0],
+            speed_car_cart[1] + to_nullify_cart[1]
+        )
+
+        speed_car_cart = (speed_car_cart[0], -speed_car_cart[1])
+        speed_car_pol = util.to_polar(speed_car_cart)
+
+        speed_car_pol_rel = (
+            speed_car_pol[0],
+            speed_car_pol[1] - car_angle,
+        )
+
+        speed_car_cart_rel = util.to_cartesian(speed_car_pol_rel)
+        speed_car_cart_rel = (speed_car_cart_rel[0], -speed_car_cart_rel[1])
+
+        return (speed_car_cart_rel, to_nullify_cart, new_angle)
+
+    @staticmethod
+    def add_speed(speed_a_cart_rel, angle_a, speed_b_cart):
+        speed_a_pol_rel = util.to_polar(speed_a_cart_rel)
+        speed_a_pol = (
+            speed_a_pol_rel[0],
+            speed_a_pol_rel[1] + angle_a
+        )
+        speed_a_cart = util.to_cartesian(speed_a_pol)
+        speed_a_pol = util.to_polar((
+            speed_a_cart[0] + speed_b_cart[0],
+            speed_a_cart[1] + speed_b_cart[1],
+        ))
+        speed_a_pol_rel = (
+            speed_a_pol[0],
+            speed_a_pol[1] - angle_a,
+        )
+        return util.to_cartesian(speed_a_pol_rel)
 
     def get_collisions(self, moving, limit=None):
         collisions = []
@@ -139,25 +201,30 @@ class CollisionHandler(object):
         return collisions
 
     def collide(self, moving, collisions, frame_interval):
+        if collisions is None or len(collisions) <= 0:
+            return
+
         speed = moving.speed
-        for collision in collisions:
-            moving_line = collision.moving_line
-            obstacle = collision.obstacle
-            obstacle_line = collision.obstacle_line
-            collision_pt = collision.point
+        collision = collisions[0]  # only the first point is taken into account
 
-            # we did collide --> compute correction
-            collision_angle = self.get_collision_angle(
-                moving_line, obstacle_line, moving.position
-            )
-            print ("COLLISION ANGLE: {}".format(collision_angle))
+        moving_line = collision.moving_line
+        obstacle = collision.obstacle
+        obstacle_line = collision.obstacle_line
+        collision_pt = collision.point
 
-            (speed, removed_speed) = self.nullify_speed(
-                speed, collision_angle
-            )
-            # static obstacles will just ignore the new speed
-            obstacle.speed = (
-                obstacle.speed[0] + removed_speed[0],
-                obstacle.speed[1] + removed_speed[1]
-            )
-        return speed
+        # we did collide --> compute correction
+        collision_angle = self.get_collision_angle(
+            moving_line, obstacle_line, moving.position
+        )
+
+        (speed, removed_speed, new_angle) = self.nullify_speed(
+            speed, moving.radians, collision_angle,
+            self.game_settings['collision']['reverse_factor'],
+            self.game_settings['collision']['angle_transmission'] *
+            frame_interval,
+        )
+        # static obstacles will just ignore the new speed
+        obstacle.speed = self.add_speed(
+            obstacle.speed, obstacle.radians, removed_speed
+        )
+        return (speed, new_angle)

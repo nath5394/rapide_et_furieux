@@ -74,7 +74,7 @@ class Car(RelativeSprite, CollisionObject):
             (
                 length,
                 # The gfx are oriented to the up side, but radians=0 == right
-                angle + self.radians + (math.pi / 2)
+                angle - self.radians + (math.pi / 2)
             ) for (length, angle) in pts
         ]
         pts = [util.to_cartesian(pt) for pt in pts]
@@ -86,12 +86,12 @@ class Car(RelativeSprite, CollisionObject):
 
     def update_image(self):
         # The gfx are oriented to the up side, but radians=0 == right
-        self.angle = (self.radians + (math.pi / 2)) * 180 / math.pi
+        self.angle = (-self.radians + (math.pi / 2)) * 180 / math.pi
         self.image = pygame.transform.rotate(self.original, -self.angle)
         self.size = self.image.get_size()
         self.relative = (
-            self.position[0] - (self.size[0] / 2),
-            self.position[1] - (self.size[1] / 2),
+            int(self.position[0]) - (self.size[0] / 2),
+            int(self.position[1]) - (self.size[1] / 2),
         )
 
     def compute_forward_speed(self, current_speed, frame_interval, terrain):
@@ -174,7 +174,7 @@ class Car(RelativeSprite, CollisionObject):
         if speed is None:
             speed = self.speed
         speed = util.to_polar(speed)
-        speed = (speed[0], speed[1] + self.radians)
+        speed = (speed[0], speed[1] - self.radians)
         speed = util.to_cartesian(speed)
         speed = (speed[0] * frame_interval, speed[1] * frame_interval)
 
@@ -196,44 +196,60 @@ class Car(RelativeSprite, CollisionObject):
         return angle_change
 
     def turn(self, angle_change):
-        self.radians = self.radians + angle_change
+        self.radians = self.radians - angle_change
 
         # cars turns, but not its speed / momentum
         # turn the speed into polar coordinates --> change the angle,
         # switch back
         speed = util.to_polar(self.speed)
-        speed = (speed[0], speed[1] + angle_change)
+        speed = (speed[0], speed[1] - angle_change)
         self.speed = util.to_cartesian(speed)
         return angle_change
 
     def move(self, frame_interval):
+        COLLISION = True
+
         terrain = self.parent.get_terrain(self.position)
 
         self.update_speed(frame_interval, terrain)
 
+        # steering
         steering = self.get_steering(frame_interval, terrain)
+        previous_radians = self.radians
+        previous_speed = self.speed
         self.turn(steering)
-        collisions = self.parent.collisions.get_collisions(self, limit=1)
-        if len(collisions) > 0:
-            # cancel steering
-            self.turn(-steering)
 
+        if COLLISION:
+            collisions = self.parent.collisions.get_collisions(self, limit=1)
+            if len(collisions) > 0:
+                # cancel steering
+                self.speed = previous_speed
+                self.radians = previous_radians
+
+
+        # move
+        prev_position = self.position
         self.position = self.apply_speed(frame_interval, self.position)
 
-        collisions = self.parent.collisions.get_collisions(self)
-        if len(collisions) > 0:
-            # cancel movement
-            self.position = self.apply_speed(
-                frame_interval, self.position, speed=(
-                    -self.speed[0], -self.speed[1]
+        if COLLISION:
+            collisions = self.parent.collisions.get_collisions(self)
+            if len(collisions) > 0:
+                # cancel movement
+                self.position = prev_position
+
+                # update speed based on collision
+                (self.speed, self.radians) = self.parent.collisions.collide(
+                    self, collisions, frame_interval
                 )
-            )
-            # update speed based on collision
-            self.speed = self.parent.collisions.collide(
-                self, collisions, frame_interval
-            )
-            # update position based on collision speed
-            self.position = self.apply_speed(frame_interval, self.position)
+
+                # apply new speed if possible before it's cancelled
+                prev_position = self.position
+                self.position = self.apply_speed(frame_interval, self.position)
+                collisions = self.parent.collisions.get_collisions(
+                    self, limit=1
+                )
+                if len(collisions) > 0:
+                    self.position = prev_position
 
         self.update_image()
 
