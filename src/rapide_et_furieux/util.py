@@ -1,3 +1,4 @@
+import itertools
 import logging
 import math
 import sys
@@ -20,6 +21,9 @@ logger = logging.getLogger(__name__)
 GAME_SETTINGS_TEMPLATE = {
     # default values
     'background_color': (0, 0, 0),
+    'collision': {
+        'reverse_factor': 0.3,
+    },
     'acceleration': {
         'normal': 512,
         'crap': 256,
@@ -55,6 +59,18 @@ GAME_SETTINGS_TEMPLATE = {
 }
 
 
+def pairwise(iterable):
+    a, b = itertools.tee(iterable)
+    next(b, None)
+    first = None
+    last = None
+    for x in zip(a, b):
+        if first is None:
+            first = x[0]
+        last = x[1]
+        yield x
+    yield (last, first)
+
 
 def to_polar(coord):
     # coord are from the top-left of the screen
@@ -67,8 +83,8 @@ def to_polar(coord):
 def to_cartesian(polar):
     # coord are from the top-left of the screen
     return (
-        polar[0] * math.cos(polar[1]),
-        polar[0] * math.sin(polar[1]),
+        int(polar[0] * math.cos(polar[1])),
+        int(polar[0] * math.sin(polar[1])),
     )
 
 

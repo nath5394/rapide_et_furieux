@@ -3,8 +3,10 @@ import logging
 import pygame
 
 from . import RelativeGroup
+from .collisions import CollisionHandler
 from .objects import RaceTrackObject
 from .tiles import TileGrid
+from .. import util
 
 
 logger = logging.getLogger(__name__)
@@ -222,7 +224,8 @@ class TrackBorder(object):
 class RaceTrack(RelativeGroup):
     DELETION_MARGIN = 15
 
-    def __init__(self, grid_margin=0, debug=False):
+    def __init__(self, grid_margin=0, debug=False,
+                 game_settings=util.GAME_SETTINGS_TEMPLATE):
         super().__init__()
 
         self.debug = debug
@@ -237,6 +240,8 @@ class RaceTrack(RelativeGroup):
         self.cars = []
 
         self.font = pygame.font.Font(None, 42)
+
+        self.collisions = CollisionHandler(self, game_settings)
 
     def draw(self, screen):
         self.tiles.draw(screen)

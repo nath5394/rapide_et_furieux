@@ -8,6 +8,7 @@ import pygame
 from .. import RelativeSprite
 from ... import assets
 from ... import util
+from ..collisions import CollisionObject
 
 
 Controls = collections.namedtuple(
@@ -22,7 +23,7 @@ Controls = collections.namedtuple(
 )
 
 
-class Car(RelativeSprite):
+class Car(RelativeSprite, CollisionObject):
     def __init__(self, resource, race_track, game_settings,
                  spawn_point, spawn_orientation, image=None):
         super().__init__(resource, image)
@@ -52,11 +53,39 @@ class Car(RelativeSprite):
         # and second one is the lateral speed (drifting)
         self.speed = (0, 0)
 
+        self.original_size = self.original.get_size()
+
         self.update_image()
 
         util.register_animator(self.move)
 
+    @property
+    def pts(self):
+        pts = [
+            (- (self.original_size[0] / 2), - (self.original_size[1] / 2)),
+            (self.original_size[0] / 2, - (self.original_size[1] / 2)),
+            (self.original_size[0] / 2, self.original_size[1] / 2),
+            (- (self.original_size[0] / 2), self.original_size[1] / 2),
+        ]
+        # TODO(Jflesch): can optim: to_polar() could be called only once,
+        # and the other points can be deduced
+        pts = [util.to_polar(pt) for pt in pts]
+        pts = [
+            (
+                length,
+                # The gfx are oriented to the up side, but radians=0 == right
+                angle + self.radians + (math.pi / 2)
+            ) for (length, angle) in pts
+        ]
+        pts = [util.to_cartesian(pt) for pt in pts]
+        pts = [
+            (x + self.position[0], y + self.position[1])
+            for (x, y) in pts
+        ]
+        return pts
+
     def update_image(self):
+        # The gfx are oriented to the up side, but radians=0 == right
         self.angle = (self.radians + (math.pi / 2)) * 180 / math.pi
         self.image = pygame.transform.rotate(self.original, -self.angle)
         self.size = self.image.get_size()
@@ -145,10 +174,7 @@ class Car(RelativeSprite):
         speed = util.to_polar(self.speed)
         speed = (speed[0], speed[1] + self.radians)
         speed = util.to_cartesian(speed)
-        speed = (
-            speed[0] * frame_interval,
-            speed[1] * frame_interval,
-        )
+        speed = (speed[0] * frame_interval, speed[1] * frame_interval)
 
         self.position = (
             self.position[0] + speed[0],
@@ -174,16 +200,29 @@ class Car(RelativeSprite):
         # turn the speed into polar coordinates --> change the angle,
         # switch back
         speed = util.to_polar(self.speed)
-        speed = (
-            speed[0],
-            speed[1] + angle_change,
-        )
+        speed = (speed[0], speed[1] + angle_change)
         self.speed = util.to_cartesian(speed)
 
     def move(self, frame_interval):
         terrain = self.parent.get_terrain(self.position)
 
         self.update_speed(frame_interval, terrain)
-        self.apply_speed(frame_interval)
         self.turn(frame_interval, terrain)
+
+        self.parent.collisions.check(self)
+
+        self.apply_speed(frame_interval)
         self.update_image()
+
+    def draw(self, screen):
+        super().draw(screen)
+        if not self.parent.debug:
+            return
+        p = self.parent.absolute
+        for (a, b) in util.pairwise(self.pts):
+            pygame.draw.line(
+                screen, (255, 0, 0),
+                (a[0] + p[0], a[1] + p[1]),
+                (b[0] + p[0], b[1] + p[1]),
+                2
+            )
