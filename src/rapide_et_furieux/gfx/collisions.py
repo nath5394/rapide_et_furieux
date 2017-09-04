@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import collections
 import itertools
 import logging
 
@@ -25,7 +26,21 @@ class CollisionObject(object):
         self.speed = (0, 0)
 
     def update_image(self):
-        assert False, "subclass must implement update_image()"
+        pass
+
+    def apply_speed(self, frame_interval, position):
+        pass
+
+
+Collision = collections.namedtuple(
+    typename="collision",
+    field_names=(
+        "moving_line",
+        "obstacle",
+        "obstacle_line",
+        "point",
+    ),
+)
 
 
 class CollisionHandler(object):
@@ -55,7 +70,7 @@ class CollisionHandler(object):
         return util.get_segment_intersect_point(line_a, line_b)
 
     @staticmethod
-    def get_collision_angle(line_a, line_b):
+    def get_collision_angle(line_moving, line_obstacle, collision_pt):
         """
         Returns the angle of the collision if there is any
         """
@@ -69,13 +84,10 @@ class CollisionHandler(object):
 
         Return the new speed, and the removed part.
         """
-        return (speed, (0, 0))
+        return ((0, 0), (0, 0))
 
-    def check(self, moving):
-        """
-        check() must be called before the next movement of the car.
-        It will cancel/reverse part of its speed if required
-        """
+    def get_collisions(self, moving, limit=None):
+        collisions = []
         for moving_line in util.pairwise(moving.pts):
             for obstacle in itertools.chain(
                         self.racetrack.borders, self.racetrack.cars
@@ -87,22 +99,40 @@ class CollisionHandler(object):
                     # did we collide ?
                     if not self.can_collide(moving_line, obstacle_line):
                         continue
-                    if (self.get_collision_point(moving_line, obstacle_line)
-                            is None):
-                        continue
-
-                    # we did collide --> compute correction
-                    print("{} || {}".format(moving_line, obstacle_line))
-                    collision_angle = self.get_collision_angle(
+                    collision_pt = self.get_collision_point(
                         moving_line, obstacle_line
                     )
-                    if collision_angle is None:
+                    if collision_pt is None:
                         continue
-                    (moving.speed, removed_speed) = self.nullify_speed(
-                        moving.speed, collision_angle
-                    )
-                    # static obstacles will just ignore the new speed
-                    obstacle.speed = (
-                        obstacle.speed[0] + removed_speed[0],
-                        obstacle.speed[1] + removed_speed[1]
-                    )
+                    collisions.append(Collision(
+                        moving_line=moving_line,
+                        obstacle=obstacle,
+                        obstacle_line=obstacle_line,
+                        point=collision_pt
+                    ))
+                    if limit is not None and len(collisions) >= limit:
+                        return collisions
+        return collisions
+
+    def collide(self, moving, collisions, frame_interval):
+        speed = moving.speed
+        for collision in collisions:
+            moving_line = collision.moving_line
+            obstacle = collision.obstacle
+            obstacle_line = collision.obstacle_line
+            collision_pt = collision.point
+
+            # we did collide --> compute correction
+            collision_angle = self.get_collision_angle(
+                moving_line, obstacle_line, collision_pt
+            )
+            # assert(collision_angle)
+            (speed, removed_speed) = self.nullify_speed(
+                speed, collision_angle
+            )
+            # static obstacles will just ignore the new speed
+            obstacle.speed = (
+                obstacle.speed[0] + removed_speed[0],
+                obstacle.speed[1] + removed_speed[1]
+            )
+        return speed

@@ -165,35 +165,37 @@ class Car(RelativeSprite, CollisionObject):
             self.compute_lateral_speed(self.speed[1], frame_interval, terrain)
         )
 
-    def apply_speed(self, frame_interval):
+    def apply_speed(self, frame_interval, position, speed=None):
         # self.speed is relative to the car, but self.position is relative
         # to the race track
         # so we switch to polar coordinates, change the angle, and switch
         # back to cartesian coordinates
 
-        speed = util.to_polar(self.speed)
+        if speed is None:
+            speed = self.speed
+        speed = util.to_polar(speed)
         speed = (speed[0], speed[1] + self.radians)
         speed = util.to_cartesian(speed)
         speed = (speed[0] * frame_interval, speed[1] * frame_interval)
 
-        self.position = (
-            self.position[0] + speed[0],
-            self.position[1] + speed[1],
+        return (
+            position[0] + speed[0],
+            position[1] + speed[1],
         )
 
-    def turn(self, frame_interval, terrain):
+    def get_steering(self, frame_interval, terrain):
         if not self.controls.steer_left and not self.controls.steer_right:
-            return
-
+            return 0
         ref_speed = self.game_settings['steering']['ref_speed']
-
         angle_change = self.game_settings['steering'][terrain] * frame_interval
         if self.controls.steer_left:
             angle_change *= -1
         if self.speed[0] < 0:
             angle_change *= -1
         angle_change *= min(1.0, abs(self.speed[0]) / ref_speed)
+        return angle_change
 
+    def turn(self, angle_change):
         self.radians = self.radians + angle_change
 
         # cars turns, but not its speed / momentum
@@ -202,16 +204,37 @@ class Car(RelativeSprite, CollisionObject):
         speed = util.to_polar(self.speed)
         speed = (speed[0], speed[1] + angle_change)
         self.speed = util.to_cartesian(speed)
+        return angle_change
 
     def move(self, frame_interval):
         terrain = self.parent.get_terrain(self.position)
 
         self.update_speed(frame_interval, terrain)
-        self.turn(frame_interval, terrain)
 
-        self.parent.collisions.check(self)
+        steering = self.get_steering(frame_interval, terrain)
+        self.turn(steering)
+        collisions = self.parent.collisions.get_collisions(self, limit=1)
+        if len(collisions) > 0:
+            # cancel steering
+            self.turn(-steering)
 
-        self.apply_speed(frame_interval)
+        self.position = self.apply_speed(frame_interval, self.position)
+
+        collisions = self.parent.collisions.get_collisions(self)
+        if len(collisions) > 0:
+            # cancel movement
+            self.position = self.apply_speed(
+                frame_interval, self.position, speed=(
+                    -self.speed[0], -self.speed[1]
+                )
+            )
+            # update speed based on collision
+            self.speed = self.parent.collisions.collide(
+                self, collisions, frame_interval
+            )
+            # update position based on collision speed
+            self.position = self.apply_speed(frame_interval, self.position)
+
         self.update_image()
 
     def draw(self, screen):
