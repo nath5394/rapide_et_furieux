@@ -31,7 +31,7 @@ GAME_SETTINGS_TEMPLATE = {
     },
     'braking': {
         'normal': 1024,
-        'crap': 256,
+        'crap': 768,
     },
     'lateral_speed_slowdown': {
         # tires on the road
@@ -54,7 +54,7 @@ GAME_SETTINGS_TEMPLATE = {
         },
     },
     'engine braking': {
-        'normal': 128,
+        'normal': 512,
         'crap': 512,
     }
 }
@@ -186,22 +186,10 @@ def get_segment_intersect_point(line_a, line_b):
     r2 = pygame.Rect(p3, (width, height))
     r2.normalize()
 
-    # Ensure both rects have a width and height of at least 'tolerance'
-    # else the collidepoint check of the Rect class will fail as it
-    # doesn't include the bottom and right hand side 'pixels' of the
-    # rectangle
-    tolerance = 1
-    if r1.width < tolerance:
-        r1.width = tolerance
-
-    if r1.height < tolerance:
-        r1.height = tolerance
-
-    if r2.width < tolerance:
-        r2.width = tolerance
-
-    if r2.height < tolerance:
-        r2.height = tolerance
+    r1.width += 1
+    r1.height += 1
+    r2.width += 1
+    r2.height += 1
 
     for point in intersects:
         res1 = r1.collidepoint(point)
