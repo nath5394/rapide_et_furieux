@@ -66,12 +66,18 @@ class Car(RelativeSprite, CollisionObject):
     def hash(self):
         return self.h
 
+    COLLISION_MARGIN = 3
+
     def recompute_pts(self):
         pts = [
-            (- (self.original_size[0] / 2), - (self.original_size[1] / 2)),
-            (self.original_size[0] / 2, - (self.original_size[1] / 2)),
-            (self.original_size[0] / 2, self.original_size[1] / 2),
-            (- (self.original_size[0] / 2), self.original_size[1] / 2),
+            ((- (self.original_size[0] / 2)) + self.COLLISION_MARGIN,
+             (- (self.original_size[1] / 2)) + self.COLLISION_MARGIN),
+            ((self.original_size[0] / 2) - self.COLLISION_MARGIN,
+             (- (self.original_size[1] / 2)) + self.COLLISION_MARGIN),
+            ((self.original_size[0] / 2) - self.COLLISION_MARGIN,
+             (self.original_size[1] / 2) - self.COLLISION_MARGIN),
+            ((- (self.original_size[0] / 2)) + self.COLLISION_MARGIN,
+             (self.original_size[1] / 2) - self.COLLISION_MARGIN),
         ]
         # TODO(Jflesch): can optim: to_polar() could be called only once,
         # and the other points can be deduced
