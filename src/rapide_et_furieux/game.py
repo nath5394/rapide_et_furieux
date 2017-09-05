@@ -106,7 +106,6 @@ class Game(object):
             self.race_track.add_car(car)
             if idx == 0:
                 self.player = car
-                break  # TODO(Jflesch): TO REMOVE
 
         self.osd_message.show("Done")
         logger.info("Done")
