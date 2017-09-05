@@ -68,6 +68,8 @@ class CollisionHandler(object):
         ) for line in [line_a, line_b]]
         for rect in [rect_a, rect_b]:
             rect.normalize()
+            rect.width += 1
+            rect.height += 1
 
         return rect_a.colliderect(rect_b)
 
