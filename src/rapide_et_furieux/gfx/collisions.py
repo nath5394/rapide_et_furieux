@@ -86,11 +86,11 @@ class CollisionHandler(object):
         # than the cat or not
         v1 = (
             line_obstacle[1][0] - line_obstacle[0][0],
-            line_obstacle[1][1] - line_obstacle[0][1]
+            (-line_obstacle[1][1]) - (-line_obstacle[0][1])
         )
         v2 = (
             line_obstacle[1][0] - car_position[0],
-            line_obstacle[1][1] - car_position[1]
+            (-line_obstacle[1][1]) - (-car_position[1])
         )
         xp = (v1[0] * v2[1]) - (v1[1] * v2[0])
         if xp < 0:

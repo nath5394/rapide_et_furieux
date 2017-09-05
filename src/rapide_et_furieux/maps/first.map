@@ -1,41 +1,5 @@
 {
     "game_settings": {
-        "acceleration": {
-            "crap": 256,
-            "normal": 512
-        },
-        "background_color": [
-            0,
-            0,
-            0
-        ],
-        "braking": {
-            "crap": 256,
-            "normal": 1024
-        },
-        "engine braking": {
-            "crap": 256,
-            "normal": 128
-        },
-        "lateral_speed_slowdown": {
-            "crap": 512,
-            "normal": 1024
-        },
-        "max_speed": {
-            "crap": {
-                "forward": 256,
-                "reverse": 128
-            },
-            "normal": {
-                "forward": 768,
-                "reverse": 256
-            }
-        },
-        "steering": {
-            "crap": 1.5707963267948966,
-            "normal": 3.141592653589793,
-            "ref_speed": 256
-        }
     },
     "race_track": {
         "borders": [

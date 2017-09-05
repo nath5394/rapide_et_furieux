@@ -238,18 +238,33 @@ class Car(RelativeSprite, CollisionObject):
                 self.position = prev_position
 
                 # update speed based on collision
+                prev_radians = self.radians
                 (self.speed, self.radians) = self.parent.collisions.collide(
                     self, collisions, frame_interval
                 )
 
                 # apply new speed if possible before it's cancelled
+                # + angle
                 prev_position = self.position
                 self.position = self.apply_speed(frame_interval, self.position)
+
                 collisions = self.parent.collisions.get_collisions(
                     self, limit=1
                 )
                 if len(collisions) > 0:
+                    # .. without angle ?
+                    self.radians = prev_radians
                     self.position = prev_position
+                    self.position = self.apply_speed(frame_interval,
+                                                     self.position)
+                    collisions = self.parent.collisions.get_collisions(
+                        self, limit=1
+                    )
+
+                    if len(collisions) > 0:
+                        # ok screw it ...
+                        self.radians = prev_radians
+                        self.position = prev_position
 
         self.update_image()
 
