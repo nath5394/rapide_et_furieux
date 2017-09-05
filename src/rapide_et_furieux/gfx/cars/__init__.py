@@ -261,7 +261,9 @@ class Car(RelativeSprite, CollisionObject):
         self.turn(steering)
 
         if COLLISION:
-            collisions = self.parent.collisions.get_collisions(self, limit=1)
+            collisions = self.parent.collisions.get_collisions(
+                self, limit=1, optim=True
+            )
             if len(collisions) > 0:
                 # cancel steering
                 self.speed = previous_speed
@@ -272,7 +274,7 @@ class Car(RelativeSprite, CollisionObject):
         self.position = self.apply_speed(frame_interval, self.position)
 
         if COLLISION:
-            collisions = self.parent.collisions.get_collisions(self)
+            collisions = self.parent.collisions.get_collisions(self, optim=True)
             if len(collisions) > 0:
                 # cancel movement
                 self.position = prev_position
@@ -289,7 +291,7 @@ class Car(RelativeSprite, CollisionObject):
                 self.position = self.apply_speed(frame_interval, self.position)
 
                 collisions = self.parent.collisions.get_collisions(
-                    self, limit=1
+                    self, limit=1, optim=False
                 )
                 if len(collisions) > 0:
                     # .. without angle ?
@@ -298,7 +300,7 @@ class Car(RelativeSprite, CollisionObject):
                     self.position = self.apply_speed(frame_interval,
                                                      self.position)
                     collisions = self.parent.collisions.get_collisions(
-                        self, limit=1
+                        self, limit=1, optim=False
                     )
 
                     if len(collisions) > 0:

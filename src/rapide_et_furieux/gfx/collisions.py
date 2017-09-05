@@ -230,15 +230,12 @@ class CollisionHandler(object):
         for obstacle in self.racetrack.cars:
             grid = (int(obstacle.position[0] / assets.TILE_SIZE[0]),
                     int(obstacle.position[1] / assets.TILE_SIZE[1]))
-            for pos in [
-                        (grid[0], grid[1]),
-                        (grid[0] - 1, grid[1] - 1),
-                        (grid[0] - 1, grid[1]),
-                        (grid[0], grid[1] - 1),
-                        (grid[0] + 1, grid[1] + 1),
-                        (grid[0] + 1, grid[1]),
-                        (grid[0], grid[1] + 1),
-                    ]:
+            offsets = itertools.product(
+                range(-2, 3, 1),
+                range(-2, 3, 1),
+            )
+            for offset in offsets:
+                pos = (grid[0] + offset[0], grid[1] + offset[1])
                 if pos not in self.precomputed_moving:
                     self.precomputed_moving[pos] = set()
                 self.precomputed_moving[pos].add(obstacle)
@@ -252,17 +249,26 @@ class CollisionHandler(object):
             return []
         return precomputed[grid]
 
-    def get_collisions(self, moving, limit=None):
+    def get_collisions(self, moving, limit=None, optim=True):
         collisions = []
+        if optim:
+            obstacles = [
+                self.get_possible_obstacle(
+                    self.precomputed_static, moving.position
+                ),
+                self.get_possible_obstacle(
+                    self.precomputed_moving, moving.position
+                ),
+            ]
+        else:
+            obstacles = [
+                self.get_possible_obstacle(
+                    self.precomputed_static, moving.position
+                ),
+                self.racetrack.cars,
+            ]
         for moving_line in util.pairwise(moving.pts):
-            for obstacle in itertools.chain(
-                        self.get_possible_obstacle(
-                            self.precomputed_static, moving.position
-                        ),
-                        self.get_possible_obstacle(
-                            self.precomputed_moving, moving.position
-                        ),
-                    ):
+            for obstacle in itertools.chain(*obstacles):
                 if obstacle is moving:
                     # ignore self
                     continue
