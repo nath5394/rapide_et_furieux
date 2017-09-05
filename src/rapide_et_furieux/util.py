@@ -22,8 +22,8 @@ GAME_SETTINGS_TEMPLATE = {
     # default values
     'background_color': (0, 0, 0),
     'collision': {
-        'reverse_factor': 1.1,
-        'angle_transmission': 0.0,
+        'reverse_factor': 1.2,
+        'angle_transmission': 16.0,
     },
     'acceleration': {
         'normal': 512,
@@ -101,7 +101,7 @@ def _calculate_gradient(line):
 
 def _calculate_y_axis_intersect(p, m):
     """Compute the point 'b' where line crosses the Y axis"""
-    return  p[1] - (m * p[0])
+    return p[1] - (m * p[0])
 
 
 def _get_line_intersect_points(line_a, line_b):
@@ -140,13 +140,13 @@ def _get_line_intersect_points(line_a, line_b):
             b1 = _calculate_y_axis_intersect(p1, m1)
             x = p3[0]
             y = (m1 * x) + b1
-        return ((x,y),)
+        return ((x, y),)
 
     # Parallel lines with same 'b' value must be the same line so they intersect
     # everywhere in this case we return the start and end points of both lines
     # the _calculate_intersect_point method will sort out which of these points
     # lays on both line segments
-    (b1, b2) = (None, None) # vertical lines have no b value
+    (b1, b2) = (None, None)  # vertical lines have no b value
     if m1 is not None:
         b1 = _calculate_y_axis_intersect(p1, m1)
 
@@ -178,7 +178,7 @@ def get_segment_intersect_point(line_a, line_b):
 
     width = p2[0] - p1[0]
     height = p2[1] - p1[1]
-    r1 = pygame.Rect(p1, (width , height))
+    r1 = pygame.Rect(p1, (width, height))
     r1.normalize()
 
     width = p4[0] - p3[0]
