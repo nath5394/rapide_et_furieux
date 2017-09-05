@@ -163,15 +163,22 @@ class CollisionHandler(object):
 
     @staticmethod
     def update_angle(car_angle, obstacle_angle, ratio):
+        MAX_ANGLE = math.pi / 8
+
         diff = car_angle - obstacle_angle
         diff *= ratio
-        if abs(diff) > math.pi / 128:
-            new_angle = car_angle - diff
-        else:
+        if abs(diff) <= math.pi / 128:
             # close enough to the obstacle angle --> we align them
             # to reduce collisions issues
-            new_angle = obstacle_angle
-        return new_angle
+            return obstacle_angle
+
+        if abs(diff) > MAX_ANGLE:
+            n = diff < 0
+            diff = MAX_ANGLE
+            if n:
+                diff *= -1
+
+        return car_angle - diff
 
     @staticmethod
     def add_speed(speed_a_cart_rel, angle_a, speed_b_cart):
