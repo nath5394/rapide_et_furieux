@@ -28,6 +28,8 @@ class Car(RelativeSprite, CollisionObject):
                  spawn_point, spawn_orientation, image=None):
         super().__init__(resource, image)
 
+        self.h = hash(spawn_point)
+
         self.game_settings = game_settings
         self.parent = race_track
 
@@ -60,6 +62,9 @@ class Car(RelativeSprite, CollisionObject):
         )
 
         self.update_image()
+
+    def hash(self):
+        return self.h
 
     def recompute_pts(self):
         pts = [

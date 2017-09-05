@@ -209,46 +209,59 @@ class CollisionHandler(object):
         self.precomputed_static = {}
         for obstacle in self.racetrack.borders:
             for obstacle_line in util.pairwise(obstacle.pts):
-                for grid_coords in util.raytrace(
-                            obstacle_line, assets.TILE_SIZE[0]
-                        ):
-                    if grid_coords in self.precomputed_static:
-                        self.precomputed_static[grid_coords].append(obstacle)
-                    else:
-                        self.precomputed_static[grid_coords] = [obstacle]
+                for grid in util.raytrace(
+                                obstacle_line, assets.TILE_SIZE[0]
+                            ):
+                        for pos in [
+                                    (grid[0], grid[1]),
+                                    (grid[0] - 1, grid[1] - 1),
+                                    (grid[0] - 1, grid[1]),
+                                    (grid[0], grid[1] - 1),
+                                    (grid[0] + 1, grid[1] + 1),
+                                    (grid[0] + 1, grid[1]),
+                                    (grid[0], grid[1] + 1),
+                                ]:
+                            if pos not in self.precomputed_static:
+                                self.precomputed_static[pos] = set()
+                            self.precomputed_static[pos].add(obstacle)
 
     def precompute_moving(self, *args, **kwargs):
-        pass
+        self.precomputed_moving = {}
+        for obstacle in self.racetrack.cars:
+            grid = (int(obstacle.position[0] / assets.TILE_SIZE[0]),
+                    int(obstacle.position[1] / assets.TILE_SIZE[1]))
+            for pos in [
+                        (grid[0], grid[1]),
+                        (grid[0] - 1, grid[1] - 1),
+                        (grid[0] - 1, grid[1]),
+                        (grid[0], grid[1] - 1),
+                        (grid[0] + 1, grid[1] + 1),
+                        (grid[0] + 1, grid[1]),
+                        (grid[0], grid[1] + 1),
+                    ]:
+                if pos not in self.precomputed_moving:
+                    self.precomputed_moving[pos] = set()
+                self.precomputed_moving[pos].add(obstacle)
 
-    def get_possible_static(self, position):
-        obstacles = []
+    def get_possible_obstacle(self, precomputed, position):
         grid = (
             int(position[0] / assets.TILE_SIZE[0]),
             int(position[1] / assets.TILE_SIZE[1]),
         )
-        for pos in [
-                    (grid[0], grid[1]),
-                    (grid[0] - 1, grid[1] - 1),
-                    (grid[0] - 1, grid[1]),
-                    (grid[0], grid[1] - 1),
-                    (grid[0] + 1, grid[1] + 1),
-                    (grid[0] + 1, grid[1]),
-                    (grid[0], grid[1] + 1),
-                ]:
-            if not pos in self.precomputed_static:
-                continue
-            obstacles += self.precomputed_static[pos]
-        return obstacles
-
-    def get_possible_moving(self, position):
-        return self.racetrack.cars
+        if not grid in precomputed:
+            return []
+        return precomputed[grid]
 
     def get_collisions(self, moving, limit=None):
         collisions = []
         for moving_line in util.pairwise(moving.pts):
             for obstacle in itertools.chain(
-                        self.get_possible_static(moving.position),
-                        self.get_possible_moving(moving.position),
+                        self.get_possible_obstacle(
+                            self.precomputed_static, moving.position
+                        ),
+                        self.get_possible_obstacle(
+                            self.precomputed_moving, moving.position
+                        ),
                     ):
                 if obstacle is moving:
                     # ignore self

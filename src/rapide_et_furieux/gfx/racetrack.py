@@ -184,6 +184,12 @@ class TrackBorder(CollisionObject):
         self.parent = parent
         self.pts = [(int(x), int(y)) for (x, y) in pts]
 
+    def __hash__(self):
+        h = 0
+        for pt in self.pts:
+            h ^= hash(pt)
+        return h
+
     def serialize(self):
         return {
             'pts': self.pts,
