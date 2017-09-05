@@ -292,7 +292,13 @@ class CollisionHandler(object):
         if collisions is None or len(collisions) <= 0:
             return
 
+        angle_trans = (
+            self.game_settings['collision']['angle_transmission'] *
+            frame_interval
+        )
+
         speed = moving.speed
+
         collision = collisions[0]  # only the first point is taken into account
 
         moving_line = collision.moving_line
@@ -312,12 +318,20 @@ class CollisionHandler(object):
             self.game_settings['collision']['reverse_factor'],
         )
         new_angle = self.update_angle(
-            moving.radians, obstacle_angle,
-            self.game_settings['collision']['angle_transmission'] *
-            frame_interval
+            moving.radians, obstacle_angle, angle_trans
         )
         # static obstacles will just ignore the new speed
         obstacle.speed = self.add_speed(
             obstacle.speed, obstacle.radians, removed_speed
         )
+
+        for collision in collisions[1:]:
+            obstacle_line = collision.obstacle_line
+            obstacle_angle = self.get_obstacle_angle(
+                obstacle_line, new_angle
+            )
+            new_angle = self.update_angle(
+                new_angle, obstacle_angle, angle_trans
+            )
+
         return (speed, new_angle)
