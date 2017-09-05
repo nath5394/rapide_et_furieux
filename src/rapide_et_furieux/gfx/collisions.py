@@ -57,8 +57,8 @@ class CollisionHandler(object):
         (rect_a, rect_b) = [pygame.Rect(
             line[0],
             (
-                line[1][0] - line[0][0],
-                line[1][1] - line[0][1],
+                line[1][0] - line[0][0] + 1,
+                line[1][1] - line[0][1] + 1,
             ),
         ) for line in [line_a, line_b]]
         for rect in [rect_a, rect_b]:
