@@ -21,11 +21,12 @@ class PlayerCar(Car):
         )
         brake = (
             bool(keys[pygame.K_DOWN]) or bool(keys[pygame.K_s]) or
-            bool(keys[pygame.K_KP1])
+            bool(keys[pygame.K_KP1]) or bool(keys[pygame.K_SPACE])
         )
         if accelerate and brake:
+            # default to braking
             accelerate = False
-            brake = False
+            brake = True
 
         left = (
             bool(keys[pygame.K_LEFT]) or bool(keys[pygame.K_a]) or
