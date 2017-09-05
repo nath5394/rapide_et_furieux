@@ -22,9 +22,9 @@ GAME_SETTINGS_TEMPLATE = {
     # default values
     'background_color': (0, 0, 0),
     'collision': {
-        'reverse_factor': 1.2,
-        'propagation': 0.7,
-        'angle_transmission': 2.0,
+        'reverse_factor': 1.2,  # when hitting a static object
+        'propagation': 0.9,  # when hitting a moving one
+        'angle_transmission': 4.0,
     },
     'acceleration': {
         'normal': 512,

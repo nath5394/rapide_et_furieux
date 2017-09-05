@@ -136,14 +136,9 @@ class CollisionHandler(object):
         removed_pol = (speed_car_pol[0] *
                        math.cos(speed_car_pol[1] - collision_angle),
                        collision_angle)
-
-        # include reverse_factor
         to_nullify_pol = (removed_pol[0] * factor, removed_pol[1])
-        to_nullify_cart = util.to_cartesian(to_nullify_pol)
+        to_nullify_cart = removed_cart = util.to_cartesian(to_nullify_pol)
         to_nullify_cart = (to_nullify_cart[0], -to_nullify_cart[1])
-
-        removed_pol = (removed_pol[0] * (1.0 - factor), removed_pol[1])
-        removed_cart = util.to_cartesian(removed_pol)
 
         speed_car_cart = (
             speed_car_cart[0] - to_nullify_cart[0],
@@ -180,11 +175,11 @@ class CollisionHandler(object):
         MAX_ANGLE = math.pi / 8
 
         diff = car_angle - obstacle_angle
-        diff *= ratio
-        if abs(diff) <= math.pi / 128:
+        if abs(diff) <= math.pi / 32:
             # close enough to the obstacle angle --> we align them
             # to reduce collisions issues
             return obstacle_angle
+        diff *= ratio
 
         if abs(diff) > MAX_ANGLE:
             n = diff < 0
@@ -310,8 +305,6 @@ class CollisionHandler(object):
         speed = moving.speed
         radians = moving.radians
 
-        collided = set()
-
         for collision in collisions:
             moving_line = collision.moving_line
             obstacle = collision.obstacle
@@ -328,22 +321,18 @@ class CollisionHandler(object):
             if obstacle.static:
                 factor = self.game_settings['collision']['reverse_factor']
             else:
-                factor = 1.0 - self.game_settings['collision']['propagation']
+                factor = self.game_settings['collision']['propagation']
 
             (speed, removed_speed) = self.nullify_speed(
                 speed, radians, collision_angle, factor,
             )
-            new_angle = self.update_angle(
+            radians = self.update_angle(
                 radians, obstacle_angle, angle_trans
             )
-
-            if obstacle in collided:
-                continue
-            collided.add(obstacle)
 
             # static obstacles will just ignore the new speed
             obstacle.speed = self.add_speed(
                 obstacle.speed, obstacle.radians, removed_speed
             )
 
-        return (speed, new_angle)
+        return (speed, radians)
