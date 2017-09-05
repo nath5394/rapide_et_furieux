@@ -181,6 +181,7 @@ class CollisionHandler(object):
             speed_a_pol_rel[1] + angle_a
         )
         speed_a_cart = util.to_cartesian(speed_a_pol)
+        speed_a_cart = (speed_a_cart[0], -speed_a_cart[1])
         speed_a_pol = util.to_polar((
             speed_a_cart[0] + speed_b_cart[0],
             speed_a_cart[1] + speed_b_cart[1],
@@ -189,7 +190,8 @@ class CollisionHandler(object):
             speed_a_pol[0],
             speed_a_pol[1] - angle_a,
         )
-        return util.to_cartesian(speed_a_pol_rel)
+        speed_a_cart_rel = util.to_cartesian(speed_a_pol_rel)
+        return (speed_a_cart_rel[0], -speed_a_cart_rel[1])
 
     def get_collisions(self, moving, limit=None):
         collisions = []
