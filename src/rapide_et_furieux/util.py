@@ -161,6 +161,19 @@ def _get_line_intersect_points(line_a, line_b):
     return None
 
 
+def line_to_int(line):
+    return (
+        (
+            int(line[0][0]),
+            int(line[0][1]),
+        ),
+        (
+            int(line[1][0]),
+            int(line[1][1]),
+        ),
+    )
+
+
 def get_segment_intersect_point(line_a, line_b):
     """
     For line segments (ie not infinitely long lines) the intersect point
@@ -170,6 +183,9 @@ def get_segment_intersect_point(line_a, line_b):
     rectangles then the lines intersect. Returns intersect point if the line
     intesect o None if not
     """
+    line_a = line_to_int(line_a)
+    line_b = line_to_int(line_b)
+
     (p1, p2) = line_a
     (p3, p4) = line_b
     intersects = _get_line_intersect_points(line_a, line_b)
