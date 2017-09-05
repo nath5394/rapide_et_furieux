@@ -32,14 +32,11 @@ class Car(RelativeSprite, CollisionObject):
         self.parent = race_track
 
         self.angle = spawn_orientation
-        # we work in radians here
-        self.radians = spawn_orientation * math.pi / 180 - (math.pi / 2)
 
-        self.position = (
-            # center of the car
-            (spawn_point[0] * assets.TILE_SIZE[0]) + (assets.TILE_SIZE[0] / 2),
-            (spawn_point[1] * assets.TILE_SIZE[1]) + (assets.TILE_SIZE[1] / 2),
-        )
+        self.pts = []
+        self._position = (0, 0)
+        # we work in radians here
+        self._radians = 0
 
         self.controls = Controls(
             accelerate=False,
@@ -55,12 +52,16 @@ class Car(RelativeSprite, CollisionObject):
 
         self.original_size = self.original.get_size()
 
+        self.radians = spawn_orientation * math.pi / 180 - (math.pi / 2)
+        self.position = (
+            # center of the car
+            (spawn_point[0] * assets.TILE_SIZE[0]) + (assets.TILE_SIZE[0] / 2),
+            (spawn_point[1] * assets.TILE_SIZE[1]) + (assets.TILE_SIZE[1] / 2),
+        )
+
         self.update_image()
 
-        util.register_animator(self.move)
-
-    @property
-    def pts(self):
+    def recompute_pts(self):
         pts = [
             (- (self.original_size[0] / 2), - (self.original_size[1] / 2)),
             (self.original_size[0] / 2, - (self.original_size[1] / 2)),
@@ -79,10 +80,28 @@ class Car(RelativeSprite, CollisionObject):
         ]
         pts = [util.to_cartesian(pt) for pt in pts]
         pts = [
-            (int(x + self.position[0]), int(y + self.position[1]))
+            (x + self.position[0], y + self.position[1])
             for (x, y) in pts
         ]
-        return pts
+        self.pts = pts
+
+    def _set_radians(self, v):
+        self._radians = v
+        self.recompute_pts()
+
+    def _get_radians(self):
+        return self._radians
+
+    radians = property(_get_radians, _set_radians)
+
+    def _set_position(self, v):
+        self._position = v
+        self.recompute_pts()
+
+    def _get_position(self):
+        return self._position
+
+    position = property(_get_position, _set_position)
 
     def update_image(self):
         # The gfx are oriented to the up side, but radians=0 == right

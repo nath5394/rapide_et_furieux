@@ -7,6 +7,7 @@ import math
 
 import pygame
 
+from .. import assets
 from .. import util
 
 
@@ -48,6 +49,10 @@ class CollisionHandler(object):
     def __init__(self, racetrack, game_settings):
         self.game_settings = game_settings
         self.racetrack = racetrack
+
+        # (grid_position[0], grid_position[1]) --> obstacle
+        self.precomputed_static = {}
+        self.precomputed_moving = {}
 
     @staticmethod
     def can_collide(line_a, line_b):
@@ -200,11 +205,50 @@ class CollisionHandler(object):
         speed_a_cart_rel = util.to_cartesian(speed_a_pol_rel)
         return (speed_a_cart_rel[0], -speed_a_cart_rel[1])
 
+    def precompute_static(self):
+        self.precomputed_static = {}
+        for obstacle in self.racetrack.borders:
+            for obstacle_line in util.pairwise(obstacle.pts):
+                for grid_coords in util.raytrace(
+                            obstacle_line, assets.TILE_SIZE[0]
+                        ):
+                    if grid_coords in self.precomputed_static:
+                        self.precomputed_static[grid_coords].append(obstacle)
+                    else:
+                        self.precomputed_static[grid_coords] = [obstacle]
+
+    def precompute_moving(self, *args, **kwargs):
+        pass
+
+    def get_possible_static(self, position):
+        obstacles = []
+        grid = (
+            int(position[0] / assets.TILE_SIZE[0]),
+            int(position[1] / assets.TILE_SIZE[1]),
+        )
+        for pos in [
+                    (grid[0], grid[1]),
+                    (grid[0] - 1, grid[1] - 1),
+                    (grid[0] - 1, grid[1]),
+                    (grid[0], grid[1] - 1),
+                    (grid[0] + 1, grid[1] + 1),
+                    (grid[0] + 1, grid[1]),
+                    (grid[0], grid[1] + 1),
+                ]:
+            if not pos in self.precomputed_static:
+                continue
+            obstacles += self.precomputed_static[pos]
+        return obstacles
+
+    def get_possible_moving(self, position):
+        return self.racetrack.cars
+
     def get_collisions(self, moving, limit=None):
         collisions = []
         for moving_line in util.pairwise(moving.pts):
             for obstacle in itertools.chain(
-                        self.racetrack.borders, self.racetrack.cars
+                        self.get_possible_static(moving.position),
+                        self.get_possible_moving(moving.position),
                     ):
                 if obstacle is moving:
                     # ignore self

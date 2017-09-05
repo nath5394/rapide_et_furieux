@@ -23,7 +23,7 @@ GAME_SETTINGS_TEMPLATE = {
     'background_color': (0, 0, 0),
     'collision': {
         'reverse_factor': 1.2,
-        'angle_transmission': 16.0,
+        'angle_transmission': 2.0,
     },
     'acceleration': {
         'normal': 512,
@@ -213,6 +213,39 @@ def get_segment_intersect_point(line_a, line_b):
     # This is the case where the infinitely long lines crossed but
     # the line segments didn't
     return None
+
+
+def raytrace(line, grid_size):
+    # TODO(Jflesch): This algo tends to go too far ...
+    inc = grid_size
+    ((x0, y0), (x1, y1)) = line
+    x0 = int(x0)
+    y0 = int(y0)
+    x1 = int(x1)
+    y1 = int(y1)
+
+    dx = abs(x1 - x0)
+    dy = abs(y1 - y0)
+    dx /= inc
+    dy /= inc
+    x = x0
+    y = y0
+    n = 1 + dx + dy
+    x_inc = inc if (x1 > x0) else -inc
+    y_inc = inc if (y1 > y0) else -inc
+    error = dx - dy
+    dx *= 2
+    dy *= 2
+
+    for n in range(0, int(n)):
+        yield(int(x / inc), int(y / inc))
+
+        if error > 0:
+            x += x_inc
+            error -= dy
+        else:
+            y += y_inc
+            error += dx
 
 
 def on_uncatched_exception_cb(exc_type, exc_value, exc_tb):

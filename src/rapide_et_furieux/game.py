@@ -75,6 +75,11 @@ class Game(object):
 
     def unload(self):
         if self.race_track is not None:
+            self.unregister_animator(
+                self.race_track.collisions.collisions.precompute_moving
+            )
+            for car in self.race_track.cars:
+                util.unregister_animator(car.move)
             self.unregister_drawer(self.race_track)
             self.race_track = None
 
@@ -92,8 +97,10 @@ class Game(object):
         util.register_drawer(RACE_TRACK_LAYER, self.race_track)
 
         self.race_track.unserialize(data['race_track'])
+        self.race_track.collisions.precompute_static()
 
         # instantiate cars
+        util.register_animator(self.race_track.collisions.precompute_moving)
         tiles = self.race_track.tiles
         iter_car_rsc = iter(itertools.cycle(assets.CARS))
         for (idx, (spawn_point, orientation)) \
@@ -104,6 +111,7 @@ class Game(object):
             car = car(next(iter_car_rsc), self.race_track, self.game_settings,
                       spawn_point, orientation)
             self.race_track.add_car(car)
+            util.register_animator(car.move)
             if idx == 0:
                 self.player = car
 
