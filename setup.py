@@ -31,6 +31,7 @@ setup(
         'gui_scripts': [
             'ref-editor = rapide_et_furieux.editor:main',
             'ref-game = rapide_et_furieux.game:main',
+            'ref-precompute = rapide_et_furieux.precompute:main',
         ],
     }
 )
