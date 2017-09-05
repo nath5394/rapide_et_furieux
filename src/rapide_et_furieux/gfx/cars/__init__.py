@@ -28,6 +28,7 @@ class Car(RelativeSprite, CollisionObject):
                  spawn_point, spawn_orientation, image=None):
         super().__init__(resource, image)
 
+        self.static = False
         self.h = hash(spawn_point)
 
         self.game_settings = game_settings
