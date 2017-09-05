@@ -96,14 +96,13 @@ class Car(RelativeSprite, CollisionObject):
 
     def compute_forward_speed(self, current_speed, frame_interval, terrain):
         engine_braking = self.game_settings['engine braking'][terrain]
+        engine_braking *= frame_interval
 
         if not self.controls.accelerate and not self.controls.brake:
             if current_speed == 0:
                 return 0
 
             # --> engine braking
-            engine_braking *= frame_interval
-
             if current_speed < 0:
                 engine_braking *= -1
 

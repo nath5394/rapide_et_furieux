@@ -55,7 +55,7 @@ GAME_SETTINGS_TEMPLATE = {
     },
     'engine braking': {
         'normal': 128,
-        'crap': 256,
+        'crap': 512,
     }
 }
 
