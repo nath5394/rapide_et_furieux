@@ -23,6 +23,7 @@ GAME_SETTINGS_TEMPLATE = {
     'background_color': (0, 0, 0),
     'collision': {
         'reverse_factor': 1.2,
+        'propagation': 0.7,
         'angle_transmission': 2.0,
     },
     'acceleration': {
