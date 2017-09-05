@@ -212,15 +212,12 @@ class CollisionHandler(object):
                 for grid in util.raytrace(
                                 obstacle_line, assets.TILE_SIZE[0]
                             ):
-                        for pos in [
-                                    (grid[0], grid[1]),
-                                    (grid[0] - 1, grid[1] - 1),
-                                    (grid[0] - 1, grid[1]),
-                                    (grid[0], grid[1] - 1),
-                                    (grid[0] + 1, grid[1] + 1),
-                                    (grid[0] + 1, grid[1]),
-                                    (grid[0], grid[1] + 1),
-                                ]:
+                        offsets = itertools.product(
+                            range(-1, 2, 1),
+                            range(-1, 2, 1),
+                        )
+                        for offset in offsets:
+                            pos = (grid[0] + offset[0], grid[1] + offset[1])
                             if pos not in self.precomputed_static:
                                 self.precomputed_static[pos] = set()
                             self.precomputed_static[pos].add(obstacle)
