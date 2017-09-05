@@ -97,15 +97,14 @@ class Car(RelativeSprite, CollisionObject):
     def compute_forward_speed(self, current_speed, frame_interval, terrain):
         engine_braking = self.game_settings['engine braking'][terrain]
         engine_braking *= frame_interval
+        if current_speed < 0:
+            engine_braking *= -1
 
         if not self.controls.accelerate and not self.controls.brake:
             if current_speed == 0:
                 return 0
 
             # --> engine braking
-            if current_speed < 0:
-                engine_braking *= -1
-
             speed = current_speed - engine_braking
 
             # if speed change sign, just stall the car
@@ -140,7 +139,7 @@ class Car(RelativeSprite, CollisionObject):
         if speed > max_speed['forward']:
             speed = max(current_speed - engine_braking, max_speed['forward'])
         elif speed < -max_speed['reverse']:
-            speed = min(current_speed + engine_braking, -max_speed['reverse'])
+            speed = min(current_speed - engine_braking, -max_speed['reverse'])
 
         return speed
 
@@ -224,7 +223,6 @@ class Car(RelativeSprite, CollisionObject):
                 # cancel steering
                 self.speed = previous_speed
                 self.radians = previous_radians
-
 
         # move
         prev_position = self.position
