@@ -72,22 +72,48 @@ class FindAllWaypointsThread(threading.Thread):
                         int(((pt_b[0] - pt_a[0]) / 2) + pt_a[0]),
                         int(((pt_b[1] - pt_a[1]) / 2) + pt_a[1]),
                     )
-                    can_add = True
-                    for border_c in borders:
-                        if middle in border_c.pts:
-                            # If the waypoint is an extremity of a border
-                            # it will mess up the IA ...
-                            can_add = False
-                            break
-                    if can_add:
-                        wpts.add(
-                            ia.Waypoint(
-                                position=middle,
-                                reachable=False,
-                            )
+                    wpts.add(
+                        ia.Waypoint(
+                            position=middle,
+                            reachable=False,
                         )
+                    )
         print("Done")
 
+        util.idle_add(self.ret_cb, wpts)
+
+
+class DropWaypointsOnBorders(threading.Thread):
+    MIN_DISTANCE_FROM_BORDERS = 5
+
+    def __init__(self, racetrack, waypoints, ret_cb):
+        super().__init__()
+        self.racetrack = racetrack
+        self.waypoints = waypoints
+        self.ret_cb = ret_cb
+
+    def run(self):
+        wpts = self.waypoints
+        print("Dropping waypoints on borders ... (starting with {})".format(
+            len(wpts)
+        ))
+        borders = self.racetrack.borders
+        m = self.MIN_DISTANCE_FROM_BORDERS ** 2
+        for wpt in set(wpts):
+            keep = True
+            for border in borders:
+                # drop all the waypoints on a border
+                if wpt.position in border.pts:
+                    keep = False
+                    break
+                # or close to it
+                dist = util.distance_sq_pt_to_segment(border.pts, wpt.position)
+                if dist < m:
+                    keep = False
+                    break
+            if not keep:
+                wpts.remove(wpt)
+        print("Done: {} waypoints remaining".format(len(wpts)))
         util.idle_add(self.ret_cb, wpts)
 
 
@@ -281,21 +307,28 @@ class Precomputing(object):
         t.start()
 
     def precompute2(self, all_waypoints):
+        wpts = set(all_waypoints)
+        self.waypoint_drawer.set_waypoints(wpts)
+        t = DropWaypointsOnBorders(self.race_track, all_waypoints,
+                                   self.precompute3)
+        t.start()
+
+    def precompute3(self, all_waypoints):
         wpts = all_waypoints
         self.waypoint_drawer.set_waypoints(wpts)
 
         t = FindReachableWaypointsThread(self.race_track, all_waypoints,
-                                         self.precompute3,
-                                         self.precompute2_update)
+                                         self.precompute4,
+                                         self.precompute3_update)
         t.start()
 
-    def precompute2_update(self, all_waypoints, all_paths):
+    def precompute3_update(self, all_waypoints, all_paths):
         wpts = all_waypoints
         self.waypoint_drawer.set_waypoints(wpts)
         paths = all_paths
         self.waypoint_drawer.set_paths(paths)
 
-    def precompute3(self, all_waypoints, all_paths):
+    def precompute4(self, all_waypoints, all_paths):
         pass
 
     def save(self):

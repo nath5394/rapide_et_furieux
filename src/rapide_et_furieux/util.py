@@ -221,7 +221,7 @@ def get_segment_intersect_point(line_a, line_b):
     return None
 
 
-def raytrace(line, grid_size):
+def raytrace(line, grid_size=1):
     # TODO(Jflesch): This algo tends to go too far ...
     inc = grid_size
     ((x0, y0), (x1, y1)) = line
@@ -252,6 +252,56 @@ def raytrace(line, grid_size):
         else:
             y += y_inc
             error += dx
+
+
+def distance_pt_to_pt(pt_a, pt_b):
+    return math.sqrt(
+        ((pt_a[0] - pt_b[0]) ** 2) +
+        ((pt_a[1] - pt_b[1]) ** 2)
+    )
+
+
+def distance_pt_to_line(line, pt):
+    ((x0, y0), (x1, y1)) = line
+    (x2, y2) = p2
+    nom = abs(
+        ((y2 - y1) * x0) -
+        ((x2 - x1) * y0) +
+        (x2 * y1) -
+        (y2 * x1)
+    )
+    denom = math.sqrt((y2 - y1) ** 2 + ((x2 - x1) ** 2))
+    result = nom / denom
+    return result
+
+
+def distance_sq_pt_to_segment(segment, pt):
+    line_dist = (
+        ((segment[1][0] - segment[0][0]) ** 2) +
+        ((segment[1][1] - segment[0][1]) ** 2)
+    )
+    if line_dist == 0:
+        return (
+            ((pt[0] - segment[0][0]) ** 2) +
+            ((pt[1] - segment[0][1]) ** 2)
+        )
+    t = (
+        ((pt[0] - segment[0][0]) * (segment[1][0] - segment[0][0])) +
+        ((pt[1] - segment[0][1]) * (segment[1][1] - segment[0][1]))
+    ) / line_dist
+    if t < 0:
+        t = 0
+    if t > 1:
+        t = 1
+    x = (
+        segment[0][0] +
+        (t * (segment[1][0] - segment[0][0]))
+    )
+    y = (
+        segment[0][1] +
+        (t * (segment[1][1] - segment[0][1]))
+    )
+    return (((pt[0] - x) ** 2) + ((pt[1] - y) ** 2))
 
 
 def on_uncatched_exception_cb(exc_type, exc_value, exc_tb):
