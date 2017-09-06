@@ -118,7 +118,7 @@ class DropWaypointsOnBorders(threading.Thread):
 
 
 class FindReachableWaypointsThread(threading.Thread):
-    MAX_PATHS_BY_PT = 10
+    MAX_PATHS_BY_PT = 500
 
     def __init__(self, racetrack, waypoints, ret_cb, update_cb):
         super().__init__()
