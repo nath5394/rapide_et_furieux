@@ -179,6 +179,8 @@ class FindReachableWaypointsThread(threading.Thread):
             print("{} new paths found (max {} kept)".format(
                 len(new_paths), self.MAX_PATHS_BY_PT)
             )
+            if len(new_paths) <= 0:
+                continue
             new_paths.sort(key=lambda path: path.score)
             new_paths = new_paths[:self.MAX_PATHS_BY_PT]
             paths += new_paths
