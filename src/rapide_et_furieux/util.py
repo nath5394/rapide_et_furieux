@@ -15,6 +15,7 @@ g_drawers = []
 g_loop = True
 g_rnd = 0
 g_on_idle = []
+g_paused = False
 
 logger = logging.getLogger(__name__)
 
@@ -294,12 +295,17 @@ def _exit():
     g_loop = False
 
 
-def check_exit_event(event):
+def check_base_keys(event):
+    global g_paused
+
     if event.type == pygame.QUIT:
         idle_add(_exit)
         return
     if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
         idle_add(_exit)
+        return
+    if event.type == pygame.KEYDOWN and event.key == pygame.K_PAUSE:
+        g_paused = not g_paused
         return
 
 
@@ -353,11 +359,12 @@ def main_loop(screen):
     global g_event_listeners
     global g_loop
     global g_on_idle
+    global g_paused
 
     g_loop = True
 
-    if check_exit_event not in g_event_listeners:
-        register_event_listener(check_exit_event)
+    if check_base_keys not in g_event_listeners:
+        register_event_listener(check_base_keys)
 
     logger.info("Ready")
 
@@ -365,6 +372,11 @@ def main_loop(screen):
     last_frame = time.time()
 
     while g_loop:
+        while g_paused and g_loop:
+            time.sleep(0.1)
+            for event in pygame.event.get():
+                check_base_keys(event)
+
         idle = True
         for event in pygame.event.get():
             idle = False
