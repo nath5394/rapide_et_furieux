@@ -39,6 +39,12 @@ class Precomputing(object):
         self.background = ui.Background()
         util.register_drawer(BACKGROUND_LAYER, self.background)
 
+        fps_counter = ui.FPSCounter(self.font, position=(
+            self.screen.get_size()[0] - 128, 0
+        ))
+        util.register_drawer(OSD_LAYER - 1, fps_counter)
+        util.register_animator(fps_counter.on_frame)
+
         util.register_event_listener(self.on_key)
         util.register_event_listener(self.on_mouse_motion)
         util.register_animator(self.scroll)
