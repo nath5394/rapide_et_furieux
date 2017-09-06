@@ -1,26 +1,82 @@
 #!/usr/bin/env python3
 
+import copy
+import itertools
 import json
 import logging
 import sys
+import threading
 
 import pygame
 
 from . import assets
 from . import util
 from .gfx import ui
+from .gfx.cars import ia
 from .gfx.racetrack import RaceTrack
+
 
 CAPTION = "Rapide et Furieux {} - Precomputing ...".format(util.VERSION)
 
 BACKGROUND_LAYER = -1
 RACE_TRACK_LAYER = 50
+WAYPOINTS_LAYER = 100
 OSD_LAYER = 250
 
 SCROLLING_BORDER = 10
 SCROLLING_SPEED = 512
 
 logger = logging.getLogger(__name__)
+
+
+
+class FindAllWaypointsThread(threading.Thread):
+    def __init__(self, racetrack, ret_cb):
+        super().__init__()
+        self.racetrack = racetrack
+        self.ret_cb = ret_cb
+
+    def run(self):
+        wpts = [
+            ia.Waypoint(
+                position=position,
+                reachable=True,
+                score=0,
+            ) for (position, _) in self.racetrack.tiles.get_spawn_points()
+        ]
+        wpts = [
+            ia.Waypoint(
+                position=checkpoint.pt,
+                reachable=True,
+                score=0,
+            ) for checkpoint in self.racetrack.checkpoints
+        ]
+
+        borders = self.racetrack.borders
+        print("Computing {} waypoints ...".format(
+            len(borders) * (len(borders) - 1)
+        ))
+        for border_a in borders:
+            for border_b in borders:
+                if border_a is border_b:
+                    continue
+                for (pt_a, pt_b) in itertools.product(
+                            border_a.pts, border_b.pts
+                        ):
+                    middle = (
+                        int(((pt_b[0] - pt_a[0]) / 2) + pt_a[0]),
+                        int(((pt_b[1] - pt_a[1]) / 2) + pt_a[1]),
+                    )
+                    wpts.append(
+                        ia.Waypoint(
+                            position=middle,
+                            reachable=False,
+                            score=0,
+                        )
+                    )
+        print("Done")
+
+        util.idle_add(self.ret_cb, wpts)
 
 
 class Precomputing(object):
@@ -34,17 +90,17 @@ class Precomputing(object):
         self.font = pygame.font.Font(None, 32)
         self.osd_message = ui.OSDMessage(self.font, 42, (5, 5))
         self.osd_message.show("{} - {}".format(CAPTION, filepath))
-        util.register_drawer(OSD_LAYER, self.osd_message)
 
         self.background = ui.Background()
-        util.register_drawer(BACKGROUND_LAYER, self.background)
 
         fps_counter = ui.FPSCounter(self.font, position=(
             self.screen.get_size()[0] - 128, 0
         ))
+
+        util.register_drawer(OSD_LAYER, self.osd_message)
+        util.register_drawer(BACKGROUND_LAYER, self.background)
         util.register_drawer(OSD_LAYER - 1, fps_counter)
         util.register_animator(fps_counter.on_frame)
-
         util.register_event_listener(self.on_key)
         util.register_event_listener(self.on_mouse_motion)
         util.register_animator(self.scroll)
@@ -64,6 +120,9 @@ class Precomputing(object):
                                     game_settings=game_settings)
         self.race_track.unserialize(data['race_track'])
         util.register_drawer(RACE_TRACK_LAYER, self.race_track)
+        self.waypoint_drawer = ia.WaypointDrawer()
+        self.waypoint_drawer.parent = self.race_track
+        util.register_drawer(WAYPOINTS_LAYER, self.waypoint_drawer)
         self.osd_message.show("Done")
         logger.info("Done")
 
@@ -128,7 +187,12 @@ class Precomputing(object):
         )
 
     def precompute(self):
-        pass
+        t = FindAllWaypointsThread(self.race_track, self.precompute2)
+        t.start()
+
+    def precompute2(self, all_waypoints):
+        wpts = copy.deepcopy(all_waypoints)
+        self.waypoint_drawer.set_waypoints(wpts)
 
     def save(self):
         pass

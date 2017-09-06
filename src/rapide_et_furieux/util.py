@@ -342,9 +342,9 @@ def unregister_drawer(drawer):
     g_drawers.remove(tup)
 
 
-def idle_add(action):
+def idle_add(action, *args, **kwargs):
     global g_on_idle
-    g_on_idle.append(action)
+    g_on_idle.append((action, args, kwargs))
 
 
 def main_loop(screen):
@@ -373,8 +373,8 @@ def main_loop(screen):
 
         if idle:
             while len(g_on_idle) > 0:
-                action = g_on_idle.pop(0)
-                action()
+                (action, args, kwargs) = g_on_idle.pop(0)
+                action(*args, **kwargs)
 
         frame_interval = last_frame - previous_frame
         if frame_interval <= 0.0:
