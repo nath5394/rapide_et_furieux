@@ -72,12 +72,20 @@ class FindAllWaypointsThread(threading.Thread):
                         int(((pt_b[0] - pt_a[0]) / 2) + pt_a[0]),
                         int(((pt_b[1] - pt_a[1]) / 2) + pt_a[1]),
                     )
-                    wpts.add(
-                        ia.Waypoint(
-                            position=middle,
-                            reachable=False,
+                    can_add = True
+                    for border_c in borders:
+                        if middle in border_c.pts:
+                            # If the waypoint is an extremity of a border
+                            # it will mess up the IA ...
+                            can_add = False
+                            break
+                    if can_add:
+                        wpts.add(
+                            ia.Waypoint(
+                                position=middle,
+                                reachable=False,
+                            )
                         )
-                    )
         print("Done")
 
         util.idle_add(self.ret_cb, wpts)
