@@ -84,7 +84,7 @@ class FindAllWaypointsThread(threading.Thread):
 
 
 class DropWaypointsOnBorders(threading.Thread):
-    MIN_DISTANCE_FROM_BORDERS = 5
+    MIN_DISTANCE_FROM_BORDERS = assets.TILE_SIZE[0] / 4
 
     def __init__(self, racetrack, waypoints, ret_cb):
         super().__init__()
