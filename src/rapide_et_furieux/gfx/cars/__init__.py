@@ -56,11 +56,9 @@ class Car(RelativeSprite, CollisionObject):
         self.original_size = self.original.get_size()
 
         self.radians = spawn_orientation * math.pi / 180 - (math.pi / 2)
-        self.position = (
-            # center of the car
-            (spawn_point[0] * assets.TILE_SIZE[0]) + (assets.TILE_SIZE[0] / 2),
-            (spawn_point[1] * assets.TILE_SIZE[1]) + (assets.TILE_SIZE[1] / 2),
-        )
+
+        # position is the center of the car
+        self.position = spawn_point
 
         self.update_image()
 

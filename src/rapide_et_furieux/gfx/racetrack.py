@@ -103,7 +103,7 @@ class CrapArea(object):
 
 
 class Checkpoint(object):
-    COLOR = (64, 64, 255)
+    COLOR = pygame.Color(64, 64, 255, 255)
 
     def __init__(self, parent, font, pt, idx):
         self.parent = parent

@@ -123,4 +123,12 @@ class TileGrid(RelativeGroup):
             if tile.resource not in assets.SPAWN_TILES:
                 continue
             angle = assets.SPAWN_TILES[tile.resource]
-            yield (position, angle)
+            yield (
+                (
+                    (position[0] * assets.TILE_SIZE[0]) +
+                    (assets.TILE_SIZE[0] / 2),
+                    (position[1] * assets.TILE_SIZE[1]) +
+                    (assets.TILE_SIZE[1] / 2),
+                ),
+                angle
+            )

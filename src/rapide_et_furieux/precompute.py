@@ -4,6 +4,7 @@ import copy
 import itertools
 import json
 import logging
+import queue
 import sys
 import threading
 
@@ -14,6 +15,8 @@ from . import util
 from .gfx import ui
 from .gfx.cars import ia
 from .gfx.racetrack import RaceTrack
+
+RUNNING = True
 
 
 CAPTION = "Rapide et Furieux {} - Precomputing ...".format(util.VERSION)
@@ -29,7 +32,6 @@ SCROLLING_SPEED = 512
 logger = logging.getLogger(__name__)
 
 
-
 class FindAllWaypointsThread(threading.Thread):
     def __init__(self, racetrack, ret_cb):
         super().__init__()
@@ -37,20 +39,23 @@ class FindAllWaypointsThread(threading.Thread):
         self.ret_cb = ret_cb
 
     def run(self):
-        wpts = [
-            ia.Waypoint(
-                position=position,
-                reachable=True,
-                score=0,
-            ) for (position, _) in self.racetrack.tiles.get_spawn_points()
-        ]
-        wpts = [
-            ia.Waypoint(
-                position=checkpoint.pt,
-                reachable=True,
-                score=0,
-            ) for checkpoint in self.racetrack.checkpoints
-        ]
+        wpts = set()
+        for wpt in (
+                    ia.Waypoint(
+                        position=position,
+                        reachable=True,
+                    ) for (position, _)
+                    in self.racetrack.tiles.get_spawn_points()
+                ):
+            wpts.add(wpt)
+
+        for wpt in (
+                    ia.Waypoint(
+                        position=checkpoint.pt,
+                        reachable=True,
+                    ) for checkpoint in self.racetrack.checkpoints
+                ):
+            wpts.add(wpt)
 
         borders = self.racetrack.borders
         print("Computing {} waypoints ...".format(
@@ -67,16 +72,90 @@ class FindAllWaypointsThread(threading.Thread):
                         int(((pt_b[0] - pt_a[0]) / 2) + pt_a[0]),
                         int(((pt_b[1] - pt_a[1]) / 2) + pt_a[1]),
                     )
-                    wpts.append(
+                    wpts.add(
                         ia.Waypoint(
                             position=middle,
                             reachable=False,
-                            score=0,
                         )
                     )
         print("Done")
 
         util.idle_add(self.ret_cb, wpts)
+
+
+class FindReachableWaypointsThread(threading.Thread):
+    MAX_PATHS_BY_PT = 500
+
+    def __init__(self, racetrack, waypoints, ret_cb, update_cb):
+        super().__init__()
+        self.racetrack = racetrack
+        self.waypoints = waypoints
+        self.ret_cb = ret_cb
+        self.update_cb = update_cb
+
+    def run(self):
+        wpts = self.waypoints
+        paths = []
+
+        examined = set()
+        # start points
+        to_examine = set()
+        for wpt in self.waypoints:
+            if wpt.reachable:
+                to_examine.add(wpt)
+
+        borders = self.racetrack.borders
+
+        print("Looking for reachable waypoints ...")
+
+        nb_wpts = len(wpts)
+        current = 0
+
+        while RUNNING:
+            try:
+                origin = to_examine.pop()
+            except KeyError:
+                break
+            print("Examining connexions with {} ({}/{})".format(
+                origin, current, nb_wpts
+            ))
+
+            new_paths = []
+            for dest in wpts:
+                if origin is dest:
+                    continue
+                if dest in examined:
+                    continue
+                can_reach = True
+                for border in borders:
+                    intersect_pt = util.get_segment_intersect_point(
+                        (origin.position, dest.position),
+                        border.pts
+                    )
+                    if intersect_pt:
+                        can_reach = False
+                        break
+                if not can_reach:
+                    continue
+                path = ia.Path(origin, dest)
+                path.compute_score_length()
+                new_paths.append(path)
+            examined.add(origin)
+            print("{} new paths found (max {} kept)".format(
+                len(new_paths), self.MAX_PATHS_BY_PT)
+            )
+            new_paths.sort(key=lambda path: path.score)
+            new_paths = new_paths[:self.MAX_PATHS_BY_PT]
+            paths += new_paths
+            for path in new_paths:
+                path.b.reachable = True
+                to_examine.add(path.b)
+            util.idle_add(self.update_cb, wpts, paths)
+            current += 1
+
+        print("Done")
+        util.idle_add(self.update_cb, wpts, paths)
+        util.idle_add(self.ret_cb, wpts, paths)
 
 
 class Precomputing(object):
@@ -127,10 +206,12 @@ class Precomputing(object):
         logger.info("Done")
 
     def on_key(self, event):
+        global RUNNING
         if event.type != pygame.KEYDOWN and event.type != pygame.KEYUP:
             return
 
         if event.key == pygame.K_F1 or event.key == pygame.K_ESCAPE:
+            RUNNING = False
             self.save()
             return
 
@@ -193,6 +274,20 @@ class Precomputing(object):
     def precompute2(self, all_waypoints):
         wpts = copy.deepcopy(all_waypoints)
         self.waypoint_drawer.set_waypoints(wpts)
+
+        t = FindReachableWaypointsThread(self.race_track, all_waypoints,
+                                         self.precompute3,
+                                         self.precompute2_update)
+        t.start()
+
+    def precompute2_update(self, all_waypoints, all_paths):
+        wpts = copy.deepcopy(all_waypoints)
+        self.waypoint_drawer.set_waypoints(wpts)
+        paths = copy.copy(all_paths)
+        self.waypoint_drawer.set_paths(paths)
+
+    def precompute3(self, all_waypoints, all_paths):
+        pass
 
     def save(self):
         pass
