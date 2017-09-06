@@ -84,7 +84,7 @@ class FindAllWaypointsThread(threading.Thread):
 
 
 class FindReachableWaypointsThread(threading.Thread):
-    MAX_PATHS_BY_PT = 500
+    MAX_PATHS_BY_PT = 10
 
     def __init__(self, racetrack, waypoints, ret_cb, update_cb):
         super().__init__()
@@ -95,9 +95,11 @@ class FindReachableWaypointsThread(threading.Thread):
 
     def run(self):
         wpts = self.waypoints
+        for wpt in wpts:
+            wpt.examined = False
+
         paths = []
 
-        examined = set()
         # start points
         to_examine = set()
         for wpt in self.waypoints:
@@ -124,7 +126,7 @@ class FindReachableWaypointsThread(threading.Thread):
             for dest in wpts:
                 if origin is dest:
                     continue
-                if dest in examined:
+                if dest.reachable:  # already examined (or will be soon)
                     continue
                 can_reach = True
                 for border in borders:
@@ -140,7 +142,6 @@ class FindReachableWaypointsThread(threading.Thread):
                 path = ia.Path(origin, dest)
                 path.compute_score_length()
                 new_paths.append(path)
-            examined.add(origin)
             print("{} new paths found (max {} kept)".format(
                 len(new_paths), self.MAX_PATHS_BY_PT)
             )
@@ -272,7 +273,7 @@ class Precomputing(object):
         t.start()
 
     def precompute2(self, all_waypoints):
-        wpts = copy.deepcopy(all_waypoints)
+        wpts = all_waypoints
         self.waypoint_drawer.set_waypoints(wpts)
 
         t = FindReachableWaypointsThread(self.race_track, all_waypoints,
@@ -281,9 +282,9 @@ class Precomputing(object):
         t.start()
 
     def precompute2_update(self, all_waypoints, all_paths):
-        wpts = copy.deepcopy(all_waypoints)
+        wpts = all_waypoints
         self.waypoint_drawer.set_waypoints(wpts)
-        paths = copy.copy(all_paths)
+        paths = all_paths
         self.waypoint_drawer.set_paths(paths)
 
     def precompute3(self, all_waypoints, all_paths):
@@ -303,7 +304,7 @@ def main():
     logger.info("Loading ...")
     pygame.init()
     screen = pygame.display.set_mode(
-        (1024, 768), pygame.DOUBLEBUF | pygame.HWSURFACE
+        (1280, 720), pygame.DOUBLEBUF | pygame.HWSURFACE
     )
     pygame.display.set_caption(CAPTION)
 
