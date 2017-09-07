@@ -152,8 +152,13 @@ class Editor(object):
         util.idle_add(self._save)
 
     def _save(self):
-        with open(self.file_path, 'r') as fd:
-            data = json.load(fd)
+        try:
+            with open(self.file_path, 'r') as fd:
+                data = json.load(fd)
+        except FileNotFoundError:
+            data = {
+                'game_settings': self.game_settings,
+            }
         data['race_track'] = self.race_track.serialize()
         with open(self.file_path, 'w') as fd:
             json.dump(data, fd, indent=4, sort_keys=True)
