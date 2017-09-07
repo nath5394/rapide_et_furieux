@@ -287,6 +287,44 @@ class FindReachableWaypointsThread(threading.Thread):
         util.idle_add(self.ret_cb, wpts, paths)
 
 
+class ComputeScoreThread(threading.Thread):
+    def __init__(self, racetrack, waypoints, paths, ret_cb):
+        super().__init__()
+        self.racetrack = racetrack
+        self.waypoints = waypoints
+        self.paths = paths
+        self.ret_cb = ret_cb
+
+    def run(self):
+        borders = self.racetrack
+        wpts = self.waypoints
+        paths = self.paths
+
+        for wpt in wpts:
+            if not wpt.reachable:
+                continue
+            score = 0xFFFFFFFF
+            for border in borders:
+                score = min(
+                    score,
+                    util.distance_sq_pt_to_segment(border.pts, wpt.position)
+                )
+            wpt.score = score
+
+        for path in paths:
+            score = 0xFFFFFFFF
+            for border in borders:
+                score = min(
+                    score,
+                    util.distance_sq_segment_to_segment(
+                        border.pts, (path.a.position, path.b.position)
+                    )
+                )
+            wpt.score = score
+
+        util.idle_add(self.ret_cb, wpts, paths)
+
+
 class Precomputing(object):
     def __init__(self, filepath, screen):
         self.filepath = filepath
@@ -423,10 +461,16 @@ class Precomputing(object):
         self.waypoint_drawer.set_paths(paths)
 
     def precompute4(self, all_waypoints, all_paths):
-        pass
+        self.waypoint_drawer.set_waypoints(all_waypoints)
+        self.waypoint_drawer.set_paths(all_paths)
 
-    def save(self):
-        pass
+        t = ComputeScoreThread(self.race_track, all_waypoints, all_paths,
+                               self.save)
+        t.start()
+
+    def save(self, *args, **kwargs):
+        print("Saving ...")
+        print("All Done")
 
 
 def main():
