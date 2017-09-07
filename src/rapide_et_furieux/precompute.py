@@ -194,7 +194,9 @@ class FindReachableWaypointsThread(threading.Thread):
                 util.idle_add(self.update_cb, wpts, paths)
             current += 1
 
-        print("Done")
+        print("Done. Got {} waypoints and {} paths".format(
+            len(wpts), len(paths)
+        ))
         util.idle_add(self.update_cb, wpts, paths)
         util.idle_add(self.ret_cb, wpts, paths)
 
