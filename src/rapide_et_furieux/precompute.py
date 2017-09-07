@@ -132,7 +132,7 @@ class FindReachableWaypointsThread(threading.Thread):
         for wpt in wpts:
             wpt.examined = False
 
-        paths = []
+        paths = set()
 
         # start points
         to_examine = set()
@@ -160,8 +160,6 @@ class FindReachableWaypointsThread(threading.Thread):
             for dest in wpts:
                 if origin is dest:
                     continue
-                if dest.reachable:  # already examined (or will be soon)
-                    continue
                 can_reach = True
                 for border in borders:
                     intersect_pt = util.get_segment_intersect_point(
@@ -176,18 +174,24 @@ class FindReachableWaypointsThread(threading.Thread):
                 path = ia.Path(origin, dest)
                 path.compute_score_length()
                 new_paths.append(path)
-            print("{} new paths found (max {} kept)".format(
-                len(new_paths), self.MAX_PATHS_BY_PT)
-            )
             if len(new_paths) <= 0:
                 continue
             new_paths.sort(key=lambda path: path.score)
             new_paths = new_paths[:self.MAX_PATHS_BY_PT]
-            paths += new_paths
+            kept = 0
             for path in new_paths:
+                if path not in paths:
+                    paths.add(path)
+                    kept += 1
+                if path.b.reachable:  # already examined (or will be soon)
+                    continue
                 path.b.reachable = True
                 to_examine.add(path.b)
-            util.idle_add(self.update_cb, wpts, paths)
+            print("{} new paths found (max {} kept)".format(
+                kept, self.MAX_PATHS_BY_PT)
+            )
+            if kept > 0:
+                util.idle_add(self.update_cb, wpts, paths)
             current += 1
 
         print("Done")
@@ -325,9 +329,9 @@ class Precomputing(object):
         t.start()
 
     def precompute3_update(self, all_waypoints, all_paths):
-        wpts = all_waypoints
+        wpts = set(all_waypoints)
         self.waypoint_drawer.set_waypoints(wpts)
-        paths = all_paths
+        paths = set(all_paths)
         self.waypoint_drawer.set_paths(paths)
 
     def precompute4(self, all_waypoints, all_paths):
