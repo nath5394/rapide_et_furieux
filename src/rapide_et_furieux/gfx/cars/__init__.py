@@ -60,6 +60,8 @@ class Car(RelativeSprite, CollisionObject):
         # position is the center of the car
         self.position = spawn_point
 
+        self.next_checkpoint = self.parent.checkpoints[0]
+
         self.update_image()
 
     def hash(self):

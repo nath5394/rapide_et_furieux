@@ -107,7 +107,7 @@ class Checkpoint(object):
 
     def __init__(self, parent, font, pt, idx):
         self.parent = parent
-        self.pt = pt
+        self.pt = ((int(pt[0]), int(pt[1])))
         self.idx = idx
         self.txt = font.render(str(idx), True, self.COLOR)
         self.next_checkpoint = None
@@ -121,6 +121,18 @@ class Checkpoint(object):
     @staticmethod
     def unserialize(data, parent, font):
         return Checkpoint(parent, font, data['pt'], data['idx'])
+
+    def __hash__(self):
+        return hash(self.pt)
+
+    def __eq__(self, o):
+        return self.pt == o.pt
+
+    def __str__(self):
+        return "Checkpoint {} ({})".format(self.idx, self.pt)
+
+    def __repr__(self):
+        return str(self)
 
     def set_idx(self, font, idx):
         self.idx = idx
@@ -230,6 +242,9 @@ class TrackBorder(CollisionObject):
 
     def __str__(self):
         return "Border({})".format(self.pts)
+
+    def __repr__(self):
+        return str(self)
 
 
 class RaceTrack(RelativeGroup):

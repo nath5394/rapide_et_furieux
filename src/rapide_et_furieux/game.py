@@ -12,6 +12,7 @@ from . import assets
 from . import util
 from .gfx import ui
 from .gfx.cars.ia import IACar
+from .gfx.cars.ia import WaypointManager
 from .gfx.cars.player import PlayerCar
 from .gfx.racetrack import RaceTrack
 
@@ -99,17 +100,22 @@ class Game(object):
         self.race_track.unserialize(data['race_track'])
         self.race_track.collisions.precompute_static()
 
+        waypoint_mgmt = WaypointManager.unserialize(data['ia'])
+        waypoint_mgmt.optimize(self.race_track)
+
         # instantiate cars
         util.register_animator(self.race_track.collisions.precompute_moving)
         tiles = self.race_track.tiles
         iter_car_rsc = iter(itertools.cycle(assets.CARS))
         for (idx, (spawn_point, orientation)) \
                 in enumerate(tiles.get_spawn_points()):
-            car = IACar
             if idx == 0:
-                car = PlayerCar
-            car = car(next(iter_car_rsc), self.race_track, self.game_settings,
-                      spawn_point, orientation)
+                car = PlayerCar(next(iter_car_rsc), self.race_track,
+                                self.game_settings, spawn_point, orientation)
+            else:
+                car = IACar(next(iter_car_rsc), self.race_track,
+                            self.game_settings, spawn_point, orientation,
+                            waypoint_mgmt=waypoint_mgmt)
             self.race_track.add_car(car)
             util.register_animator(car.move)
             if idx == 0:
