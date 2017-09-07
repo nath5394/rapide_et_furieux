@@ -100,7 +100,7 @@ class Path(object):
 
 
 class IACar(Car):
-    COLOR_PATH = (0, 255, 0)
+    COLOR_PATH = (255, 0, 255)
     MIN_ANGLE_FOR_STEERING = math.pi / 16
 
     DISTANCE_STUCK = 8 ** 2
