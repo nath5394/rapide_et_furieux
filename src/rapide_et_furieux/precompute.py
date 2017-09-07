@@ -68,6 +68,29 @@ class FindAllWaypointsThread(threading.Thread):
             wpt.checkpoint = cp
             wpts.add(wpt)
 
+        for grid in self.racetrack.tiles.grid:
+            for pos in [
+                        (grid[0] * assets.TILE_SIZE[0],
+                         grid[1] * assets.TILE_SIZE[1]),
+                        ((grid[0] + 1) * assets.TILE_SIZE[0],
+                         (grid[1] + 1) * assets.TILE_SIZE[1]),
+                        (grid[0] * assets.TILE_SIZE[0],
+                         (grid[1] + 1) * assets.TILE_SIZE[1]),
+                        ((grid[0] + 1) * assets.TILE_SIZE[0],
+                         grid[1] * assets.TILE_SIZE[1]),
+                        (
+                            grid[0] * assets.TILE_SIZE[0] +
+                            (assets.TILE_SIZE[0] / 2),
+                            grid[1] * assets.TILE_SIZE[1] +
+                            (assets.TILE_SIZE[1] / 2)
+                        ),
+                    ]:
+                wpt = ia.Waypoint(
+                    position=pos,
+                    reachable=False,  # unknown yet
+                )
+                wpts.add(wpt)
+
         borders = [
             self.add_extra_points(border.pts)
             for border in self.racetrack.borders
