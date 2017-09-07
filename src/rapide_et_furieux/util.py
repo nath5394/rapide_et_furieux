@@ -304,6 +304,17 @@ def distance_sq_pt_to_segment(segment, pt):
     return (((pt[0] - x) ** 2) + ((pt[1] - y) ** 2))
 
 
+def distance_sq_segment_to_segment(segment_a, segment_b):
+    if get_segment_intersect_point(segment_a, segment_b):
+        return 0
+    m = 0xFFFFFFFF
+    m = min(m, distance_sq_pt_to_segment(segment_a, segment_b[0]))
+    m = min(m, distance_sq_pt_to_segment(segment_a, segment_b[1]))
+    m = min(m, distance_sq_pt_to_segment(segment_b, segment_a[0]))
+    m = min(m, distance_sq_pt_to_segment(segment_b, segment_a[1]))
+    return m
+
+
 def on_uncatched_exception_cb(exc_type, exc_value, exc_tb):
     logger.error(
         "=== UNCATCHED EXCEPTION ===",

@@ -29,10 +29,10 @@ class Waypoint(object):
 
 
 class Path(object):
-    def __init__(self, a, b):
+    def __init__(self, a, b, score):
         self.a = a  # first waypoint
         self.b = b  # second waypoint
-        self.score = 0  # bigger is worst
+        self.score = score  # bigger is worst
 
     def compute_score_length(self):
         self.score = (

@@ -119,6 +119,7 @@ class DropWaypointsOnBorders(threading.Thread):
 
 class FindReachableWaypointsThread(threading.Thread):
     MAX_PATHS_BY_PT = 500
+    MIN_DISTANCE_FROM_BORDERS = assets.TILE_SIZE[0] / 2
 
     def __init__(self, racetrack, waypoints, ret_cb, update_cb):
         super().__init__()
@@ -136,7 +137,7 @@ class FindReachableWaypointsThread(threading.Thread):
 
         # start points
         to_examine = set()
-        for wpt in self.waypoints:
+        for wpt in wpts:
             if wpt.reachable:
                 to_examine.add(wpt)
 
@@ -146,6 +147,7 @@ class FindReachableWaypointsThread(threading.Thread):
 
         nb_wpts = len(wpts)
         current = 0
+        m = self.MIN_DISTANCE_FROM_BORDERS ** 2
 
         while RUNNING:
             try:
@@ -160,18 +162,26 @@ class FindReachableWaypointsThread(threading.Thread):
             for dest in wpts:
                 if origin is dest:
                     continue
+
+                # drop path too close to borders or
+                # crossing a border
                 can_reach = True
+                m_dist = 0xFFFFFFFF
                 for border in borders:
-                    intersect_pt = util.get_segment_intersect_point(
+                    dist = util.distance_sq_segment_to_segment(
                         (origin.position, dest.position),
                         border.pts
                     )
-                    if intersect_pt:
+                    m_dist = min(m_dist, dist)
+                    if dist < m:
+                        # car won't be able to follow this path easily
+                        # (or at all if the path goes through a border)
                         can_reach = False
                         break
                 if not can_reach:
                     continue
-                path = ia.Path(origin, dest)
+
+                path = ia.Path(origin, dest, m_dist)
                 path.compute_score_length()
                 new_paths.append(path)
             if len(new_paths) <= 0:
