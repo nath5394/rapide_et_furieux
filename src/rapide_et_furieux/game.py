@@ -106,7 +106,7 @@ class Game(object):
         self.race_track.collisions.precompute_static()
 
         waypoint_mgmt = WaypointManager.unserialize(
-            data['ia'], self.game_settings
+            data['ia'], self.game_settings, self.race_track
         )
         waypoint_mgmt.optimize(self.race_track)
 

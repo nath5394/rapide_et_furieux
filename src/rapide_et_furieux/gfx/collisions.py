@@ -56,6 +56,8 @@ class CollisionHandler(object):
         self.precomputed_static = {}
         self.precomputed_moving = {}
 
+        self.car_radius_sq = (assets.TILE_SIZE[0] / 2) ** 2
+
     @staticmethod
     def can_collide(line_a, line_b):
         """
@@ -249,6 +251,20 @@ class CollisionHandler(object):
         if not grid in precomputed:
             return []
         return precomputed[grid]
+
+    def has_obstacle_in_path(self, moving, path):
+        """
+        Figure out if an moving element has a moving obstacle on its path.
+        Return *approximate* result
+        """
+        for car in self.racetrack.cars:
+            if car is moving:
+                # ignore self
+                continue
+            dist = util.distance_sq_pt_to_segment(path, car.position)
+            if dist < self.car_radius_sq:
+                return True
+        return False
 
     def get_collisions(self, moving, limit=None, optim=True):
         collisions = []

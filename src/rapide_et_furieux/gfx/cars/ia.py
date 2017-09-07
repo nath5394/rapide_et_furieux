@@ -101,11 +101,11 @@ class Path(object):
 
 class IACar(Car):
     COLOR_PATH = (0, 255, 0)
-    MIN_ANGLE_FOR_STEERING = math.pi / 64
+    MIN_ANGLE_FOR_STEERING = math.pi / 16
 
     DISTANCE_STUCK = 8 ** 2
     MIN_TIME_STUCK = 4.0
-    BACKWARD_TIME = 1.0  # time we try to go backward if we are stuck
+    BACKWARD_TIME = 3.0  # time we try to go backward if we are stuck
 
     def __init__(self, *args, waypoint_mgmt, **kwargs):
         global g_number_gen
@@ -132,6 +132,9 @@ class IACar(Car):
         return str(self)
 
     def compute_controls(self, frame_interval):
+        next_pt = self.path[0]
+        path = (self.position, next_pt)
+
         dist = util.distance_sq_pt_to_pt(self.prev_position, self.position)
         if dist >= self.DISTANCE_STUCK:
             self.stuck_since = None
@@ -147,9 +150,9 @@ class IACar(Car):
                                self)
                 self.reverse_since = time.time()
 
-        next_pt = self.path[0]
+        has_bogie = self.parent.collisions.has_obstacle_in_path(self, path)
 
-        # relative to the car
+        # next point relative to the car
         next_pt = (
             (next_pt[0] - self.position[0]),
             (next_pt[1] - self.position[1]),
@@ -168,17 +171,13 @@ class IACar(Car):
             ((next_pt[1] + math.pi) % (2 * math.pi)) - math.pi
         )
 
-        # steering ?
-        steering = 0
-        if next_pt[1] < -self.MIN_ANGLE_FOR_STEERING:
-            steering = -1
-        elif next_pt[1] > self.MIN_ANGLE_FOR_STEERING:
-            steering = 1
-
         # accelerate / brake / go forward ?
         acceleration = 1
-        if next_pt[1] > (math.pi / 2) or next_pt[1] < (-math.pi / 2):
-            acceleration = -1
+
+        if has_bogie:
+            logger.warning("%s: Bogie detected on trajectory --> slowing down",
+                           self)
+            acceleration = 0
 
         if self.reverse_since is not None:
             n = time.time()
@@ -189,6 +188,14 @@ class IACar(Car):
                 self.reverse_since = None
                 self.stuck_since = None
                 self.prev_position = (0, 0)
+
+        # steering ?
+        min_angle = self.MIN_ANGLE_FOR_STEERING
+        steering = 0
+        if next_pt[1] < -min_angle:
+            steering = -1
+        elif next_pt[1] > min_angle:
+            steering = 1
 
         self.controls = Controls(
             accelerate=acceleration > 0,
@@ -202,7 +209,7 @@ class IACar(Car):
             return
 
         path = self.waypoints.compute_path(
-            self.position, self.next_checkpoint
+            self, self.position, self.next_checkpoint
         )
 
         # skip point too close to us
@@ -250,8 +257,8 @@ class WaypointManager(object):
     COLOR_REACHABLE = pygame.Color(0, 255, 0, 255)
     COLOR_PATH = pygame.Color(0, 255, 0, 255)
 
-    def __init__(self, game_settings):
-        self.parent = None
+    def __init__(self, game_settings, race_track):
+        self.parent = race_track
 
         self.waypoints = set()
         self.paths = set()
@@ -315,7 +322,7 @@ class WaypointManager(object):
         }
 
     @staticmethod
-    def unserialize(data, game_settings):
+    def unserialize(data, game_settings, race_track):
         wpts = {}
         for d in data['waypoints']:
             w = Waypoint.unserialize(d)
@@ -323,7 +330,7 @@ class WaypointManager(object):
         paths = set()
         for d in data['paths']:
             paths.add(Path.unserialize(d, wpts))
-        wm = WaypointManager(game_settings)
+        wm = WaypointManager(game_settings, race_track)
         wm.waypoints = wpts.values()
         wm.paths = paths
         return wm
@@ -377,10 +384,13 @@ class WaypointManager(object):
             self.grid_waypoints[tile_pos] = set()
             self.grid_waypoints[tile_pos].add(closest[1])
 
-    def pathfinding_heuristic(self, origin, point, target):
-        return util.distance_pt_to_pt(point, target)
+    def pathfinding_heuristic(self, car, origin, point, target):
+        h = util.distance_pt_to_pt(point, target)
+        if self.parent.collisions.has_obstacle_in_path(car, (point, target)):
+            h += assets.TILE_SIZE[0]
+        return h
 
-    def compute_path(self, origin, target):
+    def compute_path(self, car, origin, target):
         # turn the target checkpoint into a waypoint
         target = self.checkpoint_waypoints[target]
 
@@ -403,7 +413,7 @@ class WaypointManager(object):
             # target
             (util.distance_pt_to_pt(origin, pt.position) +
              self.pathfinding_heuristic(
-                 origin, pt.position, target.position
+                 car, origin, pt.position, target.position
              ))
             for pt in to_examine
         }
@@ -451,7 +461,7 @@ class WaypointManager(object):
                 g_scores[neighbor] = g_score
 
                 f_scores[neighbor] = g_score + self.pathfinding_heuristic(
-                    origin, neighbor.position, target.position
+                    car, origin, neighbor.position, target.position
                 )
 
         if not success:

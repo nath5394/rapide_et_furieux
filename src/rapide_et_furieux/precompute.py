@@ -399,8 +399,7 @@ class Precomputing(object):
                                     game_settings=game_settings)
         self.race_track.unserialize(data['race_track'])
         util.register_drawer(RACE_TRACK_LAYER, self.race_track)
-        self.waypoint_mgmt = ia.WaypointManager(game_settings)
-        self.waypoint_mgmt.parent = self.race_track
+        self.waypoint_mgmt = ia.WaypointManager(game_settings, self.race_track)
         util.register_drawer(WAYPOINTS_LAYER, self.waypoint_mgmt)
         self.osd_message.show("Done")
         logger.info("Done")
