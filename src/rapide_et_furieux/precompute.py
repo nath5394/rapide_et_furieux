@@ -73,9 +73,7 @@ class FindAllWaypointsThread(threading.Thread):
             self.add_extra_points(border.pts)
             for border in self.racetrack.borders
         ]
-        print("Computing {} waypoints ...".format(
-            len(borders) * (len(borders) - 1)
-        ))
+        print("Computing possible waypoints ...")
         for border_a in borders:
             for border_b in borders:
                 if border_a is border_b:
@@ -93,7 +91,7 @@ class FindAllWaypointsThread(threading.Thread):
                             reachable=False,
                         )
                     )
-        print("Done")
+        print("Found {} possible points".format(len(wpts)))
 
         util.idle_add(self.ret_cb, wpts)
 
