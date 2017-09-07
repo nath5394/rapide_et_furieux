@@ -28,6 +28,15 @@ class Car(RelativeSprite, CollisionObject):
                  spawn_point, spawn_orientation, image=None):
         super().__init__(resource, image)
 
+        self.original_size = self.original.get_size()
+        self.original_size = (
+            int(self.original_size[0] * assets.CAR_SCALE_FACTOR),
+            int(self.original_size[1] * assets.CAR_SCALE_FACTOR),
+        )
+        self.original = self.image = pygame.transform.scale(
+            self.original, self.original_size
+        )
+
         self.static = False
         self.h = hash(spawn_point)
 
@@ -52,8 +61,6 @@ class Car(RelativeSprite, CollisionObject):
         # so first number is the forward speed,
         # and second one is the lateral speed (drifting)
         self.speed = (0, 0)
-
-        self.original_size = self.original.get_size()
 
         self.radians = spawn_orientation * math.pi / 180 - (math.pi / 2)
 

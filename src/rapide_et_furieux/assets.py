@@ -55,6 +55,7 @@ SOUNDS = {
     },
 }
 
+CAR_SCALE_FACTOR = 0.66
 CARS = [
     ("rapide_et_furieux.gfx.cars", "car_%s_%d.png" % (color, idx))
     for idx in range(1, 6)

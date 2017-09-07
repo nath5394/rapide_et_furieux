@@ -56,7 +56,9 @@ class CollisionHandler(object):
         self.precomputed_static = {}
         self.precomputed_moving = {}
 
-        self.car_radius_sq = (assets.TILE_SIZE[0] / 2) ** 2
+        self.car_radius_sq = (
+            (assets.TILE_SIZE[0] / 2 * assets.CAR_SCALE_FACTOR) ** 2
+        )
 
     @staticmethod
     def can_collide(line_a, line_b):
@@ -248,7 +250,7 @@ class CollisionHandler(object):
             int(position[0] / assets.TILE_SIZE[0]),
             int(position[1] / assets.TILE_SIZE[1]),
         )
-        if not grid in precomputed:
+        if grid not in precomputed:
             return []
         return precomputed[grid]
 
