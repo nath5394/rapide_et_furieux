@@ -145,9 +145,6 @@ class IACar(Car):
             elif self.reverse_since is None and (
                         time.time() - self.stuck_since >= self.MIN_TIME_STUCK
                     ):
-                logger.warning("Car %s appears to be stuck "
-                               "--> reversing direction",
-                               self)
                 self.reverse_since = time.time()
 
         has_bogie = self.parent.collisions.has_obstacle_in_path(self, path)
