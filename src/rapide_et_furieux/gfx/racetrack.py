@@ -279,16 +279,16 @@ class RaceTrack(RelativeGroup):
 
         if self.debug:
             to_draw = [
-                self.cars,
                 self.objects,
+                self.cars,
                 self.borders,
                 self.crap_areas,
                 self.checkpoints,
             ]
         else:
             to_draw = [
-                self.cars,
                 self.objects,
+                self.cars,
             ]
 
         for el_list in to_draw:
