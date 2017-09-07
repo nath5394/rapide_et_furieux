@@ -9,7 +9,7 @@ from . import Car
 
 class Waypoint(object):
     def __init__(self, position, reachable):
-        self.position = tuple(position)
+        self.position = (int(position[0]), int(position[1]))
         self.reachable = reachable
         self.score = 0
         self.paths = []
@@ -26,6 +26,18 @@ class Waypoint(object):
 
     def __eq__(self, o):
         return self.position == o.position
+
+    def serialize(self):
+        return {
+            'position': self.position,
+            'score': self.score,
+        }
+
+    @staticmethod
+    def unserialize(self, data):
+        wpt = Waypoint(data['position'], True)
+        wpt.score = data['score']
+        return wpt
 
 
 class Path(object):
@@ -53,13 +65,29 @@ class Path(object):
     def __eq__(self, o):
         return (self.a, self.b) == (o.a, o.b)
 
+    def serialize(self):
+        return {
+            'a': self.a.position,
+            'b': self.b.position,
+            'score': self.score,
+        }
+
+    @staticmethod
+    def unserialize(self, data, wpts):
+        pt_a = wpts[data['a']]
+        pt_b = wpts[data['b']]
+        p = Path(pt_a, pt_b, data['score'])
+        pt_a.paths.append(p)
+        pt_b.paths.append(p)
+        return p
+
 
 class IACar(Car):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
 
-class WaypointDrawer(object):
+class WaypointManager(object):
     COLOR_UNREACHABLE = pygame.Color(200, 200, 200, 255)
     COLOR_REACHABLE = pygame.Color(0, 255, 0, 255)
     COLOR_PATH = pygame.Color(0, 255, 0, 255)
@@ -107,3 +135,26 @@ class WaypointDrawer(object):
     def draw(self, screen):
         with self.lock:
             self._draw(screen, self.parent.absolute)
+
+    def serialize(self):
+        waypoints = [
+            wpt.serialize()
+            for wpt in self.waypoints
+            if wpt.reachable
+        ]
+        paths = [path.serialize() for path in self.paths]
+        return {
+            'waypoints': waypoints,
+            'paths': paths,
+        }
+
+    @staticmethod
+    def unserialize(self, data):
+        wpts = {}
+        for d in data['waypoints']:
+            w = Waypoint.unserialize(d)
+            wpts[w.position] = w
+        paths = []
+        for d in data['paths']:
+            paths.append(Path.unserialize(d, wpts))
+        return (wpts.values(), paths)

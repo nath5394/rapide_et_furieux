@@ -277,13 +277,15 @@ class FindReachableWaypointsThread(threading.Thread):
                 kept, self.MAX_PATHS_BY_PT)
             )
             if kept > 0:
-                util.idle_add(self.update_cb, wpts, paths)
+                util.idle_add(self.update_cb, wpts, paths,
+                              current, len(to_examine), nb_wpts)
             current += 1
 
         print("Done. Got {} waypoints and {} paths".format(
             len(wpts), len(paths)
         ))
-        util.idle_add(self.update_cb, wpts, paths)
+        util.idle_add(self.update_cb, wpts, paths,
+                      nb_wpts, nb_wpts, nb_wpts)
         util.idle_add(self.ret_cb, wpts, paths)
 
 
@@ -296,9 +298,11 @@ class ComputeScoreThread(threading.Thread):
         self.ret_cb = ret_cb
 
     def run(self):
-        borders = self.racetrack
+        borders = self.racetrack.borders
         wpts = self.waypoints
         paths = self.paths
+
+        print("Computing {} waypoint scores ...".format(len(wpts)))
 
         for wpt in wpts:
             if not wpt.reachable:
@@ -311,6 +315,8 @@ class ComputeScoreThread(threading.Thread):
                 )
             wpt.score = score
 
+        print("Computing {} path scores ...".format(len(paths)))
+
         for path in paths:
             score = 0xFFFFFFFF
             for border in borders:
@@ -320,8 +326,9 @@ class ComputeScoreThread(threading.Thread):
                         border.pts, (path.a.position, path.b.position)
                     )
                 )
-            wpt.score = score
+            path.score = score
 
+        print("Done")
         util.idle_add(self.ret_cb, wpts, paths)
 
 
@@ -366,9 +373,9 @@ class Precomputing(object):
                                     game_settings=game_settings)
         self.race_track.unserialize(data['race_track'])
         util.register_drawer(RACE_TRACK_LAYER, self.race_track)
-        self.waypoint_drawer = ia.WaypointDrawer()
-        self.waypoint_drawer.parent = self.race_track
-        util.register_drawer(WAYPOINTS_LAYER, self.waypoint_drawer)
+        self.waypoint_mgmt = ia.WaypointManager()
+        self.waypoint_mgmt.parent = self.race_track
+        util.register_drawer(WAYPOINTS_LAYER, self.waypoint_mgmt)
         self.osd_message.show("Done")
         logger.info("Done")
 
@@ -379,7 +386,6 @@ class Precomputing(object):
 
         if event.key == pygame.K_F1 or event.key == pygame.K_ESCAPE:
             RUNNING = False
-            self.save()
             return
 
         keys = pygame.key.get_pressed()
@@ -435,41 +441,61 @@ class Precomputing(object):
         )
 
     def precompute(self):
+        self.osd_message.show("Finding all possible waypoints ...")
         t = FindAllWaypointsThread(self.race_track, self.precompute2)
         t.start()
 
     def precompute2(self, all_waypoints):
+        self.osd_message.show("Dropping useless waypoints ...")
         wpts = set(all_waypoints)
-        self.waypoint_drawer.set_waypoints(wpts)
+        self.waypoint_mgmt.set_waypoints(wpts)
         t = DropUselessWaypoints(self.race_track, all_waypoints,
                                  self.precompute3)
         t.start()
 
     def precompute3(self, all_waypoints):
+        self.osd_message.show("Finding paths and reachables waypoints ...")
         wpts = all_waypoints
-        self.waypoint_drawer.set_waypoints(wpts)
+        self.waypoint_mgmt.set_waypoints(wpts)
 
         t = FindReachableWaypointsThread(self.race_track, all_waypoints,
                                          self.precompute4,
                                          self.precompute3_update)
         t.start()
 
-    def precompute3_update(self, all_waypoints, all_paths):
+    def precompute3_update(self, all_waypoints, all_paths,
+                           progression, to_examine, total):
+        self.osd_message.show(
+            "Connecting the dots ... {}/{}/{}".format(
+                progression, to_examine, total
+            )
+        )
         wpts = set(all_waypoints)
-        self.waypoint_drawer.set_waypoints(wpts)
+        self.waypoint_mgmt.set_waypoints(wpts)
         paths = set(all_paths)
-        self.waypoint_drawer.set_paths(paths)
+        self.waypoint_mgmt.set_paths(paths)
 
     def precompute4(self, all_waypoints, all_paths):
-        self.waypoint_drawer.set_waypoints(all_waypoints)
-        self.waypoint_drawer.set_paths(all_paths)
+        self.osd_message.show("Computing waypoints and path scores ...")
+        self.waypoint_mgmt.set_waypoints(all_waypoints)
+        self.waypoint_mgmt.set_paths(all_paths)
 
         t = ComputeScoreThread(self.race_track, all_waypoints, all_paths,
                                self.save)
         t.start()
 
     def save(self, *args, **kwargs):
+        self.osd_message.show("Saving ...")
         print("Saving ...")
+        util.idle_add(self._save)
+
+    def _save(self):
+        self.osd_message.show("All done")
+        with open(self.filepath, 'r') as fd:
+            data = json.load(fd)
+        data['ia'] = self.waypoint_mgmt.serialize()
+        with open(self.filepath, 'w') as fd:
+            json.dump(data, fd, indent=4, sort_keys=True)
         print("All Done")
 
 
