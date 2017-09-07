@@ -52,13 +52,12 @@ class FindAllWaypointsThread(threading.Thread):
 
     def run(self):
         wpts = set()
-        for wpt in (
-                    ia.Waypoint(
-                        position=position,
-                        reachable=True,
-                    ) for (position, _)
-                    in self.racetrack.tiles.get_spawn_points()
-                ):
+        for (spawn, _) in self.racetrack.tiles.get_spawn_points():
+            wpt =ia.Waypoint(
+                position=spawn,
+                reachable=True,
+            )
+            wpt.checkpoint = True  # just to keep them alive
             wpts.add(wpt)
 
         for cp in self.racetrack.checkpoints:
