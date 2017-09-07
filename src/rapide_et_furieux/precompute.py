@@ -32,13 +32,24 @@ SCROLLING_SPEED = 512
 logger = logging.getLogger(__name__)
 
 MIN_DISTANCE_FROM_BORDERS = assets.TILE_SIZE[0] / 2
-MIN_DISTANCE_FROM_WAYPOINTS = assets.TILE_SIZE[0] / 8
+MIN_DISTANCE_FROM_WAYPOINTS = assets.TILE_SIZE[0] / 4
+MIN_DISTANCE_FROM_PATHS = assets.TILE_SIZE[0] / 8
 
 class FindAllWaypointsThread(threading.Thread):
     def __init__(self, racetrack, ret_cb):
         super().__init__()
         self.racetrack = racetrack
         self.ret_cb = ret_cb
+
+    @staticmethod
+    def add_extra_points(pts):
+        pts.append(
+            (
+                ((pts[1][0] - pts[0][0]) / 2) + pts[0][0],
+                ((pts[1][1] - pts[0][1]) / 2) + pts[0][1],
+            )
+        )
+        return pts
 
     def run(self):
         wpts = set()
@@ -59,7 +70,10 @@ class FindAllWaypointsThread(threading.Thread):
                 ):
             wpts.add(wpt)
 
-        borders = self.racetrack.borders
+        borders = [
+            self.add_extra_points(border.pts)
+            for border in self.racetrack.borders
+        ]
         print("Computing {} waypoints ...".format(
             len(borders) * (len(borders) - 1)
         ))
@@ -68,7 +82,7 @@ class FindAllWaypointsThread(threading.Thread):
                 if border_a is border_b:
                     continue
                 for (pt_a, pt_b) in itertools.product(
-                            border_a.pts, border_b.pts
+                            border_a, border_b
                         ):
                     middle = (
                         int(((pt_b[0] - pt_a[0]) / 2) + pt_a[0]),
@@ -159,6 +173,10 @@ class DropUselessWaypoints(threading.Thread):
 
 
 class FindReachableWaypointsThread(threading.Thread):
+    """
+    Basically, here, we play connect the dots
+    """
+
     MAX_PATHS_BY_PT = 500
 
     def __init__(self, racetrack, waypoints, ret_cb, update_cb):
@@ -188,7 +206,7 @@ class FindReachableWaypointsThread(threading.Thread):
         nb_wpts = len(wpts)
         current = 0
         m_border = MIN_DISTANCE_FROM_BORDERS ** 2
-        m_waypoint = MIN_DISTANCE_FROM_WAYPOINTS ** 2
+        m_path = MIN_DISTANCE_FROM_PATHS ** 2
 
         while RUNNING:
             try:
@@ -230,7 +248,7 @@ class FindReachableWaypointsThread(threading.Thread):
                         (origin.position, dest.position),
                         wpt.position
                     )
-                    if dist < m_waypoint:
+                    if dist < m_path:
                         # no point in having similar path twice
                         keep = False
                         break
