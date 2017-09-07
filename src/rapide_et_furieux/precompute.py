@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 
-import copy
 import itertools
 import json
 import logging
-import queue
 import sys
 import threading
 
@@ -35,6 +33,7 @@ MIN_DISTANCE_FROM_BORDERS = assets.TILE_SIZE[0] / 2
 MIN_DISTANCE_FROM_WAYPOINTS = assets.TILE_SIZE[0] / 4
 MIN_DISTANCE_FROM_PATHS = assets.TILE_SIZE[0] / 8
 
+
 class FindAllWaypointsThread(threading.Thread):
     def __init__(self, racetrack, ret_cb):
         super().__init__()
@@ -62,12 +61,12 @@ class FindAllWaypointsThread(threading.Thread):
                 ):
             wpts.add(wpt)
 
-        for wpt in (
-                    ia.Waypoint(
-                        position=checkpoint.pt,
-                        reachable=True,
-                    ) for checkpoint in self.racetrack.checkpoints
-                ):
+        for cp in self.racetrack.checkpoints:
+            wpt = ia.Waypoint(
+                position=cp.pt,
+                reachable=True,
+            )
+            wpt.checkpoint = cp
             wpts.add(wpt)
 
         borders = [
@@ -131,6 +130,10 @@ class DropUselessWaypoints(threading.Thread):
         m_waypoint = MIN_DISTANCE_FROM_WAYPOINTS ** 2
         removed = set()
         for wpt in set(wpts):
+            if wpt.checkpoint is not None:
+                # we *must* keep those
+                continue
+
             if wpt in removed:
                 continue
 
@@ -159,7 +162,10 @@ class DropUselessWaypoints(threading.Thread):
                 dist = util.distance_sq_pt_to_pt(wpt.position, wpt_b.position)
                 if dist > m_waypoint:
                     continue
-                to_remove = wpt if wpt.score > wpt_b.score else wpt_b
+                if wpt.score > wpt_b.score or wpt_b.checkpoint is not None:
+                    to_remove = wpt
+                else:
+                    to_remove = wpt_b
                 removed.add(to_remove)
                 try:
                     wpts.remove(to_remove)
