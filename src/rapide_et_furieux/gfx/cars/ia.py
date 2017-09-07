@@ -172,8 +172,6 @@ class IACar(Car):
         acceleration = 1
 
         if has_bogie:
-            logger.warning("%s: Bogie detected on trajectory --> slowing down",
-                           self)
             acceleration = 0
 
         if self.reverse_since is not None:
