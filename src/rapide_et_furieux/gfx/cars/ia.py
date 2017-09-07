@@ -34,7 +34,7 @@ class Waypoint(object):
         }
 
     @staticmethod
-    def unserialize(self, data):
+    def unserialize(data):
         wpt = Waypoint(data['position'], True)
         wpt.score = data['score']
         return wpt
@@ -73,9 +73,9 @@ class Path(object):
         }
 
     @staticmethod
-    def unserialize(self, data, wpts):
-        pt_a = wpts[data['a']]
-        pt_b = wpts[data['b']]
+    def unserialize(data, wpts):
+        pt_a = wpts[tuple(data['a'])]
+        pt_b = wpts[tuple(data['b'])]
         p = Path(pt_a, pt_b, data['score'])
         pt_a.paths.append(p)
         pt_b.paths.append(p)
@@ -149,7 +149,7 @@ class WaypointManager(object):
         }
 
     @staticmethod
-    def unserialize(self, data):
+    def unserialize(data):
         wpts = {}
         for d in data['waypoints']:
             w = Waypoint.unserialize(d)
