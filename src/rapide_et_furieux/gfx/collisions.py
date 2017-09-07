@@ -56,7 +56,7 @@ class CollisionHandler(object):
         self.precomputed_static = {}
         self.precomputed_moving = {}
 
-        self.car_radius_sq = (assets.TILE_SIZE[0] / 2) ** 2
+        self.car_diameter_sq = (3 * assets.TILE_SIZE[0] / 4) ** 2
 
     @staticmethod
     def can_collide(line_a, line_b):
@@ -262,7 +262,7 @@ class CollisionHandler(object):
                 # ignore self
                 continue
             dist = util.distance_sq_pt_to_segment(path, car.position)
-            if dist < self.car_radius_sq:
+            if dist < self.car_diameter_sq:
                 return True
         return False
 

@@ -3,6 +3,7 @@
 import itertools
 import logging
 import math
+import random
 import threading
 import time
 
@@ -104,8 +105,8 @@ class IACar(Car):
     MIN_ANGLE_FOR_STEERING = math.pi / 16
 
     DISTANCE_STUCK = 8 ** 2
-    MIN_TIME_STUCK = 3.0
-    BACKWARD_TIME = 3.0  # time we try to go backward if we are stuck
+    MIN_TIME_STUCK = 2.0
+    BACKWARD_TIME = (1.5, 4.0)  # time we try to go backward if we are stuck
 
     def __init__(self, *args, waypoint_mgmt, **kwargs):
         global g_number_gen
@@ -122,6 +123,7 @@ class IACar(Car):
         self.prev_position = (0, 0)
         self.stuck_since = None
         self.reverse_since = None
+        self.backward_time = None
 
         util.register_animator(self.ia_move)
 
@@ -149,6 +151,11 @@ class IACar(Car):
                                "--> reversing direction",
                                self)
                 self.reverse_since = time.time()
+                self.backward_time = (
+                    (random.random() *
+                     (self.BACKWARD_TIME[1] - self.BACKWARD_TIME[0]))
+                    + self.BACKWARD_TIME[0]
+                )
 
         has_bogie = self.parent.collisions.has_obstacle_in_path(self, path)
 
@@ -175,13 +182,14 @@ class IACar(Car):
         acceleration = 1
 
         if has_bogie:
-            logger.warning("%s: Bogie detected on trajectory --> slowing down",
-                           self)
-            acceleration = 0
-
-        if self.reverse_since is not None:
+            if self.reverse_since is None:
+                logger.warning("%s: Bogie detected on trajectory -->"
+                               " slowing down",
+                               self)
+                acceleration = 0
+        elif self.reverse_since is not None:
             n = time.time()
-            if n - self.reverse_since < self.BACKWARD_TIME:
+            if n - self.reverse_since < self.backward_time:
                 acceleration *= -1
             else:
                 logger.info("%s: Stopped reversing speed", self)
@@ -190,8 +198,14 @@ class IACar(Car):
                 self.prev_position = (0, 0)
 
         # steering ?
-        min_angle = self.MIN_ANGLE_FOR_STEERING
         steering = 0
+        min_angle = self.MIN_ANGLE_FOR_STEERING
+        if self.speed[0] < 0:
+            next_pt = (
+                -next_pt[0],
+                # [-math.pi ; +math.pi]
+                ((next_pt[1] + (2 * math.pi)) % (2 * math.pi)) - math.pi
+            )
         if next_pt[1] < -min_angle:
             steering = -1
         elif next_pt[1] > min_angle:
@@ -380,6 +394,8 @@ class WaypointManager(object):
             closest = (0xFFFFFFFF, None)
             for wpt in self.waypoints:
                 dist = util.distance_sq_pt_to_pt(center, wpt.position)
+                if dist < closest[0]:
+                    closest = (dist, wpt)
             assert(closest[1] is not None)
             self.grid_waypoints[tile_pos] = set()
             self.grid_waypoints[tile_pos].add(closest[1])
@@ -394,7 +410,7 @@ class WaypointManager(object):
         # turn the target checkpoint into a waypoint
         target = self.checkpoint_waypoints[target]
 
-        #### simple A* algorithm to find the most likely best path
+        # ### simple A* algorithm to find the most likely best path
 
         first = (0xFFFFFFF, None)
         for pt in self.grid_waypoints[
@@ -417,7 +433,6 @@ class WaypointManager(object):
              ))
             for pt in to_examine
         }
-        best_origin = {}
         g_scores = {
             # pt --> actual best cost found to reach each node
             pt: util.distance_pt_to_pt(origin, pt.position)
