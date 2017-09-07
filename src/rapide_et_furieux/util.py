@@ -282,6 +282,13 @@ def distance_sq_pt_to_pt(pt_a, pt_b):
     )
 
 
+def distance_pt_to_pt(pt_a, pt_b):
+    return math.sqrt(
+        ((pt_b[0] - pt_a[0]) ** 2) +
+        ((pt_b[1] - pt_a[1]) ** 2)
+    )
+
+
 def distance_sq_pt_to_segment(segment, pt):
     line_dist = (
         ((segment[1][0] - segment[0][0]) ** 2) +

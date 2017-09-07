@@ -1,7 +1,6 @@
 #!/usr/bin/env
 
 import itertools
-import heapq
 import threading
 
 import pygame
@@ -271,67 +270,86 @@ class WaypointManager(object):
             self.grid_waypoints[tile_pos] = set()
             self.grid_waypoints[tile_pos].add(closest[1])
 
+    def pathfinding_heuristic(self, origin, point, target):
+        return util.distance_pt_to_pt(point, target)
+
     def compute_path(self, origin, target):
         # turn the target checkpoint into a waypoint
         target = self.checkpoint_waypoints[target]
 
         #### simple A* algorithm to find the most likely best path
 
-        unique = 0
-        to_examine = self.grid_waypoints[
+        examined = set()
+        to_examine = set(self.grid_waypoints[
             int(origin[0] / assets.TILE_SIZE[0]),
             int(origin[1] / assets.TILE_SIZE[1]),
-        ]
-        to_examine = [
-            (util.distance_sq_pt_to_pt(wpt.position, target.position),
-             unique, wpt, None)
-            for (unique, wpt) in enumerate(to_examine)
-        ]
-        heapq.heapify(to_examine)
-        # visited: waypoint --> (best_source_origin, best_source_score)
-        visited = {wpt[2]: (None, 0xFFFFFFFF) for wpt in to_examine}
+        ])
+        f_scores = {
+            pt:
+            # known cost to go to the node + estimated cost to go to the
+            # target
+            (util.distance_pt_to_pt(origin, pt.position) +
+             self.pathfinding_heuristic(
+                 origin, pt.position, target.position
+             ))
+            for pt in to_examine
+        }
+        best_origin = {}
+        g_scores = {
+            # pt --> actual best cost found to reach each node
+            pt: util.distance_pt_to_pt(origin, pt.position)
+            for pt in to_examine
+        }
+        came_from = {}
 
-        target_reached = False
-        while not target_reached:
-            try:
-                (current_score, _, current, previous) = heapq.heappop(to_examine)
-            except IndexError:
-                raise Exception("[{}] Failed to find path for {} --> {} !"
-                                .format(self, origin, target))
+        current = None
+        success = False
+        while len(to_examine) > 0 and not success:
+            lowest_score = 0xFFFFFFF
+            current = None
+            for wpt in to_examine:
+                score = f_scores[wpt]
+                if score < lowest_score:
+                    lowest_score = score
+                    current = wpt
+            assert current is not None
+
+            if current is target:
+                success = True
+                break
+            to_examine.remove(current)
+            examined.add(current)
 
             for path in current.paths:
-                if path.a is current:
-                    next_pt = path.b
-                else:
-                    next_pt = path.a
-                if next_pt is previous:
-                    # don't go back
+                neighbor = path.b if path.a is current else path.a
+                if neighbor in examined:
                     continue
-                if next_pt is target:
-                    target_reached = True
+                to_examine.add(neighbor)
 
-                if next_pt not in visited:
-                    visited[next_pt] = (current, current_score)
+                g_score = g_scores[current] + util.distance_pt_to_pt(
+                    current.position, neighbor.position
+                )
+                if neighbor in g_scores and g_score > g_scores[neighbor]:
+                    # we already know a better path
+                    continue
 
-                    score = util.distance_sq_pt_to_pt(
-                        target.position, next_pt.position
-                    )
-                    unique += 1
-                    heapq.heappush(
-                        to_examine,
-                        (score, unique, next_pt, current)
-                    )
-                else:
-                    (best_source_origin, best_source_score) = visited[next_pt]
-                    if current_score < best_source_score:
-                        visited[next_pt] = (current, current_score)
+                # best path up to now
+                came_from[neighbor] = current
+                g_scores[neighbor] = g_score
 
-        # rebuild the found path
-        path = []
-        current = target
-        while current is not None and current is not origin:
-            assert(current.position not in path)
+                f_scores[neighbor] = g_score + self.pathfinding_heuristic(
+                    origin, neighbor.position, target.position
+                )
+
+        if not success:
+            raise Exception("[{}] Failed to found path from {} to {}".format(
+                self, origin, target
+            ))
+
+        # rebuild the path
+        path = [current.position]
+        while current in came_from:
+            current = came_from[current]
             path.append(current.position)
-            current = visited[current][0]
         path.reverse()
         return path
