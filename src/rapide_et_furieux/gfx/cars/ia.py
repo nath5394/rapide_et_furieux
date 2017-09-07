@@ -387,7 +387,7 @@ class WaypointManager(object):
     def pathfinding_heuristic(self, car, origin, point, target):
         h = util.distance_pt_to_pt(point, target)
         if self.parent.collisions.has_obstacle_in_path(car, (point, target)):
-            h += assets.TILE_SIZE[0]
+            h += assets.TILE_SIZE[0] * 2
         return h
 
     def compute_path(self, car, origin, target):
