@@ -374,6 +374,7 @@ def check_base_keys(event):
         return
     if event.type == pygame.KEYDOWN and event.key == pygame.K_PAUSE:
         g_paused = not g_paused
+        logger.info("Paused: {}".format(g_paused))
         return
 
 
