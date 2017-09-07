@@ -104,7 +104,7 @@ class IACar(Car):
     MIN_ANGLE_FOR_STEERING = math.pi / 16
 
     DISTANCE_STUCK = 8 ** 2
-    MIN_TIME_STUCK = 4.0
+    MIN_TIME_STUCK = 3.0
     BACKWARD_TIME = 3.0  # time we try to go backward if we are stuck
 
     def __init__(self, *args, waypoint_mgmt, **kwargs):
