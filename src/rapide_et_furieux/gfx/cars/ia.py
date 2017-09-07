@@ -105,7 +105,7 @@ class IACar(Car):
 
     DISTANCE_STUCK = 8 ** 2
     MIN_TIME_STUCK = 4.0
-    BACKWARD_TIME = 2.0  # time we try to go backward if we are stuck
+    BACKWARD_TIME = 1.0  # time we try to go backward if we are stuck
 
     def __init__(self, *args, waypoint_mgmt, **kwargs):
         global g_number_gen
