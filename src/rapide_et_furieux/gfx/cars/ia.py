@@ -1,8 +1,10 @@
 #!/usr/bin/env
 
 import itertools
+import logging
 import math
 import threading
+import time
 
 import pygame
 
@@ -12,6 +14,7 @@ from ... import assets
 from ... import util
 
 
+logger = logging.getLogger(__name__)
 g_number_gen = 0
 
 
@@ -100,6 +103,10 @@ class IACar(Car):
     COLOR_PATH = (0, 255, 0)
     MIN_ANGLE_FOR_STEERING = math.pi / 64
 
+    DISTANCE_STUCK = 8 ** 2
+    MIN_TIME_STUCK = 4.0
+    BACKWARD_TIME = 2.0  # time we try to go backward if we are stuck
+
     def __init__(self, *args, waypoint_mgmt, **kwargs):
         global g_number_gen
 
@@ -112,6 +119,10 @@ class IACar(Car):
         self.waypoints = waypoint_mgmt
         self.path = []
 
+        self.prev_position = (0, 0)
+        self.stuck_since = None
+        self.reverse_since = None
+
         util.register_animator(self.ia_move)
 
     def __str__(self):
@@ -121,6 +132,21 @@ class IACar(Car):
         return str(self)
 
     def compute_controls(self, frame_interval):
+        dist = util.distance_sq_pt_to_pt(self.prev_position, self.position)
+        if dist >= self.DISTANCE_STUCK:
+            self.stuck_since = None
+            self.prev_position = self.position
+        else:
+            if self.stuck_since is None:
+                self.stuck_since = time.time()
+            elif self.reverse_since is None and (
+                        time.time() - self.stuck_since >= self.MIN_TIME_STUCK
+                    ):
+                logger.warning("Car %s appears to be stuck "
+                               "--> reversing direction",
+                               self)
+                self.reverse_since = time.time()
+
         next_pt = self.path[0]
 
         # relative to the car
@@ -154,14 +180,22 @@ class IACar(Car):
         if next_pt[1] > (math.pi / 2) or next_pt[1] < (-math.pi / 2):
             acceleration = -1
 
+        if self.reverse_since is not None:
+            n = time.time()
+            if n - self.reverse_since < self.BACKWARD_TIME:
+                acceleration *= -1
+            else:
+                logger.info("%s: Stopped reversing speed", self)
+                self.reverse_since = None
+                self.stuck_since = None
+                self.prev_position = (0, 0)
+
         self.controls = Controls(
             accelerate=acceleration > 0,
             brake=acceleration < 0,
             steer_left=steering < 0,
             steer_right=steering > 0,
         )
-        print("CONTROLS: {}".format(self.controls))
-        print("")
 
     def ia_move(self, frame_interval):
         if not self.can_move:
@@ -352,11 +386,17 @@ class WaypointManager(object):
 
         #### simple A* algorithm to find the most likely best path
 
+        first = (0xFFFFFFF, None)
+        for pt in self.grid_waypoints[
+                    int(origin[0] / assets.TILE_SIZE[0]),
+                    int(origin[1] / assets.TILE_SIZE[1]),
+                ]:
+            dist = util.distance_sq_pt_to_pt(pt.position, origin)
+            if dist < first[0]:
+                first = (dist, pt)
+
         examined = set()
-        to_examine = set(self.grid_waypoints[
-            int(origin[0] / assets.TILE_SIZE[0]),
-            int(origin[1] / assets.TILE_SIZE[1]),
-        ])
+        to_examine = set([first[1]])
         f_scores = {
             pt:
             # known cost to go to the node + estimated cost to go to the
@@ -425,4 +465,5 @@ class WaypointManager(object):
             current = came_from[current]
             path.append(current.position)
         path.reverse()
+        path = path[1:]
         return path
