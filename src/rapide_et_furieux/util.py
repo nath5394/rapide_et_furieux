@@ -21,6 +21,8 @@ logger = logging.getLogger(__name__)
 
 GAME_SETTINGS_TEMPLATE = {
     # default values
+    'checkpoint_min_distance': 256,
+    'waypoint_min_distance': 64,
     'background_color': (0, 0, 0),
     'collision': {
         'reverse_factor': 1.2,  # when hitting a static object

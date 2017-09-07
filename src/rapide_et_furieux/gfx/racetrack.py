@@ -269,6 +269,10 @@ class RaceTrack(RelativeGroup):
 
         self.collisions = CollisionHandler(self, game_settings)
 
+    def start_race(self):
+        for car in self.cars:
+            car.can_move = True
+
     def draw(self, screen):
         self.tiles.draw(screen)
         super().draw(screen)

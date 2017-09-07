@@ -1,13 +1,18 @@
 #!/usr/bin/env
 
 import itertools
+import math
 import threading
 
 import pygame
 
 from . import Car
+from . import Controls
 from ... import assets
 from ... import util
+
+
+g_number_gen = 0
 
 
 class Waypoint(object):
@@ -93,23 +98,93 @@ class Path(object):
 
 class IACar(Car):
     COLOR_PATH = (0, 255, 0)
+    MIN_ANGLE_FOR_STEERING = math.pi / 64
 
     def __init__(self, *args, waypoint_mgmt, **kwargs):
+        global g_number_gen
+
         super().__init__(*args, **kwargs)
 
+        self.min_pt_dist = self.game_settings['waypoint_min_distance'] ** 2
+
+        self.number = g_number_gen
+        g_number_gen += 1
         self.waypoints = waypoint_mgmt
         self.path = []
 
         util.register_animator(self.ia_move)
 
+    def __str__(self):
+        return "IA{} ({}|{})".format(self.number, self.position, self.radians)
+
+    def __repr__(self):
+        return str(self)
+
     def compute_controls(self, frame_interval):
-        # TODO
-        pass
+        next_pt = self.path[0]
+
+        # relative to the car
+        next_pt = (
+            (next_pt[0] - self.position[0]),
+            (next_pt[1] - self.position[1]),
+        )
+
+        next_pt = util.to_polar(next_pt)
+
+        if next_pt[0] < 0:
+            next_pt = (-next_pt[0], next_pt[1] + math.pi)
+
+        next_pt = (next_pt[0], next_pt[1] + self.radians)
+
+        next_pt = (
+            next_pt[0],
+            # [-math.pi ; +math.pi]
+            ((next_pt[1] + math.pi) % (2 * math.pi)) - math.pi
+        )
+
+        # steering ?
+        steering = 0
+        if next_pt[1] < -self.MIN_ANGLE_FOR_STEERING:
+            steering = -1
+        elif next_pt[1] > self.MIN_ANGLE_FOR_STEERING:
+            steering = 1
+
+        # accelerate / brake / go forward ?
+        acceleration = 1
+        if next_pt[1] > (math.pi / 2) or next_pt[1] < (-math.pi / 2):
+            acceleration = -1
+
+        self.controls = Controls(
+            accelerate=acceleration > 0,
+            brake=acceleration < 0,
+            steer_left=steering < 0,
+            steer_right=steering > 0,
+        )
+        print("CONTROLS: {}".format(self.controls))
+        print("")
 
     def ia_move(self, frame_interval):
-        self.path = self.waypoints.compute_path(
+        if not self.can_move:
+            return
+
+        path = self.waypoints.compute_path(
             self.position, self.next_checkpoint
         )
+
+        # skip point too close to us
+        to_skip = 0
+        for pt in self.path:
+            dist = util.distance_sq_pt_to_pt(pt, self.position)
+            if dist < self.min_pt_dist:
+                to_skip += 1
+            else:
+                break
+
+        if to_skip >= len(path):
+            self.path = path
+        else:
+            self.path = path[to_skip:]
+
         self.compute_controls(frame_interval)
 
     def draw(self, screen):
@@ -141,7 +216,7 @@ class WaypointManager(object):
     COLOR_REACHABLE = pygame.Color(0, 255, 0, 255)
     COLOR_PATH = pygame.Color(0, 255, 0, 255)
 
-    def __init__(self):
+    def __init__(self, game_settings):
         self.parent = None
 
         self.waypoints = set()
@@ -206,7 +281,7 @@ class WaypointManager(object):
         }
 
     @staticmethod
-    def unserialize(data):
+    def unserialize(data, game_settings):
         wpts = {}
         for d in data['waypoints']:
             w = Waypoint.unserialize(d)
@@ -214,7 +289,7 @@ class WaypointManager(object):
         paths = set()
         for d in data['paths']:
             paths.add(Path.unserialize(d, wpts))
-        wm = WaypointManager()
+        wm = WaypointManager(game_settings)
         wm.waypoints = wpts.values()
         wm.paths = paths
         return wm
@@ -264,8 +339,6 @@ class WaypointManager(object):
             closest = (0xFFFFFFFF, None)
             for wpt in self.waypoints:
                 dist = util.distance_sq_pt_to_pt(center, wpt.position)
-                if dist < closest[0]:
-                    closest = (dist, wpt)
             assert(closest[1] is not None)
             self.grid_waypoints[tile_pos] = set()
             self.grid_waypoints[tile_pos].add(closest[1])

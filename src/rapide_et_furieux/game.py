@@ -5,6 +5,7 @@ import json
 import logging
 import os
 import sys
+import time
 
 import pygame
 
@@ -23,6 +24,8 @@ BACKGROUND_LAYER = -1
 RACE_TRACK_LAYER = 50
 OSD_LAYER = 250
 
+COUNTDOWN = 3
+
 logger = logging.getLogger(__name__)
 
 
@@ -35,6 +38,8 @@ class Game(object):
         self.track_filepath = track_filepath
         self.screen_size = screen.get_size()
         self.game_settings = util.GAME_SETTINGS_TEMPLATE
+        self.game_start = None
+        self.countdown = None
 
         self.font = pygame.font.Font(None, 32)
         self.osd_message = ui.OSDMessage(self.font, 42,
@@ -100,7 +105,9 @@ class Game(object):
         self.race_track.unserialize(data['race_track'])
         self.race_track.collisions.precompute_static()
 
-        waypoint_mgmt = WaypointManager.unserialize(data['ia'])
+        waypoint_mgmt = WaypointManager.unserialize(
+            data['ia'], self.game_settings
+        )
         waypoint_mgmt.optimize(self.race_track)
 
         # instantiate cars
@@ -121,6 +128,9 @@ class Game(object):
             if idx == 0:
                 self.player = car
 
+        self.game_start = time.time()
+        util.register_animator(self.race_starter)
+
         self.osd_message.show("Done")
         logger.info("Done")
 
@@ -131,6 +141,17 @@ class Game(object):
             int(self.screen_size[0] / 2 - self.player.position[0]),
             int(self.screen_size[1] / 2 - self.player.position[1]),
         )
+
+    def race_starter(self, frame_interval):
+        now = time.time()
+        t = now - self.game_start
+        if int(t) != self.countdown:
+            logger.info("Countdown: {}".format(COUNTDOWN - int(t)))
+            self.osd_message.show("{}".format(COUNTDOWN - int(t)))
+            self.countdown = int(t)
+        if self.countdown == COUNTDOWN:
+            self.race_track.start_race()
+            util.idle_add(util.unregister_animator, self.race_starter)
 
 
 def main():

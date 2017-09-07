@@ -62,6 +62,8 @@ class Car(RelativeSprite, CollisionObject):
 
         self.next_checkpoint = self.parent.checkpoints[0]
 
+        self.can_move = False
+
         self.update_image()
 
     def hash(self):
@@ -248,7 +250,15 @@ class Car(RelativeSprite, CollisionObject):
         self.speed = util.to_cartesian(speed)
         return angle_change
 
+    def check_checkpoint(self):
+        dist = util.distance_pt_to_pt(self.position, self.next_checkpoint.pt)
+        if dist <= self.game_settings['checkpoint_min_distance']:
+            self.next_checkpoint = self.next_checkpoint.next_checkpoint
+
     def move(self, frame_interval):
+        if not self.can_move:
+            return
+
         COLLISION = True
 
         terrain = self.parent.get_terrain(self.position)
@@ -310,6 +320,7 @@ class Car(RelativeSprite, CollisionObject):
                         self.position = prev_position
 
         self.update_image()
+        self.check_checkpoint()
 
     def draw(self, screen):
         super().draw(screen)
