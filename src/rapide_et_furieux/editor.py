@@ -152,10 +152,9 @@ class Editor(object):
         util.idle_add(self._save)
 
     def _save(self):
-        data = {
-            'game_settings': self.game_settings,
-            'race_track': self.race_track.serialize()
-        }
+        with open(self.file_path, 'r') as fd:
+            data = json.load(fd)
+        data['race_track'] = self.race_track.serialize()
         with open(self.file_path, 'w') as fd:
             json.dump(data, fd, indent=4, sort_keys=True)
         logger.info("Done")
