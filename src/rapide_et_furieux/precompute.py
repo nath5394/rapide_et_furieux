@@ -31,6 +31,8 @@ SCROLLING_SPEED = 512
 
 logger = logging.getLogger(__name__)
 
+MIN_DISTANCE_FROM_BORDERS = assets.TILE_SIZE[0] / 2
+MIN_DISTANCE_FROM_WAYPOINTS = assets.TILE_SIZE[0] / 8
 
 class FindAllWaypointsThread(threading.Thread):
     def __init__(self, racetrack, ret_cb):
@@ -83,23 +85,41 @@ class FindAllWaypointsThread(threading.Thread):
         util.idle_add(self.ret_cb, wpts)
 
 
-class DropWaypointsOnBorders(threading.Thread):
-    MIN_DISTANCE_FROM_BORDERS = assets.TILE_SIZE[0] / 4
-
+class DropUselessWaypoints(threading.Thread):
     def __init__(self, racetrack, waypoints, ret_cb):
         super().__init__()
         self.racetrack = racetrack
         self.waypoints = waypoints
         self.ret_cb = ret_cb
 
+    @staticmethod
+    def score_wpt(wpt):
+        factor_x = assets.TILE_SIZE[0] / 4
+        factor_y = assets.TILE_SIZE[0] / 4
+        # the closer to a multiple of 'factor', the better
+        score = (
+            ((wpt.position[0] / factor_x) % 1) +
+            ((wpt.position[1] / factor_y) % 1)
+        )
+        return score
+
     def run(self):
         wpts = self.waypoints
-        print("Dropping waypoints on borders ... (starting with {})".format(
+        print("Dropping useless waypoints ... (starting with {})".format(
             len(wpts)
         ))
+
+        for wpt in wpts:
+            wpt.score = self.score_wpt(wpt)
+
         borders = self.racetrack.borders
-        m = self.MIN_DISTANCE_FROM_BORDERS ** 2
+        m_border = MIN_DISTANCE_FROM_BORDERS ** 2
+        m_waypoint = MIN_DISTANCE_FROM_WAYPOINTS ** 2
+        removed = set()
         for wpt in set(wpts):
+            if wpt in removed:
+                continue
+
             keep = True
             for border in borders:
                 # drop all the waypoints on a border
@@ -108,18 +128,38 @@ class DropWaypointsOnBorders(threading.Thread):
                     break
                 # or close to it
                 dist = util.distance_sq_pt_to_segment(border.pts, wpt.position)
-                if dist < m:
+                if dist < m_border:
                     keep = False
                     break
             if not keep:
-                wpts.remove(wpt)
+                removed.add(wpt)
+                try:
+                    wpts.remove(wpt)
+                except KeyError:
+                    pass
+                continue
+
+            for wpt_b in set(wpts):
+                if wpt is wpt_b or wpt in removed:
+                    continue
+                dist = util.distance_sq_pt_to_pt(wpt.position, wpt_b.position)
+                if dist > m_waypoint:
+                    continue
+                to_remove = wpt if wpt.score > wpt_b.score else wpt_b
+                removed.add(to_remove)
+                try:
+                    wpts.remove(to_remove)
+                except KeyError:
+                    pass
+                if to_remove is wpt:
+                    break
+
         print("Done: {} waypoints remaining".format(len(wpts)))
         util.idle_add(self.ret_cb, wpts)
 
 
 class FindReachableWaypointsThread(threading.Thread):
     MAX_PATHS_BY_PT = 500
-    MIN_DISTANCE_FROM_BORDERS = assets.TILE_SIZE[0] / 2
 
     def __init__(self, racetrack, waypoints, ret_cb, update_cb):
         super().__init__()
@@ -147,7 +187,8 @@ class FindReachableWaypointsThread(threading.Thread):
 
         nb_wpts = len(wpts)
         current = 0
-        m = self.MIN_DISTANCE_FROM_BORDERS ** 2
+        m_border = MIN_DISTANCE_FROM_BORDERS ** 2
+        m_waypoint = MIN_DISTANCE_FROM_WAYPOINTS ** 2
 
         while RUNNING:
             try:
@@ -165,7 +206,7 @@ class FindReachableWaypointsThread(threading.Thread):
 
                 # drop path too close to borders or
                 # crossing a border
-                can_reach = True
+                keep = True
                 m_dist = 0xFFFFFFFF
                 for border in borders:
                     dist = util.distance_sq_segment_to_segment(
@@ -173,18 +214,35 @@ class FindReachableWaypointsThread(threading.Thread):
                         border.pts
                     )
                     m_dist = min(m_dist, dist)
-                    if dist < m:
+                    if dist < m_border:
                         # car won't be able to follow this path easily
                         # (or at all if the path goes through a border)
-                        can_reach = False
+                        keep = False
                         break
-                if not can_reach:
+                if not keep:
+                    continue
+
+                keep = True
+                for wpt in wpts:
+                    if wpt is origin or wpt is dest:
+                        continue
+                    dist = util.distance_sq_pt_to_segment(
+                        (origin.position, dest.position),
+                        wpt.position
+                    )
+                    if dist < m_waypoint:
+                        # no point in having similar path twice
+                        keep = False
+                        break
+                if not keep:
                     continue
 
                 path = ia.Path(origin, dest, m_dist)
                 path.compute_score_length()
                 new_paths.append(path)
             if len(new_paths) <= 0:
+                print("No new path found")
+                current += 1
                 continue
             new_paths.sort(key=lambda path: path.score)
             new_paths = new_paths[:self.MAX_PATHS_BY_PT]
@@ -327,8 +385,8 @@ class Precomputing(object):
     def precompute2(self, all_waypoints):
         wpts = set(all_waypoints)
         self.waypoint_drawer.set_waypoints(wpts)
-        t = DropWaypointsOnBorders(self.race_track, all_waypoints,
-                                   self.precompute3)
+        t = DropUselessWaypoints(self.race_track, all_waypoints,
+                                 self.precompute3)
         t.start()
 
     def precompute3(self, all_waypoints):
