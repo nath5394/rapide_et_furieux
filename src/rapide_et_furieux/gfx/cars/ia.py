@@ -101,13 +101,13 @@ class IACar(Car):
         self.waypoints = waypoint_mgmt
         self.path = []
 
-        util.register_animator(self.move)
+        util.register_animator(self.ia_move)
 
     def compute_controls(self, frame_interval):
         # TODO
         pass
 
-    def move(self, frame_interval):
+    def ia_move(self, frame_interval):
         self.path = self.waypoints.compute_path(
             self.position, self.next_checkpoint
         )
