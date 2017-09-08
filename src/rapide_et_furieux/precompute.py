@@ -29,7 +29,7 @@ SCROLLING_SPEED = 512
 
 logger = logging.getLogger(__name__)
 
-MIN_DISTANCE_FROM_BORDERS = assets.TILE_SIZE[0] / 2
+MIN_DISTANCE_FROM_BORDERS = assets.TILE_SIZE[0] / 3
 MIN_DISTANCE_FROM_WAYPOINTS = assets.TILE_SIZE[0] / 4
 MIN_DISTANCE_FROM_PATHS = assets.TILE_SIZE[0] / 8
 
@@ -53,7 +53,7 @@ class FindAllWaypointsThread(threading.Thread):
     def run(self):
         wpts = set()
         for (spawn, _) in self.racetrack.tiles.get_spawn_points():
-            wpt =ia.Waypoint(
+            wpt = ia.Waypoint(
                 position=spawn,
                 reachable=True,
             )
