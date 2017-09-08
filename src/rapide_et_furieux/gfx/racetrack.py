@@ -112,6 +112,7 @@ class Checkpoint(object):
         self.idx = idx
         self.txt = font.render(str(idx), True, self.COLOR)
         self.next_checkpoint = None
+        self.radius = parent.game_settings['checkpoint_min_distance']
 
     def serialize(self):
         return {
@@ -143,11 +144,12 @@ class Checkpoint(object):
         self.draw_checkpoint(screen, self.pt, self.txt,
                              self.next_checkpoint.pt
                              if self.next_checkpoint is not None else None,
-                             self.parent.absolute, self.COLOR)
+                             self.parent.absolute, self.COLOR, self.radius)
 
     @staticmethod
     def draw_checkpoint(screen, pt, txt, next_pt=None,
-                        parent_absolute=(0, 0), color=(0, 0, 255)):
+                        parent_absolute=(0, 0), color=(0, 0, 255),
+                        radius=None):
         # point
         pygame.draw.circle(
             screen, color,
@@ -157,6 +159,16 @@ class Checkpoint(object):
             ),
             15
         )
+        if radius is not None:
+            pygame.draw.circle(
+                screen, color,
+                (
+                    pt[0] + parent_absolute[0],
+                    pt[1] + parent_absolute[1],
+                ),
+                radius,
+                1
+            )
 
         # checkpoint number
         screen.blit(
@@ -268,6 +280,7 @@ class RaceTrack(RelativeGroup):
 
         self.font = pygame.font.Font(None, 42)
 
+        self.game_settings = game_settings
         self.collisions = CollisionHandler(self, game_settings)
 
     def start_race(self):
