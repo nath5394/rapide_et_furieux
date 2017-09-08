@@ -150,8 +150,8 @@ class IACar(Car):
                 self.reverse_since = time.time()
                 self.backward_time = (
                     (random.random() *
-                     (self.BACKWARD_TIME[1] - self.BACKWARD_TIME[0]))
-                    + self.BACKWARD_TIME[0]
+                     (self.BACKWARD_TIME[1] - self.BACKWARD_TIME[0])) +
+                    self.BACKWARD_TIME[0]
                 )
 
         has_bogie = self.parent.collisions.has_obstacle_in_path(self, path)
@@ -179,9 +179,10 @@ class IACar(Car):
         acceleration = 1
 
         if has_bogie:
-            if self.reverse_since is None:
+            if self.reverse_since is None and self.speed[0] > 128:
                 acceleration = 0
-        elif self.reverse_since is not None:
+
+        if acceleration != 0 and self.reverse_since is not None:
             n = time.time()
             if n - self.reverse_since < self.backward_time:
                 acceleration *= -1
