@@ -24,6 +24,36 @@ Controls = collections.namedtuple(
 
 
 class Car(RelativeSprite, CollisionObject):
+    TURN_APPROXIMATION = math.pi / 45
+    TURN_APPROXIMATIONS = [
+        # between [0, 2*math.pi[
+
+        # front
+        (0, TURN_APPROXIMATION, 0),
+        ((2 * math.pi) - TURN_APPROXIMATION, (2 * math.pi), 0),
+
+        # left
+        (
+            (math.pi / 2) - TURN_APPROXIMATION,
+            (math.pi / 2) + TURN_APPROXIMATION,
+            math.pi / 2
+        ),
+
+        # right
+        (
+            (3 * math.pi / 2) - TURN_APPROXIMATION,
+            (3 * math.pi / 2) + TURN_APPROXIMATION,
+            3 * math.pi / 2
+        ),
+
+        # back ?
+        (
+            math.pi - TURN_APPROXIMATION,
+            math.pi + TURN_APPROXIMATION,
+            math.pi
+        ),
+    ]
+
     def __init__(self, resource, race_track, game_settings,
                  spawn_point, spawn_orientation, image=None):
         super().__init__(resource, image)
@@ -62,7 +92,10 @@ class Car(RelativeSprite, CollisionObject):
         # and second one is the lateral speed (drifting)
         self.speed = (0, 0)
 
+        # radians_control is where the user should actually be,
+        # radians is where is they are after approxation
         self.radians = spawn_orientation * math.pi / 180 - (math.pi / 2)
+        self.radians_control = self.radians
 
         # position is the center of the car
         self.position = spawn_point
@@ -247,7 +280,15 @@ class Car(RelativeSprite, CollisionObject):
         return angle_change
 
     def turn(self, angle_change):
-        self.radians = self.radians - angle_change
+        self.radians_control = self.radians_control - angle_change
+        self.radians_control %= 2 * math.pi
+        self.radians = self.radians_control
+
+        # help the player align with the track
+        for (minimum, maximum, approx) in self.TURN_APPROXIMATIONS:
+            if self.radians >= minimum and self.radians <= maximum:
+                self.radians = approx
+                break
 
         # cars turns, but not its speed / momentum
         # turn the speed into polar coordinates --> change the angle,
@@ -274,7 +315,9 @@ class Car(RelativeSprite, CollisionObject):
 
         # steering
         steering = self.get_steering(frame_interval, terrain)
-        previous_radians = self.radians
+        (previous_radians, previous_radians_control) = (
+            self.radians, self.radians_control
+        )
         previous_speed = self.speed
         self.turn(steering)
 
@@ -286,6 +329,7 @@ class Car(RelativeSprite, CollisionObject):
                 # cancel steering
                 self.speed = previous_speed
                 self.radians = previous_radians
+                self.radians_control = previous_radians_control
 
         # move
         prev_position = self.position
@@ -298,7 +342,9 @@ class Car(RelativeSprite, CollisionObject):
                 self.position = prev_position
 
                 # update speed based on collision
-                prev_radians = self.radians
+                (previous_radians, previous_radians_control) = (
+                    self.radians, self.radians_control
+                )
                 (self.speed, self.radians) = self.parent.collisions.collide(
                     self, collisions, frame_interval
                 )
@@ -313,7 +359,8 @@ class Car(RelativeSprite, CollisionObject):
                 )
                 if len(collisions) > 0:
                     # .. without angle ?
-                    self.radians = prev_radians
+                    self.radians = previous_radians
+                    self.radians_control = previous_radians_control
                     self.position = prev_position
                     self.position = self.apply_speed(frame_interval,
                                                      self.position)
@@ -323,7 +370,8 @@ class Car(RelativeSprite, CollisionObject):
 
                     if len(collisions) > 0:
                         # ok screw it ...
-                        self.radians = prev_radians
+                        self.radians = previous_radians
+                        self.radians_control = previous_radians_control
                         self.position = prev_position
 
         self.update_image()
