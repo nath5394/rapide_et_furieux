@@ -107,6 +107,7 @@ class IACar(Car):
     DISTANCE_STUCK = 8 ** 2
     MIN_TIME_STUCK = 2.0
     BACKWARD_TIME = (1.5, 4.0)  # time we try to go backward if we are stuck
+    SLOW_DOWN_IF_BOGIE = 0.5
 
     def __init__(self, *args, waypoint_mgmt, **kwargs):
         global g_number_gen
@@ -114,6 +115,7 @@ class IACar(Car):
         super().__init__(*args, **kwargs)
 
         self.min_pt_dist = self.game_settings['waypoint_min_distance'] ** 2
+        self.max_speed = self.game_settings['max_speed']['normal']['forward']
 
         self.number = g_number_gen
         g_number_gen += 1
@@ -179,7 +181,9 @@ class IACar(Car):
         acceleration = 1
 
         if has_bogie:
-            if self.reverse_since is None and self.speed[0] > 128:
+            if (self.reverse_since is None and
+                    (self.speed[0] >
+                     (self.SLOW_DOWN_IF_BOGIE * self.max_speed))):
                 acceleration = 0
 
         if acceleration != 0 and self.reverse_since is not None:
