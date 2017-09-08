@@ -408,6 +408,12 @@ class WaypointManager(object):
         # turn the target checkpoint into a waypoint
         target = self.checkpoint_waypoints[target]
 
+        # we reuse some part of the previous path if possible, but it requires
+        # having the same target
+        car_path = list(reversed(car.path))
+        if len(car_path) > 0 and car_path[0] != target.position:
+            car_path = []
+
         # ### simple A* algorithm to find the most likely best path
 
         first = (0xFFFFFFF, None)
@@ -439,8 +445,8 @@ class WaypointManager(object):
         came_from = {}
 
         current = None
-        success = False
-        while len(to_examine) > 0 and not success:
+        end_of_path = None
+        while len(to_examine) > 0 and end_of_path is None:
             lowest_score = 0xFFFFFFF
             current = None
             for wpt in to_examine:
@@ -450,8 +456,13 @@ class WaypointManager(object):
                     current = wpt
             assert current is not None
 
+            if current.position in car_path:
+                idx = car_path.index(current.position)
+                end_of_path = car_path[:idx + 1]
+                break
+
             if current is target:
-                success = True
+                end_of_path = [current.position]
                 break
             to_examine.remove(current)
             examined.add(current)
@@ -477,13 +488,13 @@ class WaypointManager(object):
                     car, origin, neighbor.position, target.position
                 )
 
-        if not success:
+        if end_of_path is None:
             raise Exception("[{}] Failed to found path from {} to {}".format(
                 self, origin, target
             ))
 
         # rebuild the path
-        path = [current.position]
+        path = end_of_path
         while current in came_from:
             current = came_from[current]
             path.append(current.position)
