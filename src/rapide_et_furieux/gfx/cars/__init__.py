@@ -48,9 +48,7 @@ class Car(RelativeSprite, CollisionObject):
         self.angle = spawn_orientation
 
         self.pts = []
-        self._position = (0, 0)
-        # we work in radians here
-        self._radians = 0
+        self.position = (0, 0)
 
         self.controls = Controls(
             accelerate=False,
@@ -64,6 +62,7 @@ class Car(RelativeSprite, CollisionObject):
         # and second one is the lateral speed (drifting)
         self.speed = (0, 0)
 
+        # we work in radians here
         self.radians = spawn_orientation * math.pi / 180 - (math.pi / 2)
 
         # position is the center of the car
@@ -73,6 +72,7 @@ class Car(RelativeSprite, CollisionObject):
 
         self.can_move = False
 
+        self.recompute_pts()
         self.update_image()
 
     def hash(self):
@@ -107,24 +107,6 @@ class Car(RelativeSprite, CollisionObject):
             for (x, y) in pts
         ]
         self.pts = pts
-
-    def _set_radians(self, v):
-        self._radians = v
-        self.recompute_pts()
-
-    def _get_radians(self):
-        return self._radians
-
-    radians = property(_get_radians, _set_radians)
-
-    def _set_position(self, v):
-        self._position = v
-        self.recompute_pts()
-
-    def _get_position(self):
-        return self._position
-
-    position = property(_get_position, _set_position)
 
     def update_image(self):
         # The gfx are oriented to the up side, but radians=0 == right
@@ -251,6 +233,7 @@ class Car(RelativeSprite, CollisionObject):
     def turn(self, angle_change, frame_interval):
         self.radians = self.radians - angle_change
         self.radians %= 2 * math.pi
+        self.recompute_pts()
 
         # cars turns, but not its speed / momentum
         # turn the speed into polar coordinates --> change the angle,
@@ -289,19 +272,23 @@ class Car(RelativeSprite, CollisionObject):
                 # cancel steering
                 self.speed = previous_speed
                 self.radians = previous_radians
+                self.recompute_pts()
 
         # move
         prev_position = self.position
         self.position = self.apply_speed(frame_interval, self.position)
+        self.recompute_pts()
 
         if COLLISION:
             collisions = self.parent.collisions.get_collisions(self, optim=True)
             if len(collisions) > 0:
                 # cancel movement
                 self.position = prev_position
+                self.recompute_pts()
 
                 # update speed based on collision
                 previous_radians = self.radians
+
                 (self.speed, self.radians) = self.parent.collisions.collide(
                     self, collisions, frame_interval
                 )
@@ -310,6 +297,7 @@ class Car(RelativeSprite, CollisionObject):
                 # + angle
                 prev_position = self.position
                 self.position = self.apply_speed(frame_interval, self.position)
+                self.recompute_pts()
 
                 collisions = self.parent.collisions.get_collisions(
                     self, limit=1, optim=False
@@ -320,6 +308,7 @@ class Car(RelativeSprite, CollisionObject):
                     self.position = prev_position
                     self.position = self.apply_speed(frame_interval,
                                                      self.position)
+                    self.recompute_pts()
                     collisions = self.parent.collisions.get_collisions(
                         self, limit=1, optim=False
                     )
@@ -328,6 +317,7 @@ class Car(RelativeSprite, CollisionObject):
                         # ok screw it ...
                         self.radians = previous_radians
                         self.position = prev_position
+                        self.recompute_pts()
 
         self.update_image()
         self.check_checkpoint()
