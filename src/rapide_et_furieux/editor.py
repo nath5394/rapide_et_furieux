@@ -166,15 +166,13 @@ class Editor(object):
         self.osd_message.show("Done")
 
     def on_key(self, event):
-        if event.type != pygame.KEYDOWN:
-            return
-
-        if event.key == pygame.K_F1 or event.key == pygame.K_ESCAPE:
-            self.save()
-            return
-        elif event.key == pygame.K_F5:
-            self.load()
-            return
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_F1 or event.key == pygame.K_ESCAPE:
+                self.save()
+                return
+            elif event.key == pygame.K_F5:
+                self.load()
+                return
 
         keys = pygame.key.get_pressed()
         self.scrolling = (0, 0)
