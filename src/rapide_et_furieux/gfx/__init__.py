@@ -32,7 +32,7 @@ class RelativeSprite(pygame.sprite.Sprite):
 
     @property
     def absolute(self):
-        return self.absolute(self.parent)
+        return self.get_absolute(self.parent)
 
     @property
     def rect(self):

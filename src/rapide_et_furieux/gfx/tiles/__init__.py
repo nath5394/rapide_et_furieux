@@ -69,6 +69,14 @@ class TileGrid(RelativeGroup):
             position[1] * assets.TILE_SIZE[1],
         )
 
+        self.size = (
+            max(self.size[0], tile.relative[0]),
+            max(self.size[1], tile.relative[1]),
+        )
+
+        self._update_minmax(position)
+
+    def _update_minmax(self, position):
         (grid_min_x, grid_min_y) = self.grid_min
         (grid_max_x, grid_max_y) = self.grid_max
         if grid_min_x > position[0]:
@@ -82,18 +90,24 @@ class TileGrid(RelativeGroup):
         self.grid_min = (grid_min_x, grid_min_y)
         self.grid_max = (grid_max_x, grid_max_y)
 
-        self.size = (
-            max(self.size[0], tile.relative[0]),
-            max(self.size[1], tile.relative[1]),
-        )
 
     def remove_tile(self, position):
         if position not in self.grid:
             return False
         self.grid.pop(position)
+
+        if (position[0] == self.grid_min[0] or
+                position[1] == self.grid_min[1] or
+                position[0] == self.grid_max[0] or
+                position[1] == self.grid_max[1]):
+            self.grid_min = (0xFFFFFFFF, 0xFFFFFFFF)
+            self.grid_max = (-1, -1)
+            for position in self.grid:
+                self._update_minmax(position)
+
         return True
 
-    def draw(self, screen, parent=None):
+    def draw(self, screen, parent=None, grid=True):
         size = screen.get_size()
 
         absolute = self.get_absolute(
@@ -109,20 +123,21 @@ class TileGrid(RelativeGroup):
             offset = (offset[0], absolute[1])
 
         # draw grid
-        for x in range(offset[0], size[0], assets.TILE_SIZE[0]):
-            pygame.draw.line(
-                screen, self.LINE_COLOR,
-                (x - (self.margin / 2), max(0, offset[1])),
-                (x - (self.margin / 2), size[1]),
-                self.margin
-            )
-        for y in range(offset[1], size[1], assets.TILE_SIZE[1]):
-            pygame.draw.line(
-                screen, self.LINE_COLOR,
-                (max(0, offset[0]), y - (self.margin / 2)),
-                (size[0], y - (self.margin / 2)),
-                self.margin
-            )
+        if grid:
+            for x in range(offset[0], size[0], assets.TILE_SIZE[0]):
+                pygame.draw.line(
+                    screen, self.LINE_COLOR,
+                    (x - (self.margin / 2), max(0, offset[1])),
+                    (x - (self.margin / 2), size[1]),
+                    self.margin
+                )
+            for y in range(offset[1], size[1], assets.TILE_SIZE[1]):
+                pygame.draw.line(
+                    screen, self.LINE_COLOR,
+                    (max(0, offset[0]), y - (self.margin / 2)),
+                    (size[0], y - (self.margin / 2)),
+                    self.margin
+                )
 
         # draw tiles
         for x in range(int(-(absolute[0] / assets.TILE_SIZE[0])),
@@ -135,7 +150,7 @@ class TileGrid(RelativeGroup):
                 if grid_pos not in self.grid:
                     continue
                 tile = self.grid[grid_pos]
-                tile.draw(screen)
+                tile.draw(screen, parent)
 
         super().draw(screen, parent)
 

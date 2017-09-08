@@ -448,10 +448,10 @@ class RaceTrackMiniature(object):
         return (0, 0)
 
     def refresh(self):
-        offset = (
-            self.racetrack.tiles.grid_min[0] * assets.TILE_SIZE[0],
-            self.racetrack.tiles.grid_min[1] * assets.TILE_SIZE[1],
-        )
+        if self.racetrack.tiles.grid_max[0] < 0:
+            # no tile yet
+            return
+
         size = (
             (self.racetrack.tiles.grid_max[0] + 1) * assets.TILE_SIZE[0],
             (self.racetrack.tiles.grid_max[1] + 1) * assets.TILE_SIZE[1],
@@ -460,7 +460,7 @@ class RaceTrackMiniature(object):
             size = (assets.TILE_SIZE[0], assets.TILE_SIZE[1])
 
         whole_track = pygame.Surface(size, flags=pygame.SRCALPHA)
-        self.racetrack.tiles.draw(whole_track, parent=self)
+        self.racetrack.tiles.draw(whole_track, parent=self, grid=False)
 
         self.ratio = max(
             size[0] / self.size[0],
@@ -474,6 +474,8 @@ class RaceTrackMiniature(object):
         self.base_image = pygame.transform.scale(whole_track, size)
 
     def draw(self, screen):
+        if self.base_image is None:
+            return
         screen_size = screen.get_size()
         position = self.position
         position = (

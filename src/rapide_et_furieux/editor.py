@@ -12,6 +12,7 @@ from . import util
 from .gfx import ui
 from .gfx.objects import RaceTrackObject
 from .gfx.racetrack import RaceTrack
+from .gfx.racetrack import RaceTrackMiniature
 from .gfx.tiles import Tile
 
 
@@ -21,6 +22,7 @@ BACKGROUND_LAYER = -1
 ELEMENT_SELECTOR_LAYER = 100
 ELEMENT_SELECTOR_ARROWS_LAYER = 150
 RACE_TRACK_LAYER = 50
+RACE_TRACK_MINIATURE_LAYER = 100
 MOUSE_CURSOR_LAYER = 500
 OSD_LAYER = 250
 
@@ -120,12 +122,15 @@ class Editor(object):
 
         self.race_track = RaceTrack(grid_margin=5, debug=True)
         self.race_track.relative = (self.element_selector.size[0], 0)
+        self.race_track_miniature = RaceTrackMiniature(self.race_track)
 
         util.register_drawer(BACKGROUND_LAYER, ui.Background())
         util.register_drawer(ELEMENT_SELECTOR_LAYER, self.element_selector)
         for (control, offset, button) in self.element_selector_controls:
             util.register_drawer(ELEMENT_SELECTOR_ARROWS_LAYER, control)
         util.register_drawer(RACE_TRACK_LAYER, self.race_track)
+        util.register_drawer(RACE_TRACK_MINIATURE_LAYER,
+                             self.race_track_miniature)
         util.register_event_listener(self.on_click)
         util.register_event_listener(self.on_key)
         util.register_event_listener(self.on_mouse_motion)
@@ -143,6 +148,7 @@ class Editor(object):
             data = json.load(fd)
         self.game_settings.update(data['game_settings'])
         self.race_track.unserialize(data['race_track'])
+        self.race_track_miniature.refresh()
         logger.info("Done")
         self.osd_message.show("Done")
 
@@ -201,7 +207,6 @@ class Editor(object):
         if down:
             self.scrolling = (self.scrolling[1], SCROLLING_SPEED)
 
-
     def on_click(self, event):
         if event.type != pygame.MOUSEBUTTONDOWN:
             return
@@ -218,6 +223,7 @@ class Editor(object):
         # middle click ? --> delete element
         if event.button == 2:
             self.race_track.delete(position)
+            self.race_track_miniature.refresh()
             return
 
         # control ?
@@ -250,6 +256,7 @@ class Editor(object):
 
         # place the selected element on the race track
         self.selected.add_to_racetrack(self.race_track, position)
+        self.race_track_miniature.refresh()
 
     def on_mouse_motion(self, event):
         if event.type != pygame.MOUSEMOTION:
