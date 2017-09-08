@@ -28,6 +28,8 @@ class Car(RelativeSprite, CollisionObject):
                  spawn_point, spawn_orientation, image=None):
         super().__init__(resource, image)
 
+        self.color = resource[2]
+
         self.original_size = self.original.get_size()
         self.original_size = (
             int(self.original_size[0] * assets.CAR_SCALE_FACTOR),

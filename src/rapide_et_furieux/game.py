@@ -16,12 +16,14 @@ from .gfx.cars.ia import IACar
 from .gfx.cars.ia import WaypointManager
 from .gfx.cars.player import PlayerCar
 from .gfx.racetrack import RaceTrack
+from .gfx.racetrack import RaceTrackMiniature
 
 
 CAPTION = "Rapide et Furieux {}".format(util.VERSION)
 
 BACKGROUND_LAYER = -1
 RACE_TRACK_LAYER = 50
+RACE_TRACK_MINIATURE_LAYER = 100
 OSD_LAYER = 250
 
 COUNTDOWN = 3
@@ -50,6 +52,7 @@ class Game(object):
 
         self.race_track = None
         self.player = None
+        self.race_track_miniature = None
 
         self.background = ui.Background()
         util.register_drawer(BACKGROUND_LAYER, self.background)
@@ -101,9 +104,11 @@ class Game(object):
         self.race_track = RaceTrack(grid_margin=0, debug=DEBUG,
                                     game_settings=self.game_settings)
         util.register_drawer(RACE_TRACK_LAYER, self.race_track)
-
         self.race_track.unserialize(data['race_track'])
         self.race_track.collisions.precompute_static()
+        self.race_track_miniature = RaceTrackMiniature(self.race_track)
+        util.register_drawer(RACE_TRACK_MINIATURE_LAYER,
+                             self.race_track_miniature)
 
         waypoint_mgmt = WaypointManager.unserialize(
             data['ia'], self.game_settings, self.race_track

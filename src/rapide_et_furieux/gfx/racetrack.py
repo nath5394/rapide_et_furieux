@@ -3,11 +3,12 @@ import logging
 import pygame
 
 from . import RelativeGroup
+from .. import assets
+from .. import util
 from .collisions import CollisionHandler
 from .collisions import CollisionObject
 from .objects import RaceTrackObject
 from .tiles import TileGrid
-from .. import util
 
 
 logger = logging.getLogger(__name__)
@@ -431,3 +432,77 @@ class RaceTrack(RelativeGroup):
             self.add_crap_area(CrapArea.unserialize(area, self))
         for cp in data['checkpoints']:
             self.add_checkpoint(Checkpoint.unserialize(cp, self, self.font))
+
+
+class RaceTrackMiniature(object):
+    def __init__(self, racetrack, position=(-20, 20), size=(256, 256)):
+        self.racetrack = racetrack
+        self.position = position
+        self.size = size
+        self.ratio = 1.0
+        self.base_image = None
+        self.refresh()
+
+    @property
+    def absolute(self):
+        return (0, 0)
+
+    def refresh(self):
+        offset = (
+            self.racetrack.tiles.grid_min[0] * assets.TILE_SIZE[0],
+            self.racetrack.tiles.grid_min[1] * assets.TILE_SIZE[1],
+        )
+        size = (
+            (self.racetrack.tiles.grid_max[0] + 1) * assets.TILE_SIZE[0],
+            (self.racetrack.tiles.grid_max[1] + 1) * assets.TILE_SIZE[1],
+        )
+        if size[0] <= 0 or size[1] <= 0:
+            size = (assets.TILE_SIZE[0], assets.TILE_SIZE[1])
+
+        whole_track = pygame.Surface(size, flags=pygame.SRCALPHA)
+        self.racetrack.tiles.draw(whole_track, parent=self)
+
+        self.ratio = max(
+            size[0] / self.size[0],
+            size[1] / self.size[1],
+        )
+        size = (
+            int(size[0] / self.ratio),
+            int(size[1] / self.ratio),
+        )
+
+        self.base_image = pygame.transform.scale(whole_track, size)
+
+    def draw(self, screen):
+        screen_size = screen.get_size()
+        position = self.position
+        position = (
+            screen_size[0] + position[0] - self.size[0]
+            if position[0] < 0 else position[0],
+            screen_size[1] + position[1] - self.size[1]
+            if position[1] < 0 else position[1],
+        )
+        screen.blit(self.base_image, position)
+
+        for car in self.racetrack.cars:
+            self.draw_car(screen, position, self.size, car)
+
+    def draw_car(self, screen, base_position, base_size, car):
+        position = car.position
+        position = (
+            base_position[0] + (position[0] / self.ratio),
+            base_position[1] + (position[1] / self.ratio),
+        )
+        cross_size = 10
+        cross = [
+            (
+                (position[0] - cross_size, position[1]),
+                (position[0] + cross_size, position[1])
+            ),
+            (
+                (position[0], position[1] - cross_size),
+                (position[0], position[1] + cross_size)
+            ),
+        ]
+        for line in cross:
+            pygame.draw.line(screen, car.color, line[0], line[1], 3)

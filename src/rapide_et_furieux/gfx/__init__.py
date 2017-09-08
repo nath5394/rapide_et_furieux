@@ -12,7 +12,7 @@ class RelativeSprite(pygame.sprite.Sprite):
         self.resource = resource
 
         if image is None:
-            image = assets.get_resource(resource)
+            image = assets.get_resource(resource[:2])
 
         self.image = self.original = image
         self.size = self.image.get_size()
@@ -20,16 +20,19 @@ class RelativeSprite(pygame.sprite.Sprite):
     def destroy(self):
         self.image = self.original = None
 
-    @property
-    def absolute(self):
-        if self.parent is None:
+    def get_absolute(self, parent=None):
+        if parent is None:
             parent_abs = (0, 0)
         else:
-            parent_abs = self.parent.absolute
+            parent_abs = parent.absolute
         return (
             parent_abs[0] + self.relative[0],
             parent_abs[1] + self.relative[1],
         )
+
+    @property
+    def absolute(self):
+        return self.absolute(self.parent)
 
     @property
     def rect(self):
@@ -39,9 +42,11 @@ class RelativeSprite(pygame.sprite.Sprite):
             self.size
         )
 
-    def draw(self, screen):
-        screen.blit(self.image, self.absolute,
-                    ((0, 0), self.size))
+    def draw(self, screen, parent=None):
+        absolute = self.get_absolute(
+            parent if parent is not None else self.parent
+        )
+        screen.blit(self.image, absolute, ((0, 0), self.size))
 
 
 class RelativeGroup(pygame.sprite.Group):
@@ -50,13 +55,22 @@ class RelativeGroup(pygame.sprite.Group):
         self.parent = None
         self.relative = (0, 0)
 
-    @property
-    def absolute(self):
-        if self.parent is None:
+    def get_absolute(self, parent=None):
+        if parent is None:
             parent_abs = (0, 0)
         else:
-            parent_abs = self.parent.absolute
+            parent_abs = parent.absolute
         return (
             parent_abs[0] + self.relative[0],
             parent_abs[1] + self.relative[1],
         )
+
+    @property
+    def absolute(self):
+        return self.get_absolute(self.parent)
+
+    def draw(self, screen, parent=None):
+        if parent is None:
+            return super().draw(screen)
+        for sprite in self.sprites():
+            sprite.draw(screen, parent)

@@ -57,14 +57,26 @@ SOUNDS = {
 
 CAR_SCALE_FACTOR = 0.66
 CARS = [
-    ("rapide_et_furieux.gfx.cars", "car_%s_%d.png" % (color, idx))
+    ("rapide_et_furieux.gfx.cars", "car_%s_%d.png" % (color[0], idx), color[1])
     for idx in range(1, 6)
-    for color in ['black', 'blue', 'green', 'red', 'yellow']
+    for color in [
+        ('black', (0, 0, 0)),
+        ('blue', (0, 0, 255)),
+        ('green', (0, 255, 0)),
+        ('red', (255, 0, 0)),
+        ('yellow', (255, 255, 0)),
+    ]
 ]
 
 MOTORCYCLES = [
-    ("rapide_et_furieux.gfx.cars", "motorcycle_%s.png" % (color))
-    for color in ['black', 'blue', 'green', 'red', 'yellow']
+    ("rapide_et_furieux.gfx.cars", "motorcycle_%s.png" % (color[0]), color[1])
+    for color in [
+        ('black', (0, 0, 0)),
+        ('blue', (0, 0, 255)),
+        ('green', (0, 255, 0)),
+        ('red', (255, 0, 0)),
+        ('yellow', (255, 255, 0)),
+    ]
 ]
 
 EXPLOSIONS = [
@@ -192,8 +204,9 @@ def load_resources():
     rsc.update({ui_rsc: load_image(ui_rsc) for ui_rsc in UI})
     rsc.update({tile_rsc: load_image(tile_rsc) for tile_rsc in TILES})
     rsc.update({obj_rsc: load_image(obj_rsc) for obj_rsc in OBJECTS})
-    rsc.update({obj_rsc: load_image(obj_rsc) for obj_rsc in CARS})
-    rsc.update({obj_rsc: load_image(obj_rsc) for obj_rsc in MOTORCYCLES})
+    rsc.update({obj_rsc[:2]: load_image(obj_rsc[:2]) for obj_rsc in CARS})
+    rsc.update({obj_rsc[:2]: load_image(obj_rsc[:2])
+                for obj_rsc in MOTORCYCLES})
     rsc.update({obj_rsc: load_image(obj_rsc) for obj_rsc in POWERUPS})
     rsc.update({
         obj_rsc: load_image(obj_rsc)
@@ -204,4 +217,4 @@ def load_resources():
 
 
 def get_resource(rsc):
-    return g_resources[tuple(rsc)]
+    return g_resources[tuple(rsc[:2])]

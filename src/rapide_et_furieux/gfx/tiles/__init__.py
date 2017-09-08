@@ -40,12 +40,17 @@ class TileGrid(RelativeGroup):
         self.margin = margin
         self.grid = {}  # (pos_x, pos_y) --> Tile
         self.size = (0, 0)
+        self.grid_min = (0xFFFFFFFF, 0xFFFFFFFF)
+        self.grid_max = (-1, -1)
 
     def serialize(self):
         return [(k, v.serialize()) for (k, v) in self.grid.items()]
 
     def unserialize(self, data):
         self.grid = {}
+        self.grid_min = (0xFFFFFFFF, 0xFFFFFFFF)
+        self.grid_max = (-1, -1)
+
         elements = {}
         for (position, rsc) in data:
             rsc = tuple(rsc)
@@ -63,6 +68,20 @@ class TileGrid(RelativeGroup):
             position[0] * assets.TILE_SIZE[0],
             position[1] * assets.TILE_SIZE[1],
         )
+
+        (grid_min_x, grid_min_y) = self.grid_min
+        (grid_max_x, grid_max_y) = self.grid_max
+        if grid_min_x > position[0]:
+            grid_min_x = position[0]
+        if grid_min_y > position[1]:
+            grid_min_y = position[1]
+        if grid_max_x < position[0]:
+            grid_max_x = position[0]
+        if grid_max_y < position[1]:
+            grid_max_y = position[1]
+        self.grid_min = (grid_min_x, grid_min_y)
+        self.grid_max = (grid_max_x, grid_max_y)
+
         self.size = (
             max(self.size[0], tile.relative[0]),
             max(self.size[1], tile.relative[1]),
@@ -74,10 +93,12 @@ class TileGrid(RelativeGroup):
         self.grid.pop(position)
         return True
 
-    def draw(self, screen):
+    def draw(self, screen, parent=None):
         size = screen.get_size()
 
-        absolute = self.absolute
+        absolute = self.get_absolute(
+            parent if parent is not None else self.parent
+        )
         offset = (
             absolute[0] % assets.TILE_SIZE[0],
             absolute[1] % assets.TILE_SIZE[1],
@@ -116,7 +137,7 @@ class TileGrid(RelativeGroup):
                 tile = self.grid[grid_pos]
                 tile.draw(screen)
 
-        super().draw(screen)
+        super().draw(screen, parent)
 
     def get_grid_position(self, screen_position):
         pos = self.absolute
