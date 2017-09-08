@@ -176,6 +176,34 @@ class Editor(object):
             self.load()
             return
 
+        keys = pygame.key.get_pressed()
+        self.scrolling = (0, 0)
+        up = (
+            bool(keys[pygame.K_UP]) or bool(keys[pygame.K_w]) or
+            bool(keys[pygame.K_KP8])
+        )
+        down = (
+            bool(keys[pygame.K_DOWN]) or bool(keys[pygame.K_s]) or
+            bool(keys[pygame.K_KP1])
+        )
+        left = (
+            bool(keys[pygame.K_LEFT]) or bool(keys[pygame.K_a]) or
+            bool(keys[pygame.K_KP4])
+        )
+        right = (
+            bool(keys[pygame.K_RIGHT]) or bool(keys[pygame.K_d]) or
+            bool(keys[pygame.K_KP6])
+        )
+        if left:
+            self.scrolling = (-SCROLLING_SPEED, self.scrolling[1])
+        if right:
+            self.scrolling = (SCROLLING_SPEED, self.scrolling[1])
+        if up:
+            self.scrolling = (self.scrolling[0], -SCROLLING_SPEED)
+        if down:
+            self.scrolling = (self.scrolling[1], SCROLLING_SPEED)
+
+
     def on_click(self, event):
         if event.type != pygame.MOUSEBUTTONDOWN:
             return
