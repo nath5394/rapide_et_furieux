@@ -179,7 +179,6 @@ class IACar(Car):
             if n - self.reverse_since < self.BACKWARD_TIME:
                 acceleration *= -1
             else:
-                logger.info("%s: Stopped reversing speed", self)
                 self.reverse_since = None
                 self.stuck_since = None
                 self.prev_position = (0, 0)

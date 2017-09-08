@@ -45,8 +45,6 @@ class TileGrid(RelativeGroup):
         return [(k, v.serialize()) for (k, v) in self.grid.items()]
 
     def unserialize(self, data):
-        for sprite in self.sprites():
-            self.remove(sprite)
         self.grid = {}
         elements = {}
         for (position, rsc) in data:
@@ -59,15 +57,12 @@ class TileGrid(RelativeGroup):
             self.set_tile(position, tile)
 
     def set_tile(self, position, tile):
-        if position in self.grid:
-            self.remove(self.grid[position])
         self.grid[position] = tile
         tile.parent = self
         tile.relative = (
             position[0] * assets.TILE_SIZE[0],
             position[1] * assets.TILE_SIZE[1],
         )
-        self.add(tile)
         self.size = (
             max(self.size[0], tile.relative[0]),
             max(self.size[1], tile.relative[1]),
@@ -76,7 +71,6 @@ class TileGrid(RelativeGroup):
     def remove_tile(self, position):
         if position not in self.grid:
             return False
-        self.remove(self.grid[position])
         self.grid.pop(position)
         return True
 
@@ -108,6 +102,19 @@ class TileGrid(RelativeGroup):
                 (size[0], y - (self.margin / 2)),
                 self.margin
             )
+
+        # draw tiles
+        for x in range(int(-(absolute[0] / assets.TILE_SIZE[0])),
+                       int(-(absolute[0] / assets.TILE_SIZE[0])) +
+                       int(size[0] / assets.TILE_SIZE[0]) + 2):
+            for y in range(int(-(absolute[1] / assets.TILE_SIZE[1])),
+                           int(-(absolute[1] / assets.TILE_SIZE[1])) +
+                           int(size[1] / assets.TILE_SIZE[1]) + 2):
+                grid_pos = (x, y)
+                if grid_pos not in self.grid:
+                    continue
+                tile = self.grid[grid_pos]
+                tile.draw(screen)
 
         super().draw(screen)
 
