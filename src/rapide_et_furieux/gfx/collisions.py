@@ -56,8 +56,8 @@ class CollisionHandler(object):
         self.precomputed_static = {}
         self.precomputed_moving = {}
 
-        self.car_radius_sq = (
-            (assets.TILE_SIZE[0] / 2 * assets.CAR_SCALE_FACTOR) ** 2
+        self.car_diameter_sq = (
+            (assets.TILE_SIZE[0] * assets.CAR_SCALE_FACTOR) ** 2
         )
 
     @staticmethod
@@ -264,7 +264,7 @@ class CollisionHandler(object):
                 # ignore self
                 continue
             dist = util.distance_sq_pt_to_segment(path, car.position)
-            if dist < self.car_radius_sq:
+            if dist < self.car_diameter_sq:
                 return True
         return False
 
