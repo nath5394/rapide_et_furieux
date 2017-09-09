@@ -21,10 +21,13 @@ class Arrow(RelativeSprite):
 
 class Background(object):
     def __init__(self):
-        pass
+        self.color = (0, 0, 0)
+
+    def set_color(self, c):
+        self.color = tuple(c)
 
     def draw(self, screen):
-        pygame.draw.rect(screen, (0, 0, 0),
+        pygame.draw.rect(screen, self.color,
                          ((0, 0), screen.get_size()))
 
 

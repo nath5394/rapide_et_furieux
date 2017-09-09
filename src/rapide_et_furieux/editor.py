@@ -123,8 +123,9 @@ class Editor(object):
         self.race_track = RaceTrack(grid_margin=5, debug=True)
         self.race_track.relative = (self.element_selector.size[0], 0)
         self.race_track_miniature = RaceTrackMiniature(self.race_track)
+        self.background = ui.Background()
 
-        util.register_drawer(BACKGROUND_LAYER, ui.Background())
+        util.register_drawer(BACKGROUND_LAYER, self.background)
         util.register_drawer(ELEMENT_SELECTOR_LAYER, self.element_selector)
         for (control, offset, button) in self.element_selector_controls:
             util.register_drawer(ELEMENT_SELECTOR_ARROWS_LAYER, control)
@@ -147,6 +148,7 @@ class Editor(object):
         with open(self.file_path, 'r') as fd:
             data = json.load(fd)
         self.game_settings.update(data['game_settings'])
+        self.background.set_color(self.game_settings['background_color'])
         self.race_track.unserialize(data['race_track'])
         self.race_track_miniature.refresh()
         logger.info("Done")

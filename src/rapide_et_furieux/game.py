@@ -101,6 +101,7 @@ class Game(object):
         with open(self.track_filepath, 'r') as fd:
             data = json.load(fd)
         self.game_settings.update(data['game_settings'])
+        self.background.set_color(self.game_settings['background_color'])
         self.race_track = RaceTrack(grid_margin=0, debug=DEBUG,
                                     game_settings=self.game_settings)
         util.register_drawer(RACE_TRACK_LAYER, self.race_track)
