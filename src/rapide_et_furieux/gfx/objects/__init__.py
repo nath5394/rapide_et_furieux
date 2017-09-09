@@ -13,7 +13,6 @@ class RaceTrackObject(RelativeSprite):
         super().__init__(resource, image)
         self.angle = angle
         if angle != 0 and rotate:
-            assert(angle % 90 == 0)
             self.image = pygame.transform.rotate(self.image, -angle)
             self.size = self.image.get_size()
 

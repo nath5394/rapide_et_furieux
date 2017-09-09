@@ -71,28 +71,28 @@ class Editor(object):
         elements += [
             RaceTrackObject(obj_rsc, angle)
             for obj_rsc in assets.OBJECTS
-            for angle in [0, 90, 180, 270]
+            for angle in [0, 45, 90, 135, 180, 225, 270, 315]
         ]
         elements += [
             RaceTrackObject(obj_rsc, angle)
             for obj_rsc in assets.CARS
-            for angle in [0, 90, 180, 270]
+            for angle in [0, 45, 90, 135, 180, 225, 270, 315]
         ]
         elements += [
             RaceTrackObject(obj_rsc, angle)
             for obj_rsc in assets.MOTORCYCLES
-            for angle in [0, 90, 180, 270]
+            for angle in [0, 45, 90, 135, 180, 225, 270, 315]
         ]
         elements += [
             RaceTrackObject(obj_rsc, angle)
             for obj_rsc in assets.POWERUPS
-            for angle in [0, 90, 180, 270]
+            for angle in [0, 45, 90, 135, 180, 225, 270, 315]
         ]
         elements += [
             RaceTrackObject(obj_rsc, angle)
             for explosion in assets.EXPLOSIONS
             for obj_rsc in explosion
-            for angle in [0, 90, 180, 270]
+            for angle in [0, 45, 90, 135, 180, 225, 270, 315]
         ]
 
         self.element_selector = ui.ElementSelector(elements, self.screen)
