@@ -265,15 +265,16 @@ class Editor(object):
             return
 
         position = pygame.mouse.get_pos()
-        self.scrolling = (0, 0)
+        scrolling = self.scrolling
         if position[0] < SCROLLING_BORDER:
-            self.scrolling = (-SCROLLING_SPEED, self.scrolling[1])
+            scrolling = (-SCROLLING_SPEED, scrolling[1])
         elif position[0] >= self.screen_size[0] - SCROLLING_BORDER:
-            self.scrolling = (SCROLLING_SPEED, self.scrolling[1])
+            scrolling = (SCROLLING_SPEED, scrolling[1])
         if position[1] < SCROLLING_BORDER:
-            self.scrolling = (self.scrolling[0], -SCROLLING_SPEED)
+            scrolling = (scrolling[0], -SCROLLING_SPEED)
         elif position[1] >= self.screen_size[1] - SCROLLING_BORDER:
-            self.scrolling = (self.scrolling[1], SCROLLING_SPEED)
+            scrolling = (scrolling[1], SCROLLING_SPEED)
+        self.scrolling = scrolling
 
         if self.selected is None:
             return
