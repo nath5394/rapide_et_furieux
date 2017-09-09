@@ -362,7 +362,7 @@ def get_default_resolution():
 def set_default_resolution():
     size = get_default_resolution()
     screen = pygame.display.set_mode(
-        size, pygame.FULLSCREEN | pygame.DOUBLEBUF | pygame.HWSURFACE
+        size, pygame.FULLSCREEN | pygame.HWSURFACE
     )
     return screen
 

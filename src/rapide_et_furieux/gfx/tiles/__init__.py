@@ -92,9 +92,10 @@ class TileGrid(RelativeGroup):
 
 
     def remove_tile(self, position):
-        if position not in self.grid:
+        try:
+            self.grid.pop(position)
+        except KeyError:
             return False
-        self.grid.pop(position)
 
         if (position[0] == self.grid_min[0] or
                 position[1] == self.grid_min[1] or
@@ -147,9 +148,10 @@ class TileGrid(RelativeGroup):
                            int(-(absolute[1] / assets.TILE_SIZE[1])) +
                            int(size[1] / assets.TILE_SIZE[1]) + 2):
                 grid_pos = (x, y)
-                if grid_pos not in self.grid:
+                try:
+                    tile = self.grid[grid_pos]
+                except KeyError:
                     continue
-                tile = self.grid[grid_pos]
                 tile.draw(screen, parent)
 
         super().draw(screen, parent)
@@ -163,9 +165,10 @@ class TileGrid(RelativeGroup):
 
     def get_spawn_points(self):
         for (position, tile) in self.grid.items():
-            if tile.resource not in assets.SPAWN_TILES:
+            try:
+                angle = assets.SPAWN_TILES[tile.resource]
+            except KeyError:
                 continue
-            angle = assets.SPAWN_TILES[tile.resource]
             yield (
                 (
                     (position[0] * assets.TILE_SIZE[0]) +

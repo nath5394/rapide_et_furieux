@@ -250,9 +250,10 @@ class CollisionHandler(object):
             int(position[0] / assets.TILE_SIZE[0]),
             int(position[1] / assets.TILE_SIZE[1]),
         )
-        if grid not in precomputed:
+        try:
+            return precomputed[grid]
+        except KeyError:
             return []
-        return precomputed[grid]
 
     def has_obstacle_in_path(self, moving, path):
         """
