@@ -1,3 +1,4 @@
+import itertools
 import logging
 
 import pygame
@@ -273,6 +274,7 @@ class RaceTrack(RelativeGroup):
         self.tiles.parent = self
 
         self.objects = []
+        self.grid_objects = {}
         self.borders = []
         self.crap_areas = []
         self.checkpoints = []
@@ -287,30 +289,78 @@ class RaceTrack(RelativeGroup):
         for car in self.cars:
             car.can_move = True
 
+    def get_visibles(self, screen_rect, objs):
+        for obj in objs:
+            if screen_rect.collidepoint(obj.position):
+                yield obj
+
+    def get_visibles_optim(self, screen_rect, objs):
+        screen_rect = (
+            (
+                int((screen_rect.x / assets.TILE_SIZE[0]) - 1),
+                int((screen_rect.y / assets.TILE_SIZE[1]) - 1),
+            ),
+            (
+                int(((screen_rect.x + screen_rect.w) /
+                     assets.TILE_SIZE[0]) + 1),
+                int(((screen_rect.y + screen_rect.h) /
+                     assets.TILE_SIZE[1]) + 1),
+            ),
+        )
+        for pos in itertools.product(
+                    range(screen_rect[0][0], screen_rect[1][0]),
+                    range(screen_rect[0][1], screen_rect[1][1]),
+                ):
+            try:
+                for obj in self.grid_objects[pos]:
+                    yield obj
+            except KeyError:
+                continue
+
     def draw(self, screen):
         self.tiles.draw(screen)
         super().draw(screen)
 
+        absolute = self.absolute
+        screen_size = screen.get_size()
+        max_dist = assets.TILE_SIZE[0] * 2
+        screen_rect = pygame.Rect(
+            (
+                -absolute[0] - max_dist,
+                -absolute[1] - max_dist,
+            ),
+            (
+                screen_size[0] + (2 * max_dist),
+                screen_size[1] + (2 * max_dist),
+            )
+        )
+
         if self.debug:
             to_draw = [
-                self.objects,
-                self.cars,
+                self.get_visibles_optim(screen_rect, self.grid_objects),
+                self.get_visibles(screen_rect, self.cars),
                 self.borders,
                 self.crap_areas,
                 self.checkpoints,
             ]
         else:
             to_draw = [
-                self.objects,
-                self.cars,
+                self.get_visibles_optim(screen_rect, self.grid_objects),
+                self.get_visibles(screen_rect, self.cars),
             ]
 
-        for el_list in to_draw:
-            for el in el_list:
-                el.draw(screen)
+        for el in itertools.chain(*to_draw):
+            el.draw(screen)
 
     def add_object(self, obj):
         self.objects.append(obj)
+        grid_pos = (
+            int(obj.position[0] / assets.TILE_SIZE[0]),
+            int(obj.position[1] / assets.TILE_SIZE[1]),
+        )
+        if grid_pos not in self.grid_objects:
+            self.grid_objects[grid_pos] = set()
+        self.grid_objects[grid_pos].add(obj)
 
     def add_border(self, border):
         if not isinstance(border, TrackBorder):
@@ -405,6 +455,11 @@ class RaceTrack(RelativeGroup):
         if el is not None:
             logger.info("Removing object: %s", el)
             self.objects.remove(el)
+            grid_pos = (
+                int(el.position[0] / assets.ASSET_SIZE[0]),
+                int(el.position[1] / assets.ASSET_SIZE[1]),
+            )
+            self.grid_objects[grid_pos].remove(el)
             return
 
         # position matches a tile ?

@@ -16,6 +16,13 @@ class RaceTrackObject(RelativeSprite):
             self.image = pygame.transform.rotate(self.image, -angle)
             self.size = self.image.get_size()
 
+    @property
+    def position(self):
+        return (
+            self.relative[0] + (self.size[0] / 2),
+            self.relative[1] + (self.size[1] / 2),
+        )
+
     def serialize(self):
         return {
             "rsc": self.resource,
