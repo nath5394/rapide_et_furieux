@@ -499,8 +499,29 @@ class RaceTrackMiniature(object):
         )
         screen.blit(self.base_image, position)
 
+        self.draw_screen(screen, position)
+
         for car in self.racetrack.cars:
             self.draw_car(screen, position, self.size, car)
+
+    def draw_screen(self, screen, position):
+        cam_position = self.racetrack.relative
+        cam_position = (
+            (-cam_position[0] / self.ratio) + position[0],
+            (-cam_position[1] / self.ratio) + position[1],
+        )
+
+        screen_size = screen.get_size()
+        screen_size = (
+            screen_size[0] / self.ratio,
+            screen_size[1] / self.ratio,
+        )
+
+        pygame.draw.rect(
+            screen, (128, 128, 128),
+            (cam_position, screen_size),
+            3
+        )
 
     def draw_car(self, screen, base_position, base_size, car):
         position = car.position
