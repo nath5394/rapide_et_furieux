@@ -6,6 +6,7 @@ import pygame
 
 
 TILE_SIZE = (128, 128)
+BONUS_SIZE = (34, 34)
 
 ARROW_UP = ("rapide_et_furieux.gfx.ui", "arrowUp.png")
 ARROW_DOWN = ("rapide_et_furieux.gfx.ui", "arrowDown.png")

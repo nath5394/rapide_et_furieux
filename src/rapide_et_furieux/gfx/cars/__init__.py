@@ -252,6 +252,17 @@ class Car(RelativeSprite, CollisionObject):
         if dist <= self.game_settings['checkpoint_min_distance']:
             self.next_checkpoint = self.next_checkpoint.next_checkpoint
 
+    def grab_bonus(self):
+        grab_dist = assets.BONUS_SIZE[0] + (assets.TILE_SIZE[0] / 3)
+        grab_dist **= 2
+
+        for bonus in set(self.parent.bonuses):
+            dist = util.distance_sq_pt_to_pt(bonus.position, self.position)
+            if dist < grab_dist:
+                bonus.add_to_car(self)
+                self.parent.remove_bonus(bonus)
+
+
     def move(self, frame_interval):
         if not self.can_move:
             return
@@ -324,6 +335,7 @@ class Car(RelativeSprite, CollisionObject):
                         self.recompute_pts()
 
         self.update_image()
+        self.grab_bonus()
         self.check_checkpoint()
 
     def draw(self, screen):
