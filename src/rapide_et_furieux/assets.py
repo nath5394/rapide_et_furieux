@@ -68,6 +68,53 @@ CARS = [
     ]
 ]
 
+BARRELS = [
+    ("rapide_et_furieux.gfx.weapons",
+     "barrel%s_outline.png" % (color[0]), color[1])
+    for color in [
+        ('Black', (0, 0, 0)),
+        ('Blue', (0, 0, 255)),
+        ('Green', (0, 255, 0)),
+        ('Red', (255, 0, 0)),
+        ('Beige', (255, 255, 0)),
+    ]
+]
+
+BULLETS = [
+    ("rapide_et_furieux.gfx.weapons",
+     "bullet%sSilver.png" % (color[0]), color[1])
+    for color in [
+        ('Blue', (0, 0, 255)),
+        ('Green', (0, 255, 0)),
+        ('Red', (255, 0, 0)),
+        ('Silver', (0, 0, 0)),
+        ('Yellow', (255, 255, 0)),
+    ]
+]
+
+GUNS = [
+    ("rapide_et_furieux.gfx.weapons", "gun%02d.png" % (idx))
+    for idx in range(0, 11)
+]
+
+LASERS = [
+    ("rapide_et_furieux.gfx.weapons", "laserBlue16.png", (0, 0, 255)),
+    ("rapide_et_furieux.gfx.weapons", "laserGreen10.png", (0, 255, 0)),
+    ("rapide_et_furieux.gfx.weapons", "laserRed16.png", (255, 0, 0)),
+]
+
+SCRATCHS = [
+    ("rapide_et_furieux.gfx.weapons", "scratch%d.png" % (idx))
+    for idx in range(1, 4)
+]
+
+SHIELDS = [
+    ("rapide_et_furieux.gfx.weapons", "shield%d.png" % (idx))
+    for idx in range(1, 4)
+]
+
+TURRET_BASE = ("rapide_et_furieux.gfx.weapons", "turretBase_small.png")
+
 MOTORCYCLES = [
     ("rapide_et_furieux.gfx.cars", "motorcycle_%s.png" % (color[0]), color[1])
     for color in [
@@ -131,7 +178,11 @@ POWERUPS = {
     ("rapide_et_furieux.gfx.powerups", "powerupYellow_bolt.png"),
 }
 
-TILES = []
+TILES = [
+    ("rapide_et_furieux.gfx.tiles", "dirt.png"),
+    ("rapide_et_furieux.gfx.tiles", "grass.png"),
+    ("rapide_et_furieux.gfx.tiles", "sand.png"),
+]
 TILES += [
     ("rapide_et_furieux.gfx.tiles", "road_asphalt%02d.png" % idx)
     for idx in range(1, 91)
@@ -213,6 +264,13 @@ def load_resources():
         for explosions in EXPLOSIONS
         for obj_rsc in explosions
     })
+    rsc.update({obj_rsc[:2]: load_image(obj_rsc[:2]) for obj_rsc in BARRELS})
+    rsc.update({obj_rsc[:2]: load_image(obj_rsc[:2]) for obj_rsc in BULLETS})
+    rsc.update({obj_rsc[:2]: load_image(obj_rsc[:2]) for obj_rsc in LASERS})
+    rsc.update({obj_rsc: load_image(obj_rsc) for obj_rsc in GUNS})
+    rsc.update({obj_rsc: load_image(obj_rsc) for obj_rsc in SCRATCHS})
+    rsc.update({obj_rsc: load_image(obj_rsc) for obj_rsc in SHIELDS})
+    rsc[TURRET_BASE] = load_image(TURRET_BASE)
     g_resources = rsc
 
 
