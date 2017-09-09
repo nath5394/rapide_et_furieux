@@ -47,7 +47,7 @@ class Car(RelativeSprite, CollisionObject):
 
         self.angle = spawn_orientation
 
-        self.pts = []
+        self._pts = None
         self.position = (0, 0)
 
         self.controls = Controls(
@@ -81,6 +81,9 @@ class Car(RelativeSprite, CollisionObject):
     COLLISION_MARGIN = 3
 
     def recompute_pts(self):
+        self._pts = None
+
+    def _recompute_pts(self):
         pts = [
             ((- (self.original_size[0] / 2)) + self.COLLISION_MARGIN,
              (- (self.original_size[1] / 2)) + self.COLLISION_MARGIN),
@@ -106,7 +109,13 @@ class Car(RelativeSprite, CollisionObject):
             (x + self.position[0], y + self.position[1])
             for (x, y) in pts
         ]
-        self.pts = pts
+        self._pts = pts
+
+    @property
+    def pts(self):
+        if self._pts is None:
+            self._recompute_pts()
+        return self._pts
 
     def update_image(self):
         # The gfx are oriented to the up side, but radians=0 == right

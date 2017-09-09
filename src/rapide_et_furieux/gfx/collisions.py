@@ -24,8 +24,6 @@ class CollisionObject(object):
         # they are just here so the algorithms stay the same
         # for everything
         self.radians = 0  # radians = 0 : object is turned to the right
-        self.position = (0, 0)  # center
-
         # speed relative to the object, not the track !
         self.speed = (0, 0)
 
@@ -48,6 +46,8 @@ Collision = collections.namedtuple(
 
 
 class CollisionHandler(object):
+    MIN_SQ_DISTANCE_FOR_MOVING_COLLISION = (assets.TILE_SIZE[0] * 1.5) ** 2
+
     def __init__(self, racetrack, game_settings):
         self.game_settings = game_settings
         self.racetrack = racetrack
@@ -286,11 +286,18 @@ class CollisionHandler(object):
                 ),
                 self.racetrack.cars,
             ]
-        for moving_line in util.pairwise(moving.pts):
-            for obstacle in itertools.chain(*obstacles):
-                if obstacle is moving:
-                    # ignore self
+        for obstacle in itertools.chain(*obstacles):
+            if obstacle is moving:
+                # ignore self
+                continue
+            if hasattr(obstacle, 'position'):
+                p1 = moving.position
+                p2 = obstacle.position
+                dist = util.distance_sq_pt_to_pt(p1, p2)
+                if dist >= self.MIN_SQ_DISTANCE_FOR_MOVING_COLLISION:
+                    # not close enough
                     continue
+            for moving_line in util.pairwise(moving.pts):
                 for obstacle_line in util.pairwise(obstacle.pts):
                     # did we collide ?
                     if not self.can_collide(moving_line, obstacle_line):
