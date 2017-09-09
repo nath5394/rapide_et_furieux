@@ -67,6 +67,10 @@ class Car(RelativeSprite, CollisionObject):
 
         self.can_move = False
 
+        self.extra_drawers = set()
+        self.weapons = {}  # weapon --> number of ammos
+        self.weapon_observers = set()
+
         self.recompute_pts()
         self.update_image()
 
@@ -340,6 +344,10 @@ class Car(RelativeSprite, CollisionObject):
 
     def draw(self, screen):
         super().draw(screen)
+
+        for drawer in self.extra_drawers:
+            drawer.draw(screen)
+
         if not self.parent.debug:
             return
         # it would be faster to draw the rectangle on the image itself
@@ -353,3 +361,10 @@ class Car(RelativeSprite, CollisionObject):
                 (b[0] + p[0], b[1] + p[1]),
                 2
             )
+
+    def add_weapon(self, weapon, count):
+        if weapon in self.weapons:
+            count += self.weapons[weapon]
+        self.weapons[weapon] = count
+        for obs in self.weapon_observers:
+            obs()

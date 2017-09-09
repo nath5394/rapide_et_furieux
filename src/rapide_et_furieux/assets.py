@@ -8,6 +8,16 @@ import pygame
 TILE_SIZE = (128, 128)
 BONUS_SIZE = (34, 34)
 
+BACKGROUND_LAYER = -1
+RACE_TRACK_LAYER = 50
+RACE_TRACK_MINIATURE_LAYER = 100
+ELEMENT_SELECTOR_LAYER = 150
+ELEMENT_SELECTOR_ARROWS_LAYER = 160
+WEAPON_SELECTOR_LAYER = 150
+OSD_LAYER = 250
+MOUSE_CURSOR_LAYER = 500
+
+
 ARROW_UP = ("rapide_et_furieux.gfx.ui", "arrowUp.png")
 ARROW_DOWN = ("rapide_et_furieux.gfx.ui", "arrowDown.png")
 RED_LINE = ("rapide_et_furieux.gfx.ui", "red_line.png")
@@ -81,6 +91,7 @@ BARRELS = [
     ]
 ]
 
+BULLET = ("rapide_et_furieux.gfx.weapons", "bulletBeigeSilver.png")
 BULLETS = [
     ("rapide_et_furieux.gfx.weapons",
      "bullet%sSilver.png" % (color[0]), color[1])
@@ -98,17 +109,20 @@ GUNS = [
     for idx in range(0, 11)
 ]
 
-LASERS = [
-    ("rapide_et_furieux.gfx.weapons", "laserBlue16.png", (0, 0, 255)),
-    ("rapide_et_furieux.gfx.weapons", "laserGreen10.png", (0, 255, 0)),
-    ("rapide_et_furieux.gfx.weapons", "laserRed16.png", (255, 0, 0)),
-]
+LASERS = {
+    (0, 0, 255): ("rapide_et_furieux.gfx.weapons", "laserBlue16.png"),
+    (0, 255, 0): ("rapide_et_furieux.gfx.weapons", "laserGreen10.png"),
+    (255, 0, 0): ("rapide_et_furieux.gfx.weapons", "laserRed16.png"),
+}
+
+MISSILE = ("rapide_et_furieux.gfx.weapons", "spr_missile.png")
 
 SCRATCHS = [
     ("rapide_et_furieux.gfx.weapons", "scratch%d.png" % (idx))
     for idx in range(1, 4)
 ]
 
+SHIELD = ("rapide_et_furieux.gfx.weapons", "shield3.png")
 SHIELDS = [
     ("rapide_et_furieux.gfx.weapons", "shield%d.png" % (idx))
     for idx in range(1, 4)
@@ -179,6 +193,7 @@ OBJECTS = [
 ]
 
 BONUSES = {
+    color[1]:
     ("rapide_et_furieux.gfx.bonuses", "powerup%s_bolt.png" % color[0], color[1])
     for color in [
         ('Blue', (0, 0, 255)),
@@ -268,7 +283,8 @@ def load_resources():
     rsc.update({obj_rsc[:2]: load_image(obj_rsc[:2]) for obj_rsc in CARS})
     rsc.update({obj_rsc[:2]: load_image(obj_rsc[:2])
                 for obj_rsc in MOTORCYCLES})
-    rsc.update({obj_rsc[:2]: load_image(obj_rsc[:2]) for obj_rsc in BONUSES})
+    rsc.update({obj_rsc[:2]: load_image(obj_rsc[:2])
+                for obj_rsc in BONUSES.values()})
     rsc.update({
         obj_rsc: load_image(obj_rsc)
         for explosions in EXPLOSIONS
@@ -276,12 +292,13 @@ def load_resources():
     })
     rsc.update({obj_rsc[:2]: load_image(obj_rsc[:2]) for obj_rsc in BARRELS})
     rsc.update({obj_rsc[:2]: load_image(obj_rsc[:2]) for obj_rsc in BULLETS})
-    rsc.update({obj_rsc[:2]: load_image(obj_rsc[:2]) for obj_rsc in LASERS})
+    rsc.update({obj_rsc: load_image(obj_rsc) for obj_rsc in LASERS.values()})
     rsc.update({obj_rsc: load_image(obj_rsc) for obj_rsc in GUNS})
     rsc.update({obj_rsc: load_image(obj_rsc) for obj_rsc in SCRATCHS})
     rsc.update({obj_rsc: load_image(obj_rsc) for obj_rsc in SHIELDS})
     rsc[TURRET_BASE] = load_image(TURRET_BASE)
     rsc[MINE] = load_image(MINE)
+    rsc[MISSILE] = load_image(MISSILE)
     g_resources = rsc
 
 

@@ -18,14 +18,10 @@ from .gfx.cars.ia import WaypointManager
 from .gfx.cars.player import PlayerCar
 from .gfx.racetrack import RaceTrack
 from .gfx.racetrack import RaceTrackMiniature
+from .gfx.weapons.selector import WeaponSelector
 
 
 CAPTION = "Rapide et Furieux {}".format(util.VERSION)
-
-BACKGROUND_LAYER = -1
-RACE_TRACK_LAYER = 50
-RACE_TRACK_MINIATURE_LAYER = 100
-OSD_LAYER = 250
 
 COUNTDOWN = 3
 
@@ -49,14 +45,14 @@ class Game(object):
                                          (self.screen_size[0] / 3, 5))
         self.osd_message.show("{} - {}".format(CAPTION, track_filepath))
         if DEBUG:
-            util.register_drawer(OSD_LAYER, self.osd_message)
+            util.register_drawer(assets.OSD_LAYER, self.osd_message)
 
         self.race_track = None
         self.player = None
         self.race_track_miniature = None
 
         self.background = ui.Background()
-        util.register_drawer(BACKGROUND_LAYER, self.background)
+        util.register_drawer(assets.BACKGROUND_LAYER, self.background)
 
         logger.info("Initializing ...")
         self.osd_message.show("Initializing ...")
@@ -69,7 +65,7 @@ class Game(object):
             fps_counter = ui.FPSCounter(self.font, position=(
                 self.screen.get_size()[0] - 128, 0
             ))
-            util.register_drawer(OSD_LAYER - 1, fps_counter)
+            util.register_drawer(assets.OSD_LAYER - 1, fps_counter)
             util.register_animator(fps_counter.on_frame)
 
         util.register_animator(self.track_player_car)
@@ -105,11 +101,11 @@ class Game(object):
         self.background.set_color(self.game_settings['background_color'])
         self.race_track = RaceTrack(grid_margin=0, debug=DEBUG,
                                     game_settings=self.game_settings)
-        util.register_drawer(RACE_TRACK_LAYER, self.race_track)
+        util.register_drawer(assets.RACE_TRACK_LAYER, self.race_track)
         self.race_track.unserialize(data['race_track'])
         self.race_track.collisions.precompute_static()
         self.race_track_miniature = RaceTrackMiniature(self.race_track)
-        util.register_drawer(RACE_TRACK_MINIATURE_LAYER,
+        util.register_drawer(assets.RACE_TRACK_MINIATURE_LAYER,
                              self.race_track_miniature)
 
         waypoint_mgmt = WaypointManager.unserialize(
@@ -125,11 +121,14 @@ class Game(object):
         util.register_animator(self.race_track.collisions.precompute_moving)
         tiles = self.race_track.tiles
         iter_car_rsc = iter(itertools.cycle(assets.CARS))
+        player_car = None
         for (idx, (spawn_point, orientation)) \
                 in enumerate(tiles.get_spawn_points()):
             if idx == 0:
-                car = PlayerCar(next(iter_car_rsc), self.race_track,
-                                self.game_settings, spawn_point, orientation)
+                car = player_car = PlayerCar(
+                    next(iter_car_rsc), self.race_track,
+                    self.game_settings, spawn_point, orientation
+                )
             else:
                 car = IACar(next(iter_car_rsc), self.race_track,
                             self.game_settings, spawn_point, orientation,
@@ -138,6 +137,10 @@ class Game(object):
             util.register_animator(car.move)
             if idx == 0:
                 self.player = car
+
+        weapon_selector = WeaponSelector(player_car)
+        util.register_event_listener(weapon_selector.on_key)
+        util.register_drawer(assets.WEAPON_SELECTOR_LAYER, weapon_selector)
 
         self.game_start = time.time()
         util.register_animator(self.race_starter)

@@ -18,14 +18,6 @@ from .gfx.tiles import Tile
 
 CAPTION = "Rapide et Furieux - Level editor - {}".format(util.VERSION)
 
-BACKGROUND_LAYER = -1
-ELEMENT_SELECTOR_LAYER = 100
-ELEMENT_SELECTOR_ARROWS_LAYER = 150
-RACE_TRACK_LAYER = 50
-RACE_TRACK_MINIATURE_LAYER = 100
-MOUSE_CURSOR_LAYER = 500
-OSD_LAYER = 250
-
 SCROLLING_BORDER = 10
 SCROLLING_SPEED = 512
 
@@ -45,7 +37,7 @@ class Editor(object):
             self.font, 42, (self.screen_size[0] / 3, 10)
         )
         self.osd_message.show("{} - {}".format(CAPTION, file_path))
-        util.register_drawer(OSD_LAYER, self.osd_message)
+        util.register_drawer(assets.OSD_LAYER, self.osd_message)
 
         self.selected = None
         self.arrow_up = None
@@ -100,7 +92,7 @@ class Editor(object):
         fps_counter = ui.FPSCounter(self.font, position=(
             self.screen.get_size()[0] - 128, 0
         ))
-        util.register_drawer(OSD_LAYER - 1, fps_counter)
+        util.register_drawer(assets.OSD_LAYER - 1, fps_counter)
         util.register_animator(fps_counter.on_frame)
 
         self.arrow_up = ui.Arrow(assets.ARROW_UP)
@@ -125,12 +117,13 @@ class Editor(object):
         self.race_track_miniature = RaceTrackMiniature(self.race_track)
         self.background = ui.Background()
 
-        util.register_drawer(BACKGROUND_LAYER, self.background)
-        util.register_drawer(ELEMENT_SELECTOR_LAYER, self.element_selector)
+        util.register_drawer(assets.BACKGROUND_LAYER, self.background)
+        util.register_drawer(assets.ELEMENT_SELECTOR_LAYER,
+                             self.element_selector)
         for (control, offset, button) in self.element_selector_controls:
-            util.register_drawer(ELEMENT_SELECTOR_ARROWS_LAYER, control)
-        util.register_drawer(RACE_TRACK_LAYER, self.race_track)
-        util.register_drawer(RACE_TRACK_MINIATURE_LAYER,
+            util.register_drawer(assets.ELEMENT_SELECTOR_ARROWS_LAYER, control)
+        util.register_drawer(assets.RACE_TRACK_LAYER, self.race_track)
+        util.register_drawer(assets.RACE_TRACK_MINIATURE_LAYER,
                              self.race_track_miniature)
         util.register_event_listener(self.on_click)
         util.register_event_listener(self.on_key)
@@ -249,7 +242,7 @@ class Editor(object):
                 self.selected.destroy()
             self.selected = selected.copy()
             self.selected.relative = position
-            util.register_drawer(MOUSE_CURSOR_LAYER, self.selected)
+            util.register_drawer(assets.MOUSE_CURSOR_LAYER, self.selected)
             logger.info("Selected: %s", self.selected)
             return
 
