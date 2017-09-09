@@ -417,10 +417,14 @@ class WaypointManager(object):
         # ### simple A* algorithm to find the most likely best path
 
         first = (0xFFFFFFF, None)
-        for pt in self.grid_waypoints[
-                    int(origin[0] / assets.TILE_SIZE[0]),
-                    int(origin[1] / assets.TILE_SIZE[1]),
-                ]:
+        origin_grid = (int(origin[0] / assets.TILE_SIZE[0]),
+                      int(origin[1] / assets.TILE_SIZE[1]))
+        if origin_grid in self.grid_waypoints:
+            origins = self.grid_waypoints[origin_grid]
+        else:
+            logger.warning("AI: No waypoint close to {} !".format(origin_grid))
+            origins = self.waypoints
+        for pt in origins:
             dist = util.distance_sq_pt_to_pt(pt.position, origin)
             if dist < first[0]:
                 first = (dist, pt)
