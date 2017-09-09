@@ -268,6 +268,7 @@ class WaypointManager(object):
     COLOR_UNREACHABLE = pygame.Color(200, 200, 200, 255)
     COLOR_REACHABLE = pygame.Color(0, 255, 0, 255)
     COLOR_PATH = pygame.Color(0, 255, 0, 255)
+    MAX_PATH_PTS = 5
 
     def __init__(self, game_settings, race_track):
         self.parent = race_track
@@ -418,7 +419,7 @@ class WaypointManager(object):
 
         first = (0xFFFFFFF, None)
         origin_grid = (int(origin[0] / assets.TILE_SIZE[0]),
-                      int(origin[1] / assets.TILE_SIZE[1]))
+                       int(origin[1] / assets.TILE_SIZE[1]))
         if origin_grid in self.grid_waypoints:
             origins = self.grid_waypoints[origin_grid]
         else:
@@ -435,10 +436,13 @@ class WaypointManager(object):
             pt:
             # known cost to go to the node + estimated cost to go to the
             # target
-            (util.distance_pt_to_pt(origin, pt.position) +
-             self.pathfinding_heuristic(
-                 car, origin, pt.position, target.position
-             ))
+            (
+                (util.distance_pt_to_pt(origin, pt.position) +
+                 self.pathfinding_heuristic(
+                     car, origin, pt.position, target.position
+                 )),
+                0
+            )
             for pt in to_examine
         }
         g_scores = {
@@ -454,7 +458,7 @@ class WaypointManager(object):
             lowest_score = 0xFFFFFFF
             current = None
             for wpt in to_examine:
-                score = f_scores[wpt]
+                (score, nb_pts) = f_scores[wpt]
                 if score < lowest_score:
                     lowest_score = score
                     current = wpt
@@ -468,6 +472,11 @@ class WaypointManager(object):
             if current is target:
                 end_of_path = [current.position]
                 break
+
+            if nb_pts > self.MAX_PATH_PTS:
+                end_of_path = [current.position]
+                break
+
             to_examine.remove(current)
             examined.add(current)
 
@@ -488,9 +497,9 @@ class WaypointManager(object):
                 came_from[neighbor] = current
                 g_scores[neighbor] = g_score
 
-                f_scores[neighbor] = g_score + self.pathfinding_heuristic(
+                f_scores[neighbor] = (g_score + self.pathfinding_heuristic(
                     car, origin, neighbor.position, target.position
-                )
+                ), nb_pts + 1)
 
         if end_of_path is None:
             raise Exception("[{}] Failed to found path from {} to {}".format(
