@@ -279,6 +279,7 @@ class RaceTrack(RelativeGroup):
         self.crap_areas = []
         self.checkpoints = []
         self.cars = []
+        self.bonuses = set()
 
         self.font = pygame.font.Font(None, 42)
 
@@ -339,6 +340,7 @@ class RaceTrack(RelativeGroup):
             to_draw = [
                 self.get_visibles_optim(screen_rect, self.grid_objects),
                 self.get_visibles(screen_rect, self.cars),
+                self.get_visibles(screen_rect, self.bonuses),
                 self.borders,
                 self.crap_areas,
                 self.checkpoints,
@@ -347,10 +349,17 @@ class RaceTrack(RelativeGroup):
             to_draw = [
                 self.get_visibles_optim(screen_rect, self.grid_objects),
                 self.get_visibles(screen_rect, self.cars),
+                self.get_visibles(screen_rect, self.bonuses),
             ]
 
         for el in itertools.chain(*to_draw):
             el.draw(screen)
+
+    def add_bonus(self, obj):
+        self.bonuses.add(obj)
+
+    def remove_bonus(self, obj):
+        self.bonuses.remove(obj)
 
     def add_object(self, obj):
         self.objects.append(obj)

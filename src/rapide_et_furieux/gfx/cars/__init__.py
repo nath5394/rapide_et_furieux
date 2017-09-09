@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import collections
 import math
 
 import pygame
@@ -11,16 +10,12 @@ from ... import util
 from ..collisions import CollisionObject
 
 
-Controls = collections.namedtuple(
-    typename="controls",
-    field_names=(
-        # all are booleans
-        "accelerate",
-        "brake",
-        "steer_left",
-        "steer_right",
-    ),
-)
+class Controls(object):
+    def __init__(self, accelerate, brake, steer_left, steer_right):
+        self.accelerate = accelerate
+        self.brake = brake
+        self.steer_left = steer_left
+        self.steer_right = steer_right
 
 
 class Car(RelativeSprite, CollisionObject):

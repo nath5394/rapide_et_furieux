@@ -115,6 +115,9 @@ SHIELDS = [
 
 TURRET_BASE = ("rapide_et_furieux.gfx.weapons", "turretBase_small.png")
 
+OIL = ("rapide_et_furieux.gfx.objects", "oil.png")
+MINE = ("rapide_et_furieux.gfx.weapons", "ballBlack_07.png")
+
 MOTORCYCLES = [
     ("rapide_et_furieux.gfx.cars", "motorcycle_%s.png" % (color[0]), color[1])
     for color in [
@@ -154,7 +157,7 @@ OBJECTS = [
     ("rapide_et_furieux.gfx.objects", "cone_down.png"),
     ("rapide_et_furieux.gfx.objects", "cone_straight.png"),
     ("rapide_et_furieux.gfx.objects", "lights.png"),
-    ("rapide_et_furieux.gfx.objects", "oil.png"),
+    OIL,
     ("rapide_et_furieux.gfx.objects", "rock1.png"),
     ("rapide_et_furieux.gfx.objects", "rock2.png"),
     ("rapide_et_furieux.gfx.objects", "rock3.png"),
@@ -174,8 +177,14 @@ OBJECTS = [
     ("rapide_et_furieux.gfx.objects", "tribune_overhang_striped.png"),
 ]
 
-POWERUPS = {
-    ("rapide_et_furieux.gfx.powerups", "powerupYellow_bolt.png"),
+BONUSES = {
+    ("rapide_et_furieux.gfx.bonuses", "powerup%s_bolt.png" % color[0], color[1])
+    for color in [
+        ('Blue', (0, 0, 255)),
+        ('Green', (0, 255, 0)),
+        ('Red', (255, 0, 0)),
+        ('Yellow', (255, 255, 0)),
+    ]
 }
 
 TILES = [
@@ -258,7 +267,7 @@ def load_resources():
     rsc.update({obj_rsc[:2]: load_image(obj_rsc[:2]) for obj_rsc in CARS})
     rsc.update({obj_rsc[:2]: load_image(obj_rsc[:2])
                 for obj_rsc in MOTORCYCLES})
-    rsc.update({obj_rsc: load_image(obj_rsc) for obj_rsc in POWERUPS})
+    rsc.update({obj_rsc[:2]: load_image(obj_rsc[:2]) for obj_rsc in BONUSES})
     rsc.update({
         obj_rsc: load_image(obj_rsc)
         for explosions in EXPLOSIONS
@@ -271,6 +280,7 @@ def load_resources():
     rsc.update({obj_rsc: load_image(obj_rsc) for obj_rsc in SCRATCHS})
     rsc.update({obj_rsc: load_image(obj_rsc) for obj_rsc in SHIELDS})
     rsc[TURRET_BASE] = load_image(TURRET_BASE)
+    rsc[MINE] = load_image(MINE)
     g_resources = rsc
 
 

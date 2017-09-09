@@ -344,7 +344,7 @@ class WaypointManager(object):
         for d in data['paths']:
             paths.add(Path.unserialize(d, wpts))
         wm = WaypointManager(game_settings, race_track)
-        wm.waypoints = wpts.values()
+        wm.waypoints = set(wpts.values())
         wm.paths = paths
         return wm
 

@@ -12,6 +12,7 @@ import pygame
 from . import assets
 from . import util
 from .gfx import ui
+from .gfx.bonuses import BonusGenerator
 from .gfx.cars.ia import IACar
 from .gfx.cars.ia import WaypointManager
 from .gfx.cars.player import PlayerCar
@@ -115,6 +116,10 @@ class Game(object):
             data['ia'], self.game_settings, self.race_track
         )
         waypoint_mgmt.optimize(self.race_track)
+
+        bonus = BonusGenerator(self.race_track, self.game_settings,
+                               waypoint_mgmt)
+        util.register_animator(bonus.add_bonus)
 
         # instantiate cars
         util.register_animator(self.race_track.collisions.precompute_moving)
