@@ -266,7 +266,7 @@ def distance_pt_to_pt(pt_a, pt_b):
 
 def distance_pt_to_line(line, pt):
     ((x0, y0), (x1, y1)) = line
-    (x2, y2) = p2
+    (x2, y2) = pt
     nom = abs(
         ((y2 - y1) * x0) -
         ((x2 - x1) * y0) +
@@ -280,13 +280,6 @@ def distance_pt_to_line(line, pt):
 
 def distance_sq_pt_to_pt(pt_a, pt_b):
     return (
-        ((pt_b[0] - pt_a[0]) ** 2) +
-        ((pt_b[1] - pt_a[1]) ** 2)
-    )
-
-
-def distance_pt_to_pt(pt_a, pt_b):
-    return math.sqrt(
         ((pt_b[0] - pt_a[0]) ** 2) +
         ((pt_b[1] - pt_a[1]) ** 2)
     )
