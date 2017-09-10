@@ -22,7 +22,7 @@ class Laser(RelativeSprite):
     ) ** 2
     DAMAGE = 50
     GRID_MARGE = 10
-    EXPLOSION_SIZE = (20, 20)
+    EXPLOSION_SIZE = 20
     EXPLOSION_TIME = 0.5
 
     def __init__(self, race_track, shooter, position, angle):

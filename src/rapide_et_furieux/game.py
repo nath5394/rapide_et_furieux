@@ -30,6 +30,7 @@ from .gfx.ui.console import (
     CommandShowFPS,
     Console,
 )
+from .gfx.weapons.common import load_explosions
 from .gfx.weapons.selector import WeaponSelector
 
 
@@ -66,6 +67,7 @@ class Game(object):
 
     def _init(self):
         assets.load_resources()
+        load_explosions()
 
         if DEBUG:
             fps_counter = ui.FPSCounter(self.font, position=(
