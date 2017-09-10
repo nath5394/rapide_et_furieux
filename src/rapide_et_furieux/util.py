@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 GAME_SETTINGS_TEMPLATE = {
     # default values
-    'bonus_interval': 5.0,
+    'bonus_interval': 1.0,
     'checkpoint_min_distance': 256,
     'waypoint_min_distance': 64,
     'background_color': (0, 0, 0),
