@@ -76,8 +76,8 @@ class Editor(object):
             for angle in [0, 45, 90, 135, 180, 225, 270, 315]
         ]
         elements += [
-            RaceTrackObject(obj_rsc, angle)
-            for obj_rsc in assets.POWERUPS
+            RaceTrackObject(obj_rsc[:2], angle)
+            for obj_rsc in assets.BONUSES.values()
             for angle in [0, 45, 90, 135, 180, 225, 270, 315]
         ]
         elements += [
