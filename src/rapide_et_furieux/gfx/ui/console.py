@@ -43,7 +43,7 @@ class CommandKillAll(object):
             self.race_track.remove_car(car)
             util.unregister_animator(car.move)
             nb += 1
-        self.console.add_line("{} AI removed".format(nb))
+        self.console.add_line("{} cars removed".format(nb))
 
 
 class CommandAddAI(object):
@@ -190,6 +190,14 @@ class Console(logging.Handler):
                 self.history_idx = 0
             if len(self.history) > 0:
                 txt = self.history[self.history_idx]
+        elif k == pygame.K_TAB:
+            nb = 0
+            for cmd in self.commands:
+                if cmd.startswith(txt):
+                    txt = cmd
+                    nb += 1
+            if nb == 1:
+                txt += " "
         elif k in self.valid_chars:
             k = chr(k)
             if mods & pygame.KMOD_SHIFT:
