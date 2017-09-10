@@ -4,7 +4,7 @@ from . import common
 from ... import assets
 
 
-class GuidedMissile(object):
+class GuidedMissileGenerator(object):
     category = common.CATEGORY_GUIDED
 
     def __init__(self):
@@ -21,4 +21,4 @@ class GuidedMissile(object):
         return hash("missile")
 
     def __eq__(self, o):
-        return isinstance(o, GuidedMissile)
+        return isinstance(o, GuidedMissileGenerator)

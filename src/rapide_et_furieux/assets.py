@@ -109,6 +109,10 @@ GUNS = [
     ("rapide_et_furieux.gfx.weapons", "gun%02d.png" % (idx))
     for idx in range(0, 11)
 ]
+GUN_LASER = ("rapide_et_furieux.gfx.weapons", "gun00.png")
+GUN_MACHINGUN = ("rapide_et_furieux.gfx.weapons", "gun05.png")
+GUN_MISSILE = ("rapide_et_furieux.gfx.weapons", "gun01.png")
+GUN_TANKSHELL = ("rapide_et_furieux.gfx.weapons", "gun06.png")
 
 LASERS = {
     (0, 0, 255): ("rapide_et_furieux.gfx.weapons", "laserBlue16.png"),

@@ -6,7 +6,7 @@ from . import common
 from ... import assets
 
 
-class Mine(object):
+class MineGenerator(object):
     category = common.CATEGORY_COUNTER_MEASURES
 
     def __init__(self):
@@ -30,4 +30,4 @@ class Mine(object):
         return hash("mine")
 
     def __eq__(self, o):
-        return isinstance(o, Mine)
+        return isinstance(o, MineGenerator)

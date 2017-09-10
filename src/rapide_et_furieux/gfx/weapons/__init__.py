@@ -15,18 +15,18 @@ def get_weapons():
         # Weapons must implement a method 'activate(car)'
         # which we return a gun object with methods: 'deactivate()' and 'fire()'
         common.CATEGORY_GUNS: [
-            laser.ForwardLaser(),
-            shell.TankShell(),
+            laser.ForwardLaserGenerator(),
+            shell.TankShellGenerator(),
         ],
         common.CATEGORY_GUIDED: [
-            laser.AutomaticLaser(),
-            machinegun.MachineGun(),
-            missile.GuidedMissile(),
+            laser.AutomaticLaserGenerator(),
+            machinegun.MachineGunGenerator(),
+            missile.GuidedMissileGenerator(),
         ],
         common.CATEGORY_COUNTER_MEASURES: [
-            shield.Shield(),
-            mine.Mine(),
-            oil.Oil(),
+            shield.ShieldGenerator(),
+            mine.MineGenerator(),
+            oil.OilGenerator(),
         ],
     }
 
@@ -35,12 +35,12 @@ def get_weapons_probabilities():
     # must be kept sorted by probabilities
     return [
         # probability, weapon, ammos
-        (1.0, laser.ForwardLaser, 5),
-        (1.0, shell.TankShell, 1),
-        (1.0, laser.AutomaticLaser, 3),
-        (1.0, machinegun.MachineGun, 3),
-        (1.0, missile.GuidedMissile, 1),
-        (1.0, shield.Shield, 1),
-        (1.0, mine.Mine, 1),
-        (1.0, oil.Oil, 1),
+        (1.0, laser.ForwardLaserGenerator, 5),
+        (1.0, shell.TankShellGenerator, 1),
+        (1.0, laser.AutomaticLaserGenerator, 3),
+        (1.0, machinegun.MachineGunGenerator, 3),
+        (1.0, missile.GuidedMissileGenerator, 1),
+        (1.0, shield.ShieldGenerator, 1),
+        (1.0, mine.MineGenerator, 1),
+        (1.0, oil.OilGenerator, 1),
     ]

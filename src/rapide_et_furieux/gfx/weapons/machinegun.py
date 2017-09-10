@@ -6,7 +6,7 @@ from . import common
 from ... import assets
 
 
-class MachineGun(object):
+class MachineGunGenerator(object):
     category = common.CATEGORY_GUIDED
 
     def __init__(self):
@@ -24,4 +24,4 @@ class MachineGun(object):
         return hash("machingun")
 
     def __eq__(self, o):
-        return isinstance(o, MachineGun)
+        return isinstance(o, MachineGunGenerator)

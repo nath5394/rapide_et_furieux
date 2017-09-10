@@ -6,7 +6,7 @@ from . import common
 from ... import assets
 
 
-class Oil(object):
+class OilGenerator(object):
     category = common.CATEGORY_COUNTER_MEASURES
 
     def __init__(self):
@@ -30,4 +30,4 @@ class Oil(object):
         return hash("oil")
 
     def __eq__(self, o):
-        return isinstance(o, Oil)
+        return isinstance(o, OilGenerator)

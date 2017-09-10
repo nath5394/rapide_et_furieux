@@ -15,6 +15,20 @@ class PlayerCar(Car):
     def on_frame(self, frame_interval):
         keys = pygame.key.get_pressed()
 
+        if ((bool(keys[pygame.K_RCTRL]) or bool(keys[pygame.K_LCTRL])) and
+                self.weapon):
+            self.weapon.fire()
+            count = self.weapons[self.weapon.parent]
+            count -= 1
+            if count <= 0:
+                self.weapon.deactivate()
+                self.weapons.pop(self.weapon.parent)
+                self.weapon = None
+            else:
+                self.weapons[self.weapon.parent] = count
+            for obs in self.weapon_observers:
+                obs()
+
         accelerate = (
             bool(keys[pygame.K_UP]) or bool(keys[pygame.K_w]) or
             bool(keys[pygame.K_KP8])

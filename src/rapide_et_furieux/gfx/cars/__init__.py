@@ -75,6 +75,7 @@ class Car(RelativeSprite, CollisionObject):
         self.extra_drawers = set()
         self.weapons = {}  # weapon --> number of ammos
         self.weapon_observers = set()
+        self.weapon = None  # active weapon
 
         self.recompute_pts()
         self.update_image()
@@ -351,7 +352,7 @@ class Car(RelativeSprite, CollisionObject):
         super().draw(screen)
 
         for drawer in self.extra_drawers:
-            drawer.draw(screen)
+            drawer.draw(screen, self)
 
         if not self.parent.debug:
             return

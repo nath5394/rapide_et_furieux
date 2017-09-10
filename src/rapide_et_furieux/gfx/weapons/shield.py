@@ -6,7 +6,7 @@ from . import common
 from ... import assets
 
 
-class Shield(object):
+class ShieldGenerator(object):
     category = common.CATEGORY_COUNTER_MEASURES
 
     def __init__(self):
@@ -30,4 +30,4 @@ class Shield(object):
         return hash("shield")
 
     def __eq__(self, o):
-        return isinstance(o, Shield)
+        return isinstance(o, ShieldGenerator)

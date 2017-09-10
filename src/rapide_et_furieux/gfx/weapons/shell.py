@@ -6,7 +6,7 @@ from . import common
 from ... import assets
 
 
-class TankShell(object):
+class TankShellGenerator(object):
     category = common.CATEGORY_GUNS
 
     def __init__(self):
@@ -27,4 +27,4 @@ class TankShell(object):
         return hash("Tank shell")
 
     def __eq__(self, o):
-        return isinstance(o, TankShell)
+        return isinstance(o, TankShellGenerator)

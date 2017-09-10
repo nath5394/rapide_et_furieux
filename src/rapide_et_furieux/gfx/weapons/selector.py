@@ -228,17 +228,20 @@ class WeaponSelector(object):
         idx = -1
         if k != self.active_category or self.active_weapon is None:
             self.active_category = k
+            self.active_weapon = None
         else:
+            self.active_category = k
             wps = self.weapons[self.active_category]
             for (idx, weapon) in enumerate(wps):
-                if weapon == self.active_weapon.weapon:
+                if weapon == self.active_weapon.parent:
                     break
             else:
                 assert False
 
+        wps = self.weapons[self.active_category]
         wps = wps[idx + 1:] + wps[:idx]
         if idx >= 0:
-            wps.append(self.active_weapon.weapon)
+            wps.append(self.active_weapon.parent)
 
         if self.active_weapon is not None:
             self.active_weapon.deactivate()
@@ -251,7 +254,6 @@ class WeaponSelector(object):
                 self.active_weapon = weapon.activate(
                     self.race_track, self.player_car
                 )
-                self.active_category = self.active_weapon.category
                 break
 
         self.refresh()
