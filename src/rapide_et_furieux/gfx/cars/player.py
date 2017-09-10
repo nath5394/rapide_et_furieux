@@ -21,7 +21,6 @@ class PlayerCar(Car):
                 count = self.weapons[self.weapon.parent]
                 count -= 1
                 if count <= 0:
-                    self.weapon.deactivate()
                     self.weapons.pop(self.weapon.parent)
                     self.weapon = None
                 else:
