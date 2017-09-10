@@ -20,7 +20,7 @@ class WeaponSelector(object):
         'selected': {
             'high': (255, 246, 0, 255),
             'low': (195, 188, 0, 255),
-        }
+        },
     }
     CATEGORY_NAME_SIZE = (300, 36)
     WEAPON_SIZE = (300, 48)
@@ -28,7 +28,8 @@ class WeaponSelector(object):
     WEAPON_NAME_SIZE = (200, 48)
     WIDTH_RECT = 2
 
-    def __init__(self, player_car, position=(0, -1)):
+    def __init__(self, race_track, player_car, position=(0, -1)):
+        self.race_track = race_track
         self.player_car = player_car
         self.position = position
 
@@ -54,7 +55,9 @@ class WeaponSelector(object):
                 len(self.player_car.weapons.keys()) > 0):
             weapon = list(self.player_car.weapons.keys())[0]
             if self.player_car.weapons[weapon] > 0:
-                self.active_weapon = weapon
+                self.active_weapon = weapon.activate(
+                    self.race_track, self.player_car
+                )
                 for category_idx in range(0, NB_CATEGORIES):
                     wps = self.weapons[category_idx]
                     if weapon in wps:
@@ -141,7 +144,7 @@ class WeaponSelector(object):
                     'none'
                     if nb <= 0 else
                     'selected'
-                    if weapon == self.active_weapon else
+                    if weapon == self.active_weapon.parent else
                     'unselected'
                 ]
                 pygame.draw.rect(
@@ -180,7 +183,7 @@ class WeaponSelector(object):
                         (self.CATEGORY_NAME_SIZE[1] +
                             (self.WEAPON_SIZE[1] * y) +
                             (self.WEAPON_ICON_SIZE[1] -
-                            weapon.image.get_size()[1]) / 2),
+                             weapon.image.get_size()[1]) / 2),
                     )
                 )
                 weapon_name = self.font.render(
@@ -196,7 +199,7 @@ class WeaponSelector(object):
                         (self.CATEGORY_NAME_SIZE[1] +
                             (self.WEAPON_SIZE[1] * y) +
                             (self.WEAPON_NAME_SIZE[1] -
-                            weapon_name.get_size()[1]) / 2),
+                             weapon_name.get_size()[1]) / 2),
                     )
                 )
 
@@ -219,32 +222,33 @@ class WeaponSelector(object):
         if k >= NB_CATEGORIES:
             return
 
+        idx = -1
         if k != self.active_category or self.active_weapon is None:
             self.active_category = k
-            self.active_weapon = None
-            for weapon in self.weapons[self.active_category]:
-                if weapon not in self.player_car.weapons:
-                    continue
-                nb = self.player_car.weapons[weapon]
-                if nb > 0:
-                    self.active_weapon = weapon
-                    break
         else:
             wps = self.weapons[self.active_category]
             for (idx, weapon) in enumerate(wps):
-                if weapon == self.active_weapon:
+                if weapon == self.active_weapon.weapon:
                     break
             else:
                 assert False
 
-            wps = wps[idx + 1:] + wps[:idx] + [wps[idx]]
-            for weapon in wps:
-                if weapon not in self.player_car.weapons:
-                    continue
-                nb = self.player_car.weapons[weapon]
-                if nb > 0:
-                    self.active_weapon = weapon
-                    break
+        wps = wps[idx + 1:] + wps[:idx]
+        if idx >= 0:
+            wps.append(self.active_weapon.weapon)
+
+        if self.active_weapon is not None:
+            self.active_weapon.deactivate()
+            self.active_weapon = None
+        for weapon in wps:
+            if weapon not in self.player_car.weapons:
+                continue
+            nb = self.player_car.weapons[weapon]
+            if nb > 0:
+                self.active_weapon = weapon.activate(
+                    self.race_track, self.player_car
+                )
+                break
 
         self.refresh()
 

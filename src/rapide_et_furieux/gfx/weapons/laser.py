@@ -16,9 +16,10 @@ class Laser(RelativeSprite):
 
 
 class ForwardLaserGun(object):
-    def __init__(self, race_track, car):
+    def __init__(self, parent, race_track, car):
         self.race_track = race_track
         self.car = car
+        self.parent = parent
         self.car.extra_drawers.add(self)
 
     def draw(self, screen):
@@ -40,7 +41,7 @@ class ForwardLaser(object):
         self.image = pygame.transform.rotate(self.image, -90)
 
     def activate(self, race_track, car):
-        return ForwardLaserGun(race_track, car)
+        return ForwardLaserGun(self, race_track, car)
 
     def __str__(self):
         return "Laser"

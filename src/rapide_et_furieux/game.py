@@ -138,7 +138,7 @@ class Game(object):
             if idx == 0:
                 self.player = car
 
-        weapon_selector = WeaponSelector(player_car)
+        weapon_selector = WeaponSelector(self.race_track, player_car)
         util.register_event_listener(weapon_selector.on_key)
         util.register_drawer(assets.WEAPON_SELECTOR_LAYER, weapon_selector)
 
