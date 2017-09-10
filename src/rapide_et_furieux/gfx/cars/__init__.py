@@ -9,6 +9,7 @@ from .. import RelativeSprite
 from ... import assets
 from ... import util
 from ..collisions import CollisionObject
+from ..weapons import common
 
 UNIQUE = 0
 
@@ -281,6 +282,9 @@ class Car(RelativeSprite, CollisionObject):
                 bonus.add_to_car(self)
                 self.parent.remove_bonus(bonus)
 
+    def explode(self):
+        common.Explosion(self.parent, self.position, assets.TILE_SIZE[0], 1.0)
+
     def respawn(self):
         self.health = 100
         self.speed = (0, 0)
@@ -316,6 +320,7 @@ class Car(RelativeSprite, CollisionObject):
 
     def move(self, frame_interval):
         if self.health <= 0:
+            self.explode()
             self.respawn()
 
         if not self.can_move:
