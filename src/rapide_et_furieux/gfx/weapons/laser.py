@@ -114,7 +114,7 @@ class Laser(RelativeSprite):
 
 class ForwardLaserGun(common.Weapon):
     category = common.CATEGORY_GUNS
-    MIN_FIRE_INTERVAL = 0.3
+    MIN_FIRE_INTERVAL = 0.2
 
     def __init__(self, generator, race_track, car):
         super().__init__(generator, car)
