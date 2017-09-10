@@ -1,8 +1,10 @@
+import random
 import time
 
 import pygame
 
 from ... import assets
+from ... import util
 
 
 CATEGORY_GUNS = 0  # straight forward only
@@ -62,8 +64,38 @@ def load_explosions():
 
 
 class Explosion(object):
-    def __init__(self, race_track, position, size, time):
-        pass
+    def __init__(self, race_track, position, size, anim_length):
+        self.frames = random.choice(EXPLOSION_SURFACES[size])
+        self.parent = race_track
+        self.relative = (position[0] - (size / 2), position[1] - (size / 2))
+        self.anim_length = anim_length
+        self.t = 0
+        util.register_drawer(assets.WEAPONS_LAYER, self)
+        util.register_animator(self.anim)
+
+    def disappear(self):
+        util.unregister_drawer(self)
+        util.unregister_animator(self.anim)
+
+    def anim(self, frame_interval):
+        self.t += frame_interval
+        if self.t > self.anim_length:
+            self.disappear()
+
+    @property
+    def absolute(self):
+        p = self.parent.absolute
+        return (
+            p[0] + self.relative[0],
+            p[1] + self.relative[1],
+        )
+
+    def draw(self, screen):
+        frame_idx = int(len(self.frames) * self.t / self.anim_length)
+        screen.blit(
+            self.frames[frame_idx],
+            self.absolute
+        )
 
 
 class Weapon(object):
