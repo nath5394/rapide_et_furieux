@@ -35,12 +35,12 @@ def get_weapons_probabilities():
     # must be kept sorted by probabilities
     return [
         # probability, weapon, ammos
-        (1.0, laser.ForwardLaserGenerator, 10),
-        (1.0, shell.TankShellGenerator, 1),
-        (1.0, laser.AutomaticLaserGenerator, 5),
-        (1.0, machinegun.MachineGunGenerator, 3),
-        (1.0, missile.GuidedMissileGenerator, 1),
+        (1.0, laser.ForwardLaserGenerator, 100),
+        (1.0, shell.TankShellGenerator, 10),
+        (1.0, laser.AutomaticLaserGenerator, 10),
+        (1.0, machinegun.MachineGunGenerator, 300),
+        (0.5, missile.GuidedMissileGenerator, 3),
         (1.0, shield.ShieldGenerator, 1),
-        (1.0, mine.MineGenerator, 1),
-        (1.0, oil.OilGenerator, 1),
+        (1.0, mine.MineGenerator, 3),
+        (1.0, oil.OilGenerator, 2),
     ]
