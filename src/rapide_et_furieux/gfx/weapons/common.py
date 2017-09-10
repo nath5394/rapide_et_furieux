@@ -150,8 +150,8 @@ class Projectile(RelativeSprite):
         angle *= math.pi / 180
         (cos, sin) = (math.cos(angle), math.sin(angle))
         self.relative = (
-            self.relative[0] + ((assets.TILE_SIZE[0] / 3) * cos),
-            self.relative[1] + ((assets.TILE_SIZE[1] / 3) * sin),
+            self.relative[0] + ((assets.TILE_SIZE[0] / 8) * cos),
+            self.relative[1] + ((assets.TILE_SIZE[1] / 8) * sin),
         )
 
         util.register_drawer(assets.WEAPONS_LAYER, self)
