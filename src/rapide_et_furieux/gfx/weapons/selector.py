@@ -1,10 +1,7 @@
 import pygame
 
-from . import (
-    CATEGORY_NAMES,
-    NB_CATEGORIES,
-    get_weapons,
-)
+from . import common
+from . import get_weapons
 
 
 class WeaponSelector(object):
@@ -51,6 +48,9 @@ class WeaponSelector(object):
         self.refresh()
 
     def refresh(self):
+        if self.active_weapon is not None:
+            self.active_category = self.active_weapon.category
+
         if (self.active_weapon is None and
                 len(self.player_car.weapons.keys()) > 0):
             weapon = list(self.player_car.weapons.keys())[0]
@@ -58,7 +58,7 @@ class WeaponSelector(object):
                 self.active_weapon = weapon.activate(
                     self.race_track, self.player_car
                 )
-                for category_idx in range(0, NB_CATEGORIES):
+                for category_idx in range(0, common.NB_CATEGORIES):
                     wps = self.weapons[category_idx]
                     if weapon in wps:
                         self.active_category = category_idx
@@ -67,7 +67,7 @@ class WeaponSelector(object):
         self.image = pygame.Surface(
             (
                 max(self.CATEGORY_NAME_SIZE[0], self.WEAPON_SIZE[0]) *
-                NB_CATEGORIES + 1,
+                common.NB_CATEGORIES + 1,
                 self.CATEGORY_NAME_SIZE[1] +
                 (self.max_weapon_per_category * self.WEAPON_SIZE[1]) + 1
             ),
@@ -78,7 +78,7 @@ class WeaponSelector(object):
         self.image.fill(self.COLORS['none']['low'])
 
         x = 0
-        for category_idx in range(0, NB_CATEGORIES):
+        for category_idx in range(0, common.NB_CATEGORIES):
             nb = 0
             wps = self.weapons[category_idx]
             for weapon in wps:
@@ -113,7 +113,7 @@ class WeaponSelector(object):
                 ),
                 self.WIDTH_RECT
             )
-            category_name = CATEGORY_NAMES[category_idx]
+            category_name = common.CATEGORY_NAMES[category_idx]
             category_name = self.font.render(
                 "{} - {} ({})".format(category_idx + 1, category_name, nb),
                 True, colors['high'],
@@ -222,7 +222,7 @@ class WeaponSelector(object):
         else:
             return
 
-        if k >= NB_CATEGORIES or k < 0:
+        if k >= common.NB_CATEGORIES or k < 0:
             return
 
         idx = -1
@@ -251,6 +251,7 @@ class WeaponSelector(object):
                 self.active_weapon = weapon.activate(
                     self.race_track, self.player_car
                 )
+                self.active_category = self.active_weapon.category
                 break
 
         self.refresh()

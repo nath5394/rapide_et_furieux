@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from . import common
 from . import laser
 from . import machinegun
 from . import mine
@@ -9,31 +10,20 @@ from . import shield
 from . import shell
 
 
-CATEGORY_GUNS = 0  # straight forward only
-CATEGORY_GUIDED = 1  # guided
-CATEGORY_COUNTER_MEASURES = 2  # backward only
-NB_CATEGORIES = 3
-
-CATEGORY_NAMES = {
-    CATEGORY_GUNS: 'Guns',
-    CATEGORY_GUIDED: 'Smart weapons',
-    CATEGORY_COUNTER_MEASURES: 'Counter-measures',
-}
-
 def get_weapons():
     return {
         # Weapons must implement a method 'activate(car)'
         # which we return a gun object with methods: 'deactivate()' and 'fire()'
-        CATEGORY_GUNS: [
+        common.CATEGORY_GUNS: [
             laser.ForwardLaser(),
             shell.TankShell(),
         ],
-        CATEGORY_GUIDED: [
+        common.CATEGORY_GUIDED: [
             laser.AutomaticLaser(),
             machinegun.MachineGun(),
             missile.GuidedMissile(),
         ],
-        CATEGORY_COUNTER_MEASURES: [
+        common.CATEGORY_COUNTER_MEASURES: [
             shield.Shield(),
             mine.Mine(),
             oil.Oil(),

@@ -2,6 +2,7 @@
 
 import pygame
 
+from . import common
 from .. import RelativeSprite
 from ... import assets
 
@@ -16,6 +17,8 @@ class Laser(RelativeSprite):
 
 
 class ForwardLaserGun(object):
+    category = common.CATEGORY_GUNS
+
     def __init__(self, parent, race_track, car):
         self.race_track = race_track
         self.car = car
@@ -36,6 +39,8 @@ class ForwardLaserGun(object):
 
 
 class ForwardLaser(object):
+    category = common.CATEGORY_GUNS
+
     def __init__(self):
         self.image = assets.load_image(assets.LASERS[(0, 0, 255)])
         self.image = pygame.transform.rotate(self.image, -90)

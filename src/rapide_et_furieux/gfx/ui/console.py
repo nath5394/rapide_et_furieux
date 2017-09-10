@@ -1,27 +1,29 @@
 import itertools
 import logging
+import random
 
 import pygame
 
 from ... import assets
 from ... import util
 from ..cars.ia import IACar
+from ..weapons import get_weapons
 
 
 logger = logging.getLogger(__name__)
 
 
 class CommandEcho(object):
-    def __init__(self, console, *args, **kwargs):
-        self.console = console
+    def __init__(self, *args, **kwargs):
+        self.console = None
 
     def run(self, cmd, args):
         self.console.add_line(" ".join(args))
 
 
 class CommandList(object):
-    def __init__(self, console, *args, **kwargs):
-        self.console = console
+    def __init__(self, *args, **kwargs):
+        self.console = None
 
     def run(self, cmd, args):
         self.console.add_line("Available commands:")
@@ -30,8 +32,8 @@ class CommandList(object):
 
 
 class CommandKillAll(object):
-    def __init__(self, console, race_track, player_car):
-        self.console = console
+    def __init__(self, race_track, player_car):
+        self.console = None
         self.race_track = race_track
         self.player = player_car
 
@@ -47,8 +49,8 @@ class CommandKillAll(object):
 
 
 class CommandAddAI(object):
-    def __init__(self, console, race_track, player_car, waypoint_mgmt):
-        self.console = console
+    def __init__(self, race_track, player_car, waypoint_mgmt):
+        self.console = None
         self.race_track = race_track
         self.player = player_car
         self.waypoints = waypoint_mgmt
@@ -70,6 +72,60 @@ class CommandAddAI(object):
         self.console.add_line("AI added")
 
 
+def simplify_bonus_name(bonus_name):
+    bonus_name = bonus_name.lower()
+    bonus_name = bonus_name.replace(" ", "")
+    return bonus_name
+
+
+class CommandListBonuses(object):
+    def __init__(self, *args, **kwargs):
+        self.console = None
+
+    def run(self, cmd, args):
+        self.console.add_line("Available bonuses:")
+        for bonuses in get_weapons().values():
+            for bonus in bonuses:
+                self.console.add_line(
+                    "  {} - {}".format(
+                        simplify_bonus_name(str(bonus)),
+                        str(bonus)
+                    )
+                )
+
+
+class CommandQuit(object):
+    def __init__(self, *args, **kwargs):
+        self.console = None
+
+    def run(self, cmd, args):
+        self.console.add_line("Quitting")
+        util.idle_add(util.exit)
+
+
+class CommandGetBonus(object):
+    def __init__(self, player_car):
+        self.console = None
+        self.player = player_car
+
+    def run(self, cmd, args):
+        bonuses = list(itertools.chain(*list(get_weapons().values())))
+        if len(args) <= 0:
+            bonus = random.choice(bonuses)
+        else:
+            for bonus in bonuses:
+                if simplify_bonus_name(str(bonus)) == args[0]:
+                    break
+            else:
+                self.console.add_line("Unknown bonus: {}".format(args[0]))
+                return
+        nb = 1
+        if len(args) >= 2:
+            nb = int(args[1])
+        self.player.add_weapon(bonus, nb)
+        self.console.add_line("Bonus {} ({}) added".format(str(bonus), nb))
+
+
 class Console(logging.Handler):
     PREFERED_FONTS = [
         'ubuntumono',
@@ -83,14 +139,13 @@ class Console(logging.Handler):
     GOLDEN_RATIO = 1.61803398875
     HISTORY_MAX = 10
 
-    def __init__(self, race_track, player_car, waypoint_mgmt):
+    def __init__(self, commands):
         super().__init__()
-        self.commands = {
-            'add_ai': CommandAddAI(self, race_track, player_car, waypoint_mgmt),
-            'echo': CommandEcho(self),
-            'killall': CommandKillAll(self, race_track, player_car),
-            'list': CommandList(self),
-        }
+
+        self.commands = commands
+        for cmd in commands.values():
+            if hasattr(cmd, 'console'):
+                cmd.console = self
 
         self._formatter = logging.Formatter(
             '%(levelname)-6s %(name)s %(message)s'
@@ -129,8 +184,9 @@ class Console(logging.Handler):
         self.valid_chars = set(self.valid_chars)
         self.screen_size = None
 
-    def add_line(self, line):
-        self.lines.append(self.font.render(line, True, self.FONT_COLOR))
+    def add_line(self, lines):
+        for line in lines.split("\n"):
+            self.lines.append(self.font.render(line, True, self.FONT_COLOR))
         self.image = None
 
     def emit(self, record):
@@ -192,10 +248,16 @@ class Console(logging.Handler):
                 txt = self.history[self.history_idx]
         elif k == pygame.K_TAB:
             nb = 0
+            match = None
             for cmd in self.commands:
                 if cmd.startswith(txt):
-                    txt = cmd
+                    if match is None:
+                        match = cmd
+                    else:
+                        match = util.common_str_prefix([match, cmd])
                     nb += 1
+            if match is not None:
+                txt = match
             if nb == 1:
                 txt += " "
         elif k in self.valid_chars:

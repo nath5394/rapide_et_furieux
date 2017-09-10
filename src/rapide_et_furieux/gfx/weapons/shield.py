@@ -2,10 +2,13 @@
 
 import pygame
 
+from . import common
 from ... import assets
 
 
 class Shield(object):
+    category = common.CATEGORY_COUNTER_MEASURES
+
     def __init__(self):
         self.image = assets.load_image(assets.SHIELD)
         img_size = self.image.get_size()

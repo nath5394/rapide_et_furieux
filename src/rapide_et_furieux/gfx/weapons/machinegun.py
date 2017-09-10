@@ -2,10 +2,13 @@
 
 import pygame
 
+from . import common
 from ... import assets
 
 
 class MachineGun(object):
+    category = common.CATEGORY_GUIDED
+
     def __init__(self):
         self.image = assets.load_image(assets.BULLET)
         self.image = pygame.transform.rotate(self.image, -90)

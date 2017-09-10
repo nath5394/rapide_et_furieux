@@ -325,6 +325,16 @@ def distance_sq_segment_to_segment(segment_a, segment_b):
     return m
 
 
+def common_str_prefix(strings):
+    "Given a list of strings, returns the longest common leading component"
+    s1 = min(strings)
+    s2 = max(strings)
+    for i, c in enumerate(s1):
+        if c != s2[i]:
+            return s1[:i]
+    return s1
+
+
 def on_uncatched_exception_cb(exc_type, exc_value, exc_tb):
     logger.error(
         "=== UNCATCHED EXCEPTION ===",
@@ -361,7 +371,7 @@ def set_default_resolution():
     return screen
 
 
-def _exit():
+def exit():
     global g_loop
     g_loop = False
 
@@ -369,11 +379,11 @@ def _exit():
 def check_base_keys(event):
     global g_paused
 
-    if event.type == pygame.QUIT:
-        idle_add(_exit)
-        return
-    if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-        idle_add(_exit)
+    if event.type == pygame.QUIT or (
+                event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE
+            ):
+        logger.info("Quitting ...")
+        idle_add(exit)
         return
     if event.type == pygame.KEYDOWN and event.key == pygame.K_PAUSE:
         g_paused = not g_paused

@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 
+from . import common
 from ... import assets
 
 
 class GuidedMissile(object):
+    category = common.CATEGORY_GUIDED
+
     def __init__(self):
         self.image = assets.load_image(assets.MISSILE)
 

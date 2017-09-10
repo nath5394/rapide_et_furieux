@@ -18,7 +18,16 @@ from .gfx.cars.ia import WaypointManager
 from .gfx.cars.player import PlayerCar
 from .gfx.racetrack import RaceTrack
 from .gfx.racetrack import RaceTrackMiniature
-from .gfx.ui.console import Console
+from .gfx.ui.console import (
+    Console,
+    CommandAddAI,
+    CommandEcho,
+    CommandGetBonus,
+    CommandQuit,
+    CommandKillAll,
+    CommandList,
+    CommandListBonuses,
+)
 from .gfx.weapons.selector import WeaponSelector
 
 
@@ -129,11 +138,21 @@ class Game(object):
             if idx == 0:
                 self.player = car
 
-        console = Console(self.race_track, player_car, waypoint_mgmt)
+        weapon_selector = WeaponSelector(self.race_track, player_car)
+
+        commands = {
+            'add_ai': CommandAddAI(self.race_track, player_car, waypoint_mgmt),
+            'echo': CommandEcho(),
+            'get_bonus': CommandGetBonus(player_car),
+            'quit': CommandQuit(),
+            'killall': CommandKillAll(self.race_track, player_car),
+            'list': CommandList(),
+            'list_bonuses': CommandListBonuses(),
+        }
+        console = Console(commands)
         util.register_drawer(assets.CONSOLE_LAYER, console)
         util.register_event_listener(console.on_key)
 
-        weapon_selector = WeaponSelector(self.race_track, player_car)
         util.register_event_listener(weapon_selector.on_key)
         util.register_drawer(assets.WEAPON_SELECTOR_LAYER, weapon_selector)
 
