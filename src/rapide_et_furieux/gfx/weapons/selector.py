@@ -73,6 +73,7 @@ class WeaponSelector(object):
             ),
             flags=pygame.SRCALPHA
         )
+        self.image = self.image.convert_alpha()
 
         self.image.fill(self.COLORS['none']['low'])
 
@@ -219,7 +220,7 @@ class WeaponSelector(object):
         else:
             return
 
-        if k >= NB_CATEGORIES:
+        if k >= NB_CATEGORIES or k < 0:
             return
 
         idx = -1

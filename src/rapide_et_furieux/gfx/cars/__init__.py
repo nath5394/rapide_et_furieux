@@ -9,6 +9,8 @@ from ... import assets
 from ... import util
 from ..collisions import CollisionObject
 
+UNIQUE = 0
+
 
 class Controls(object):
     def __init__(self, accelerate, brake, steer_left, steer_right):
@@ -21,6 +23,8 @@ class Controls(object):
 class Car(RelativeSprite, CollisionObject):
     def __init__(self, resource, race_track, game_settings,
                  spawn_point, spawn_orientation, image=None):
+        global UNIQUE
+
         super().__init__(resource, image)
 
         self.color = resource[2]
@@ -35,7 +39,8 @@ class Car(RelativeSprite, CollisionObject):
         )
 
         self.static = False
-        self.h = hash(spawn_point)
+        self.h = hash(spawn_point) ^ UNIQUE
+        UNIQUE += 1
 
         self.game_settings = game_settings
         self.parent = race_track

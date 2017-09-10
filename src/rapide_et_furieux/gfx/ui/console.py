@@ -1,0 +1,265 @@
+import itertools
+import logging
+
+import pygame
+
+from ... import assets
+from ... import util
+from ..cars.ia import IACar
+
+
+logger = logging.getLogger(__name__)
+
+
+class CommandEcho(object):
+    def __init__(self, console, *args, **kwargs):
+        self.console = console
+
+    def run(self, cmd, args):
+        self.console.add_line(" ".join(args))
+
+
+class CommandList(object):
+    def __init__(self, console, *args, **kwargs):
+        self.console = console
+
+    def run(self, cmd, args):
+        self.console.add_line("Available commands:")
+        for cmd in self.console.commands:
+            self.console.add_line(" {}".format(cmd))
+
+
+class CommandKillAll(object):
+    def __init__(self, console, race_track, player_car):
+        self.console = console
+        self.race_track = race_track
+        self.player = player_car
+
+    def run(self, cmd, *args):
+        nb = 0
+        for car in list(self.race_track.cars):
+            if car is self.player:
+                continue
+            self.race_track.remove_car(car)
+            util.unregister_animator(car.move)
+            nb += 1
+        self.console.add_line("{} AI removed".format(nb))
+
+
+class CommandAddAI(object):
+    def __init__(self, console, race_track, player_car, waypoint_mgmt):
+        self.console = console
+        self.race_track = race_track
+        self.player = player_car
+        self.waypoints = waypoint_mgmt
+
+        self.iter_car_rsc = iter(itertools.cycle(assets.CARS[1:]))
+        self.iter_spawnpoint = iter(itertools.cycle(
+            list(self.race_track.tiles.get_spawn_points())[1:]
+        ))
+
+    def run(self, cmd, *args):
+        (spawnpoint, orientation) = next(self.iter_spawnpoint)
+        car = IACar(next(self.iter_car_rsc), self.race_track,
+                    self.race_track.game_settings,
+                    spawnpoint, orientation,
+                    waypoint_mgmt=self.waypoints)
+        self.race_track.add_car(car)
+        util.register_animator(car.move)
+        car.can_move = True
+        self.console.add_line("AI added")
+
+
+class Console(logging.Handler):
+    PREFERED_FONTS = [
+        'ubuntumono',
+        'dejavusansmono',
+    ]
+    FONT_SIZE = 24
+    FONT_COLOR = (200, 255, 200, 255)
+    BG_COLOR = (64, 200, 64, 64)
+
+    CONSOLE_HEIGHT = 1 / 2  # of the screen height
+    GOLDEN_RATIO = 1.61803398875
+    HISTORY_MAX = 10
+
+    def __init__(self, race_track, player_car, waypoint_mgmt):
+        super().__init__()
+        self.commands = {
+            'add_ai': CommandAddAI(self, race_track, player_car, waypoint_mgmt),
+            'echo': CommandEcho(self),
+            'killall': CommandKillAll(self, race_track, player_car),
+            'list': CommandList(self),
+        }
+
+        self._formatter = logging.Formatter(
+            '%(levelname)-6s %(name)s %(message)s'
+        )
+        logger = logging.getLogger()
+        logger.addHandler(self)
+
+        self.visible = False
+        self.lines = []
+
+        for fontname in self.PREFERED_FONTS:
+            try:
+                fontpath = pygame.font.match_font(fontname)
+                if fontpath is None:
+                    continue
+                self.font = pygame.font.Font(fontpath, self.FONT_SIZE)
+                break
+            except:
+                pass
+        else:
+            self.font = pygame.font.Font(None, self.FONT_SIZE)
+            logger.warning("No monospace font found")
+
+        self.prompt = self.font.render("> ", True, self.FONT_COLOR)
+        self.typing = ("", self.font.render("", True, self.FONT_COLOR))
+        self.history = []
+        self.history_idx = 0
+
+        self.valid_chars = list(range(pygame.K_a, pygame.K_z + 1))
+        self.valid_chars += list(range(pygame.K_0, pygame.K_9 + 1))
+        self.valid_chars += [
+            pygame.K_SPACE, pygame.K_SLASH, pygame.K_BACKSLASH,
+            pygame.K_COMMA, pygame.K_COLON, pygame.K_UNDERSCORE,
+            pygame.K_QUOTE, pygame.K_PLUS, pygame.K_MINUS,
+        ]
+        self.valid_chars = set(self.valid_chars)
+        self.screen_size = None
+
+    def add_line(self, line):
+        self.lines.append(self.font.render(line, True, self.FONT_COLOR))
+        self.image = None
+
+    def emit(self, record):
+        self.add_line(self._formatter.format(record))
+
+    def execute(self, cmd, args):
+        if cmd not in self.commands:
+            self.add_line("Unknown command: {}".format(cmd))
+            return
+        try:
+            self.commands[cmd].run(cmd, args)
+        except Exception as exc:
+            logger.error(
+                "UNCATCHED EXCEPTION:",
+                exc_info=exc
+            )
+
+    def on_key(self, event):
+        if event.type != pygame.KEYDOWN:
+            return False
+
+        k = event.key
+        if k == pygame.K_BACKQUOTE:
+            self.visible = not self.visible
+            logger.info("Console visible: {}".format(self.visible))
+            return True
+
+        if not self.visible:
+            return False
+
+        if k >= pygame.K_KP0 and k <= pygame.K_KP9:
+            k += pygame.K_0 - pygame.K_KP0
+
+        mods = pygame.key.get_mods()
+        txt = self.typing[0]
+        if k == pygame.K_RETURN or k == pygame.K_KP_ENTER:
+            self.add_line("> " + txt)
+            self.history.append(txt)
+            self.history_idx = len(self.history)
+
+            txt = txt.split(" ")
+            cmd = txt[0]
+            args = txt[1:]
+            self.execute(cmd, args)
+            txt = ""
+        elif k == pygame.K_BACKSPACE or k == pygame.K_DELETE:
+            txt = txt[:-1]
+        elif k == pygame.K_PAGEUP:
+            self.history_idx -= 1
+            if self.history_idx < 0:
+                self.history_idx = len(self.history) - 1
+            if self.history_idx >= 0:
+                txt = self.history[self.history_idx]
+        elif k == pygame.K_PAGEDOWN:
+            self.history_idx += 1
+            if self.history_idx >= len(self.history):
+                self.history_idx = 0
+            if len(self.history) > 0:
+                txt = self.history[self.history_idx]
+        elif k in self.valid_chars:
+            k = chr(k)
+            if mods & pygame.KMOD_SHIFT:
+                if k == '-':
+                    k = '_'
+                elif k >= 'a' and k <= 'z':
+                    k = chr(ord(k) + ord('A') - ord('a'))
+            txt += k
+        else:
+            # wasn't for us
+            return False
+
+        self.typing = (
+            txt,
+            self.font.render(txt, True, self.FONT_COLOR)
+        )
+        self.refresh()
+        return True
+
+    def refresh(self):
+        if self.screen_size is None:
+            return
+
+        (w, h) = self.screen_size
+        h *= self.CONSOLE_HEIGHT
+
+        self.image = pygame.Surface((w, h), pygame.SRCALPHA)
+
+        pygame.draw.rect(
+            self.image,
+            self.BG_COLOR,
+            ((0, 0), (w, h)),
+        )
+
+        typing_h = max(self.FONT_SIZE, self.typing[1].get_size()[1],
+                       self.prompt.get_size()[1])
+        h -= typing_h
+        w = 0
+
+        self.image.blit(self.prompt, (w, h))
+        w += self.prompt.get_size()[0]
+
+        self.image.blit(self.typing[1], (w, h))
+        w += self.typing[1].get_size()[0]
+
+        pygame.draw.rect(
+            self.image, self.FONT_COLOR,
+            (
+                (w + 3, h + 3),
+                ((self.FONT_SIZE - 6) / self.GOLDEN_RATIO,
+                 self.FONT_SIZE - 6),
+            )
+        )
+
+        for (lidx, line) in enumerate(reversed(self.lines)):
+            h -= line.get_size()[1]
+            if h < 0:
+                break
+            self.image.blit(
+                line,
+                (0, h)
+            )
+
+        self.lines = self.lines[len(self.lines) - lidx - 1:]
+
+    def draw(self, screen):
+        if not self.visible:
+            return
+        if self.screen_size is None:
+            self.screen_size = screen.get_size()
+        if self.image is None:
+            self.refresh()
+        screen.blit(self.image, (0, 0))

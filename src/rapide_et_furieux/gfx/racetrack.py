@@ -405,6 +405,9 @@ class RaceTrack(RelativeGroup):
     def add_car(self, car):
         self.cars.append(car)
 
+    def remove_car(self, car):
+        self.cars.remove(car)
+
     def get_track_border(self, position):
         for border in self.borders:
             if border.matches(position):
@@ -549,6 +552,7 @@ class RaceTrackMiniature(object):
         )
 
         self.base_image = pygame.transform.scale(whole_track, size)
+        self.base_image = self.base_image.convert_alpha()
 
     def draw(self, screen):
         if self.base_image is None:

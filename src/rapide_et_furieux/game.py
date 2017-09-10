@@ -18,6 +18,7 @@ from .gfx.cars.ia import WaypointManager
 from .gfx.cars.player import PlayerCar
 from .gfx.racetrack import RaceTrack
 from .gfx.racetrack import RaceTrackMiniature
+from .gfx.ui.console import Console
 from .gfx.weapons.selector import WeaponSelector
 
 
@@ -41,11 +42,6 @@ class Game(object):
         self.countdown = None
 
         self.font = pygame.font.Font(None, 32)
-        self.osd_message = ui.OSDMessage(self.font, 42,
-                                         (self.screen_size[0] / 3, 5))
-        self.osd_message.show("{} - {}".format(CAPTION, track_filepath))
-        if DEBUG:
-            util.register_drawer(assets.OSD_LAYER, self.osd_message)
 
         self.race_track = None
         self.player = None
@@ -55,7 +51,6 @@ class Game(object):
         util.register_drawer(assets.BACKGROUND_LAYER, self.background)
 
         logger.info("Initializing ...")
-        self.osd_message.show("Initializing ...")
         util.idle_add(self._init)
 
     def _init(self):
@@ -65,18 +60,14 @@ class Game(object):
             fps_counter = ui.FPSCounter(self.font, position=(
                 self.screen.get_size()[0] - 128, 0
             ))
-            util.register_drawer(assets.OSD_LAYER - 1, fps_counter)
             util.register_animator(fps_counter.on_frame)
 
         util.register_animator(self.track_player_car)
 
         pygame.mouse.set_visible(False)
 
-        self.osd_message.show("Done")
-
     def load(self):
         logger.info("Loading '%s' ...", self.track_filepath)
-        self.osd_message.show("Loading '%s' ..." % self.track_filepath)
         util.idle_add(self._load)
 
     def unload(self):
@@ -138,6 +129,10 @@ class Game(object):
             if idx == 0:
                 self.player = car
 
+        console = Console(self.race_track, player_car, waypoint_mgmt)
+        util.register_drawer(assets.CONSOLE_LAYER, console)
+        util.register_event_listener(console.on_key)
+
         weapon_selector = WeaponSelector(self.race_track, player_car)
         util.register_event_listener(weapon_selector.on_key)
         util.register_drawer(assets.WEAPON_SELECTOR_LAYER, weapon_selector)
@@ -145,7 +140,6 @@ class Game(object):
         self.game_start = time.time()
         util.register_animator(self.race_starter)
 
-        self.osd_message.show("Done")
         logger.info("Done")
 
     def track_player_car(self, frame_interval):
@@ -161,11 +155,10 @@ class Game(object):
         t = now - self.game_start
         if int(t) != self.countdown:
             logger.info("Countdown: {}".format(COUNTDOWN - int(t)))
-            self.osd_message.show("{}".format(COUNTDOWN - int(t)))
             self.countdown = int(t)
-        if self.countdown == COUNTDOWN:
-            self.race_track.start_race()
-            util.idle_add(util.unregister_animator, self.race_starter)
+            if self.countdown >= COUNTDOWN:
+                self.race_track.start_race()
+                util.idle_add(util.unregister_animator, self.race_starter)
 
 
 def main():

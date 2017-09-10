@@ -9,7 +9,7 @@ import pygame
 
 VERSION = "0.1"
 
-g_event_listeners = set()
+g_event_listeners = []
 g_animators = []
 g_drawers = []
 g_loop = True
@@ -383,7 +383,7 @@ def check_base_keys(event):
 
 def register_event_listener(event_listener):
     global g_event_listeners
-    g_event_listeners.add(event_listener)
+    g_event_listeners.append(event_listener)
 
 
 def unregister_event_listener(event_listener):
@@ -453,7 +453,8 @@ def main_loop(screen):
         for event in pygame.event.get():
             idle = False
             for event_listener in set(g_event_listeners):
-                event_listener(event)
+                if event_listener(event):
+                    break
 
         if idle:
             while len(g_on_idle) > 0:
