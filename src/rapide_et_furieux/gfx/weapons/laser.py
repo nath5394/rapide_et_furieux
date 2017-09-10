@@ -15,12 +15,12 @@ logger = logging.getLogger(__name__)
 
 
 class Laser(RelativeSprite):
-    SPEED = assets.TILE_SIZE[0] * 10
+    SPEED = assets.TILE_SIZE[0] * 20
     CONTACT_DISTANCE_SQ = (
         (assets.TILE_SIZE[0] / 2) *
         assets.CAR_SCALE_FACTOR
     ) ** 2
-    DAMAGE = 50
+    DAMAGE = 25
     GRID_MARGE = 10
     EXPLOSION_SIZE = 20
     EXPLOSION_TIME = 0.5
@@ -47,8 +47,8 @@ class Laser(RelativeSprite):
         angle *= math.pi / 180
         (cos, sin) = (math.cos(angle), math.sin(angle))
         self.relative = (
-            self.relative[0] + (assets.TILE_SIZE[0] * cos),
-            self.relative[1] + (assets.TILE_SIZE[1] * sin),
+            self.relative[0] + ((assets.TILE_SIZE[0] / 3) * cos),
+            self.relative[1] + ((assets.TILE_SIZE[1] / 3) * sin),
         )
 
         util.register_drawer(assets.WEAPONS_LAYER, self)

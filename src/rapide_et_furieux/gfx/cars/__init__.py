@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import logging
 import math
 
 import pygame
@@ -10,6 +11,8 @@ from ... import util
 from ..collisions import CollisionObject
 
 UNIQUE = 0
+
+logger = logging.getLogger(__name__)
 
 
 class Controls(object):
@@ -73,6 +76,8 @@ class Car(RelativeSprite, CollisionObject):
         self.position = spawn_point
 
         self.next_checkpoint = self.parent.checkpoints[0]
+        self.checkpoint_min_dist_sq = \
+            game_settings['checkpoint_min_distance'] ** 2
 
         self.can_move = False
 
@@ -262,8 +267,8 @@ class Car(RelativeSprite, CollisionObject):
         return angle_change
 
     def check_checkpoint(self):
-        dist = util.distance_pt_to_pt(self.position, self.next_checkpoint.pt)
-        if dist <= self.game_settings['checkpoint_min_distance']:
+        dist = util.distance_sq_pt_to_pt(self.position, self.next_checkpoint.pt)
+        if dist <= self.checkpoint_min_dist_sq:
             self.next_checkpoint = self.next_checkpoint.next_checkpoint
 
     def grab_bonus(self):
@@ -276,8 +281,43 @@ class Car(RelativeSprite, CollisionObject):
                 bonus.add_to_car(self)
                 self.parent.remove_bonus(bonus)
 
+    def respawn(self):
+        self.health = 100
+        self.speed = (0, 0)
+
+        has_collision = True
+        while has_collision:
+            prev_cp = self.next_checkpoint
+
+            dist = 0
+            while dist < self.checkpoint_min_dist_sq:
+                prev_cp = prev_cp.previous_checkpoint
+                assert(prev_cp is not self.next_checkpoint)
+                dist = util.distance_sq_pt_to_pt(
+                    self.position, prev_cp.pt
+                )
+
+            self.next_checkpoint = prev_cp.next_checkpoint
+            self.position = prev_cp.pt
+
+            pos_diff = (
+                self.next_checkpoint.pt[0] - prev_cp.pt[0],
+                self.next_checkpoint.pt[1] - prev_cp.pt[1],
+            )
+            self.radians = math.atan2(pos_diff[0], pos_diff[1])
+
+            self.recompute_pts()
+            collisions = self.parent.collisions.get_collisions(
+                self, optim=False, limit=1, debug=True
+            )
+            has_collision = len(collisions) > 0
+
+        self.parent.collisions.precompute_moving()
 
     def move(self, frame_interval):
+        if self.health <= 0:
+            self.respawn()
+
         if not self.can_move:
             return
 

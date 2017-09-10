@@ -113,6 +113,7 @@ class Checkpoint(object):
         self.idx = idx
         self.txt = font.render(str(idx), True, self.COLOR)
         self.next_checkpoint = None
+        self.previous_checkpoint = None
         self.radius = parent.game_settings['checkpoint_min_distance']
 
     def serialize(self):
@@ -395,6 +396,12 @@ class RaceTrack(RelativeGroup):
                     self.checkpoints[idx + 1]
             else:
                 self.checkpoints[idx].next_checkpoint = self.checkpoints[0]
+            if idx - 1 >= 0:
+                self.checkpoints[idx].previous_checkpoint = \
+                    self.checkpoints[idx - 1]
+            else:
+                self.checkpoints[idx].previous_checkpoint = \
+                    self.checkpoints[-1]
 
     def add_checkpoint(self, pt):
         if not isinstance(pt, Checkpoint):

@@ -46,7 +46,7 @@ Collision = collections.namedtuple(
 
 
 class CollisionHandler(object):
-    MIN_SQ_DISTANCE_FOR_MOVING_COLLISION = (assets.TILE_SIZE[0] * 1.5) ** 2
+    MIN_SQ_DISTANCE_FOR_MOVING_COLLISION = (assets.TILE_SIZE[0] * 2) ** 2
 
     def __init__(self, racetrack, game_settings):
         self.game_settings = game_settings
@@ -269,7 +269,7 @@ class CollisionHandler(object):
                 return True
         return False
 
-    def get_collisions(self, moving, limit=None, optim=True):
+    def get_collisions(self, moving, limit=None, optim=True, debug=False):
         collisions = []
         if optim:
             obstacles = [
