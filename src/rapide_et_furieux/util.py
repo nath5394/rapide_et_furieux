@@ -10,7 +10,7 @@ import pygame
 VERSION = "0.1"
 
 g_event_listeners = set()
-g_animators = set()
+g_animators = []
 g_drawers = []
 g_loop = True
 g_rnd = 0
@@ -393,7 +393,7 @@ def unregister_event_listener(event_listener):
 
 def register_animator(animator):
     global g_animators
-    g_animators.add(animator)
+    g_animators.append(animator)
 
 
 def unregister_animator(animator):
@@ -464,7 +464,7 @@ def main_loop(screen):
         if frame_interval <= 0.0:
             # avoid divisions by zero
             frame_interval = 0.00001
-        for animator in g_animators:
+        for animator in reversed(g_animators):
             animator(frame_interval)
 
         for (layer, _, drawer) in g_drawers:
