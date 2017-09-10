@@ -19,14 +19,16 @@ from .gfx.cars.player import PlayerCar
 from .gfx.racetrack import RaceTrack
 from .gfx.racetrack import RaceTrackMiniature
 from .gfx.ui.console import (
-    Console,
     CommandAddAI,
+    CommandDebug,
     CommandEcho,
     CommandGetBonus,
-    CommandQuit,
     CommandKillAll,
     CommandList,
     CommandListBonuses,
+    CommandQuit,
+    CommandShowFPS,
+    Console,
 )
 from .gfx.weapons.selector import WeaponSelector
 
@@ -69,6 +71,7 @@ class Game(object):
             fps_counter = ui.FPSCounter(self.font, position=(
                 self.screen.get_size()[0] - 128, 0
             ))
+            util.register_drawer(assets.OSD_LAYER - 1, fps_counter)
             util.register_animator(fps_counter.on_frame)
 
         util.register_animator(self.track_player_car)
@@ -142,12 +145,14 @@ class Game(object):
 
         commands = {
             'add_ai': CommandAddAI(self.race_track, player_car, waypoint_mgmt),
+            'debug': CommandDebug(self.race_track),
             'echo': CommandEcho(),
             'get_bonus': CommandGetBonus(player_car),
             'quit': CommandQuit(),
             'killall': CommandKillAll(self.race_track, player_car),
             'list': CommandList(),
             'list_bonuses': CommandListBonuses(),
+            'show_fps': CommandShowFPS(self.font, self.screen_size),
         }
         console = Console(commands)
         util.register_drawer(assets.CONSOLE_LAYER, console)

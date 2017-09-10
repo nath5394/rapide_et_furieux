@@ -4,6 +4,7 @@ import random
 
 import pygame
 
+from . import FPSCounter
 from ... import assets
 from ... import util
 from ..cars.ia import IACar
@@ -11,6 +12,38 @@ from ..weapons import get_weapons
 
 
 logger = logging.getLogger(__name__)
+
+
+class CommandDebug(object):
+    def __init__(self, race_track):
+        self.console = None
+        self.race_track = race_track
+
+    def run(self, cmd, args):
+        if len(args) > 0:
+            if args[0] == "on":
+                debug = True
+            elif args[0] == "off":
+                debug = False
+            else:
+                self.console.add_line("Debug [on|off]")
+                return
+            self.race_track.debug = debug
+        self.console.add_line("Debug: {}".format(self.race_track.debug))
+
+
+class CommandShowFPS(object):
+    def __init__(self, font, screen_size):
+        self.console = None
+        self.font = font
+        self.screen_size = screen_size
+
+    def run(self, cmd, args):
+        fps_counter = FPSCounter(self.font, position=(
+            self.screen_size[0] - 128, 0
+        ))
+        util.register_drawer(assets.OSD_LAYER - 1, fps_counter)
+        util.register_animator(fps_counter.on_frame)
 
 
 class CommandEcho(object):
@@ -37,7 +70,7 @@ class CommandKillAll(object):
         self.race_track = race_track
         self.player = player_car
 
-    def run(self, cmd, *args):
+    def run(self, cmd, args):
         nb = 0
         for car in list(self.race_track.cars):
             if car is self.player:
@@ -60,7 +93,7 @@ class CommandAddAI(object):
             list(self.race_track.tiles.get_spawn_points())[1:]
         ))
 
-    def run(self, cmd, *args):
+    def run(self, cmd, args):
         (spawnpoint, orientation) = next(self.iter_spawnpoint)
         car = IACar(next(self.iter_car_rsc), self.race_track,
                     self.race_track.game_settings,
