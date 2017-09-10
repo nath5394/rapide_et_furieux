@@ -94,17 +94,19 @@ BARRELS = [
 ]
 
 BULLET = ("rapide_et_furieux.gfx.weapons", "bulletBeigeSilver.png")
-BULLETS = [
+BULLETS = {
+    color[1]:
     ("rapide_et_furieux.gfx.weapons",
      "bullet%sSilver.png" % (color[0]), color[1])
     for color in [
         ('Blue', (0, 0, 255)),
         ('Green', (0, 255, 0)),
         ('Red', (255, 0, 0)),
-        ('Silver', (0, 0, 0)),
+        ('Silver', (128, 128, 128)),
+        ('Beige', (100, 100, 100)),
         ('Yellow', (255, 255, 0)),
     ]
-]
+}
 
 GUNS = [
     ("rapide_et_furieux.gfx.weapons", "gun%02d.png" % (idx))
@@ -297,7 +299,8 @@ def load_resources():
         for obj_rsc in explosions
     })
     rsc.update({obj_rsc[:2]: load_image(obj_rsc[:2]) for obj_rsc in BARRELS})
-    rsc.update({obj_rsc[:2]: load_image(obj_rsc[:2]) for obj_rsc in BULLETS})
+    rsc.update({obj_rsc[:2]: load_image(obj_rsc[:2])
+                for obj_rsc in BULLETS.values()})
     rsc.update({obj_rsc: load_image(obj_rsc) for obj_rsc in LASERS.values()})
     rsc.update({obj_rsc: load_image(obj_rsc) for obj_rsc in GUNS})
     rsc.update({obj_rsc: load_image(obj_rsc) for obj_rsc in SCRATCHS})
