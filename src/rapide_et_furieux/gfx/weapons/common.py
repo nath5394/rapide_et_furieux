@@ -25,7 +25,7 @@ CATEGORY_NAMES = {
 }
 
 
-EXPLOSION_SIZES = [20, 64, 128]
+EXPLOSION_SIZES = [20, 64, 128, assets.TILE_SIZE[0]]
 EXPLOSION_SURFACES = {}  # size --> list of list of surfaces
 
 
@@ -215,11 +215,11 @@ class Projectile(RelativeSprite):
         car.health -= self.DAMAGE
         logger.info("Hit: {} ; health: {}".format(car, car.health))
 
-        if self.EXPLOSION_DAMANGE > 0:
+        if self.EXPLOSION_DAMAGE > 0:
             for car in self.parent.cars:
                 dist = util.distance_sq_pt_to_pt(car.position, position)
                 if dist < self.explosion_range_sq:
-                    car.health -= self.EXPLOSION_DAMANGE
+                    car.health -= self.EXPLOSION_DAMAGE
                     logger.info("Hit: {} ; health: {}".format(car, car.health))
 
 

@@ -16,7 +16,7 @@ class TankShell(common.Projectile):
     GRID_MARGE = 10
     EXPLOSION_SIZE = 128
     EXPLOSION_TIME = 1
-    EXPLOSION_DAMANGE = 50
+    EXPLOSION_DAMAGE = 50
     ASSETS = assets.BULLETS
     DEFAULT_ASSET = assets.BULLETS[(0, 0, 255)]
     SIZE_FACTOR = 1.5
