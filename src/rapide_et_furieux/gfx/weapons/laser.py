@@ -60,7 +60,7 @@ class AutomaticLaser(object):
 
     def activate(self, race_track, car):
         # TODO
-        assert()
+        return
 
     def __str__(self):
         return "Targeted laser"

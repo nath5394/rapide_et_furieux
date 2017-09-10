@@ -145,7 +145,9 @@ class WeaponSelector(object):
                     'none'
                     if nb <= 0 else
                     'selected'
-                    if weapon == self.active_weapon.parent else
+                    if (self.active_weapon is None or
+                        weapon == self.active_weapon.parent)
+                    else
                     'unselected'
                 ]
                 pygame.draw.rect(

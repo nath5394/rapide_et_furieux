@@ -12,7 +12,7 @@ class MachineGun(object):
 
     def activate(self, race_track, car):
         # TODO
-        assert()
+        return None
 
     def __str__(self):
         return "Machine gun"
