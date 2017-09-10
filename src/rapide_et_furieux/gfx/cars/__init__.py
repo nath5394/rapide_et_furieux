@@ -21,6 +21,8 @@ class Controls(object):
 
 
 class Car(RelativeSprite, CollisionObject):
+    DEFAULT_HEALTH = 100
+
     def __init__(self, resource, race_track, game_settings,
                  spawn_point, spawn_orientation, image=None):
         global UNIQUE
@@ -49,6 +51,8 @@ class Car(RelativeSprite, CollisionObject):
 
         self._pts = None
         self.position = (0, 0)
+
+        self.health = self.DEFAULT_HEALTH
 
         self.controls = Controls(
             accelerate=False,

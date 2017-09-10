@@ -12,6 +12,11 @@ CATEGORY_NAMES = {
 }
 
 
+class Explosion(object):
+    def __init__(self, race_track, position, size, time):
+        pass
+
+
 class Weapon(object):
     MIN_FIRE_INTERVAL = 0.5
 
