@@ -162,20 +162,57 @@ class Projectile(RelativeSprite):
             self.SPEED * cos,
             self.SPEED * sin,
         )
+        self.radians = 0  # to make collide() happy
+
+        # TODO(Jflesch): very approximative ...
+        self._pts = (
+            (0, 0),
+            self.image.get_size()
+        )
+
+        self.max_speed_sq = (
+            ((self.image.get_size()[0] * 1.5) ** 2) +
+            ((self.image.get_size()[1] * 1.5) ** 2)
+        )
+        self.max_speed = math.sqrt(self.max_speed_sq)
 
     def disappear(self):
         util.unregister_drawer(self)
         util.unregister_animator(self.move)
 
-    def move(self, frame_interval):
-        self.relative = (
-            self.relative[0] + (self.speed[0] * frame_interval),
-            self.relative[1] + (self.speed[1] * frame_interval),
-        )
-        position = (
+    @property
+    def position(self):
+        return (
             self.relative[0] + (self.size[0] / 2),
             self.relative[1] + (self.size[1] / 2),
         )
+
+    @property
+    def pts(self):
+        relative = self.relative
+        return [
+            (
+                relative[0] + self._pts[0][0],
+                relative[1] + self._pts[0][1],
+            ),
+            (
+                relative[0] + self._pts[1][0],
+                relative[1] + self._pts[1][1],
+            ),
+        ]
+
+    def move(self, frame_interval):
+        speed = (self.speed[0] * frame_interval, self.speed[1] * frame_interval)
+        speed_sq = (speed[0] ** 2) + (speed[1] ** 2)
+        if speed_sq > self.max_speed_sq:
+            ratio = math.sqrt(speed_sq) / self.max_speed
+            speed = (speed[0] / ratio, speed[1] / ratio)
+
+        self.relative = (
+            int(self.relative[0] + speed[0]),
+            int(self.relative[1] + speed[1]),
+        )
+        position = self.position
 
         # are we still in the game ?
         grid_pos = (
@@ -197,14 +234,12 @@ class Projectile(RelativeSprite):
             self.disappear()
             return
 
-        for car in self.parent.cars:
-            if car is self.shooter:
-                continue
-            # TODO(Jflesch): Improve collision detection
-            dist = util.distance_sq_pt_to_pt(car.position, position)
-            if dist < self.CONTACT_DISTANCE_SQ:
-                break
-        else:
+        collisions = self.parent.collisions.get_collisions(self)
+        collisions = [
+            collision for collision in collisions
+            if collision.obstacle is not self.shooter
+        ]
+        if len(collisions) <= 0:
             return
 
         self.disappear()
@@ -212,10 +247,15 @@ class Projectile(RelativeSprite):
                          self.EXPLOSION_SIZE,
                          self.EXPLOSION_TIME)
 
-        car.health -= self.DAMAGE
-        logger.info("Hit: {} ; health: {}".format(car, car.health))
+        target = collisions[0].obstacle
+        if hasattr(target, 'health'):
+            target.health -= self.DAMAGE
+            logger.info("Hit: {} ; health: {}".format(target, target.health))
 
         if self.EXPLOSION_DAMAGE > 0:
+            self.parent.collisions.collide(
+                self, collisions, frame_interval
+            )
             for car in self.parent.cars:
                 dist = util.distance_sq_pt_to_pt(car.position, position)
                 if dist < self.explosion_range_sq:
