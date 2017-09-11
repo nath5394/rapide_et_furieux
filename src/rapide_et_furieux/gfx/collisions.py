@@ -297,7 +297,7 @@ class CollisionHandler(object):
                     yield((obstacle, collision_pt))
                     found += 1
                     break
-            if found >= limit:
+            if limit is not None and found >= limit:
                 return
 
     def get_collisions(self, moving, limit=None, optim=True, debug=False):

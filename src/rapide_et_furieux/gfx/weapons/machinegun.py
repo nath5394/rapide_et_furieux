@@ -92,9 +92,7 @@ class MachineGun(common.AutomaticTurret):
         )
 
         # find where the shoots ends
-        obstacles = self.race_track.collisions.get_obstacles_on_segment(
-            line, limit=2
-        )
+        obstacles = self.race_track.collisions.get_obstacles_on_segment(line)
         closest = (0xFFFFFFFF, None, None)
         for (obstacle, collision_pt) in obstacles:
             if obstacle is self.shooter:
