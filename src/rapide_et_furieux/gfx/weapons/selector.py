@@ -84,7 +84,7 @@ class WeaponSelector(object):
             for weapon in wps:
                 if weapon not in self.player_car.weapons:
                     continue
-                nb = self.player_car.weapons[weapon]
+                nb += self.player_car.weapons[weapon]
 
             colors = self.COLORS[
                 'none'
