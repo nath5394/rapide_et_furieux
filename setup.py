@@ -19,6 +19,7 @@ setup(
     author_email="jflesch@kwain.net",
     install_requires=[
         "pygame",
+        "numpy",
     ],
     packages=find_packages('src'),
     include_package_data=True,

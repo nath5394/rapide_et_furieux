@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import itertools
 import logging
 import math
 
@@ -86,6 +87,8 @@ class Car(RelativeSprite, CollisionObject):
         self.weapons = {}  # weapon --> number of ammos
         self.weapon_observers = set()
         self.weapon = None  # active weapon
+
+        self.base_exploded = ExplodedCar.generate_base_exploded(self.original)
 
         self.recompute_pts()
         self.update_image()
@@ -283,6 +286,7 @@ class Car(RelativeSprite, CollisionObject):
                 self.parent.remove_bonus(bonus)
 
     def explode(self):
+        ExplodedCar(self)
         common.Explosion(self.parent, self.position, assets.TILE_SIZE[0], 1.0)
 
     def respawn(self):
@@ -423,3 +427,86 @@ class Car(RelativeSprite, CollisionObject):
         self.weapons[weapon] = count
         for obs in self.weapon_observers:
             obs()
+
+
+class ExplodedCar(Car):
+    LIFE_LENGTH = 1.5
+    IMG_PER_SECOND = 5.0
+
+    def __init__(self, parent_car):
+        super().__init__(
+            parent_car.resource, parent_car.parent,
+            parent_car.game_settings, parent_car.position,
+            parent_car.angle
+        )
+        self.radians = parent_car.radians
+        self.images = parent_car.base_exploded
+        self.original = self.images[0]
+        self.update_image()
+
+        self.parent.add_car(self)
+        self.parent.collisions.precompute_moving()
+        util.register_animator(self.anim)
+
+        self.t = 0
+        self.frame = 0
+
+    def anim(self, frame_interval):
+        self.t += frame_interval
+        if self.t >= self.LIFE_LENGTH:
+            util.unregister_animator(self.anim)
+            self.parent.remove_car(self)
+            self.parent.collisions.precompute_moving()
+            return
+        frame = int(self.t * self.IMG_PER_SECOND)
+        if frame >= len(self.images):
+            frame = len(self.images) - 1
+        if frame == self.frame:
+            return
+        self.frame = frame
+        self.original = self.images[frame]
+        self.update_image()
+
+    @staticmethod
+    def generate_base_exploded(img):
+        # generate basic grayscale image
+        base_img = img.copy()
+        base_img = img.convert_alpha()
+        pixels = pygame.surfarray.pixels3d(base_img)
+        for (x, y) in itertools.product(
+                    range(0, base_img.get_size()[0]),
+                    range(0, base_img.get_size()[1])
+                ):
+            p = pixels[x][y]
+            v = p[0] + p[1] + p[2]
+            v /= 3
+            if v >= 192:
+                # turn whites into dark grays
+                v = 255 - v
+            pixels[x][y] = (v, v, v)
+
+        # TODO(Jflesch): scratches
+
+        # generate images with various transparency
+        imgs = []
+        for t in range(0, int(
+                    ExplodedCar.LIFE_LENGTH * ExplodedCar.IMG_PER_SECOND
+                )):
+            # opacity 255 -> 0
+            t *= 0.75
+            t = 255 - int(
+                255 * t / (ExplodedCar.LIFE_LENGTH * ExplodedCar.IMG_PER_SECOND)
+            )
+            img = base_img.copy()
+            pixels = pygame.surfarray.pixels_alpha(img)
+            for (x, y) in itertools.product(
+                        range(0, img.get_size()[0]),
+                        range(0, img.get_size()[1])
+                    ):
+                p = pixels[x][y]
+                if p > t:
+                    p = t
+                pixels[x][y] = p
+            imgs.append(img)
+        return imgs
+
