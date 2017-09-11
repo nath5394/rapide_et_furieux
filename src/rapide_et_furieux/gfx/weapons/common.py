@@ -370,6 +370,8 @@ class AutomaticTurret(Turret):
         for car in race_track.cars:
             if car is shooter:
                 continue
+            if not car.ALIVE:
+                continue
             dist = util.distance_sq_pt_to_pt(shooter.position, car.position)
             if dist < best[0]:
                 best = (dist, car)

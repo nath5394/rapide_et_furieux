@@ -27,6 +27,7 @@ class Controls(object):
 
 class Car(RelativeSprite, CollisionObject):
     DEFAULT_HEALTH = 100
+    ALIVE = True
 
     def __init__(self, resource, race_track, game_settings,
                  spawn_point, spawn_orientation, image=None):
@@ -432,6 +433,7 @@ class Car(RelativeSprite, CollisionObject):
 class ExplodedCar(Car):
     LIFE_LENGTH = 1.5
     IMG_PER_SECOND = 5.0
+    ALIVE = False
 
     def __init__(self, parent_car):
         super().__init__(
@@ -509,4 +511,3 @@ class ExplodedCar(Car):
                 pixels[x][y] = p
             imgs.append(img)
         return imgs
-

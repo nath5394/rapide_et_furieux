@@ -577,6 +577,8 @@ class RaceTrackMiniature(object):
         self.draw_screen(screen, position)
 
         for car in self.racetrack.cars:
+            if not car.ALIVE:
+                continue
             self.draw_car(screen, position, self.size, car)
 
     def draw_screen(self, screen, position):
