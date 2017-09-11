@@ -117,6 +117,18 @@ GUN_MACHINGUN = ("rapide_et_furieux.gfx.weapons", "gun05.png")
 GUN_MISSILE = ("rapide_et_furieux.gfx.weapons", "gun01.png")
 GUN_TANKSHELL = ("rapide_et_furieux.gfx.weapons", "gun06.png")
 
+CROSSAIRS = {
+    color[1]:
+    ("rapide_et_furieux.gfx.weapons",
+     "crossair_%s.png" % (color[0]), color[1])
+    for color in [
+        ('black', (0, 0, 0)),
+        ('blue', (0, 0, 255)),
+        ('red', (255, 0, 0)),
+        ('white', (255, 255, 255)),
+    ]
+}
+
 LASERS = {
     (0, 0, 255): ("rapide_et_furieux.gfx.weapons", "laserBlue16.png"),
     (0, 255, 0): ("rapide_et_furieux.gfx.weapons", "laserGreen10.png"),
@@ -301,6 +313,8 @@ def load_resources():
     rsc.update({obj_rsc[:2]: load_image(obj_rsc[:2]) for obj_rsc in BARRELS})
     rsc.update({obj_rsc[:2]: load_image(obj_rsc[:2])
                 for obj_rsc in BULLETS.values()})
+    rsc.update({obj_rsc[:2]: load_image(obj_rsc[:2])
+                for obj_rsc in CROSSAIRS.values()})
     rsc.update({obj_rsc: load_image(obj_rsc) for obj_rsc in LASERS.values()})
     rsc.update({obj_rsc: load_image(obj_rsc) for obj_rsc in GUNS})
     rsc.update({obj_rsc: load_image(obj_rsc) for obj_rsc in SCRATCHS})

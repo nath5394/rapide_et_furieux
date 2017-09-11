@@ -119,7 +119,7 @@ class Projectile(RelativeSprite):
     DEFAULT_ASSET = None
     SIZE_FACTOR = 1.0
 
-    def __init__(self, race_track, shooter):
+    def __init__(self, race_track, shooter, angle):
         self.shooter = shooter
         self.explosion_range_sq = (self.EXPLOSION_SIZE / 2) ** 2
 
@@ -137,7 +137,6 @@ class Projectile(RelativeSprite):
                 )
             )
 
-        angle = shooter.angle
         self.image = pygame.transform.rotate(self.image, -angle)
         self.size = self.image.get_size()
         self.parent = race_track
@@ -266,10 +265,10 @@ class Projectile(RelativeSprite):
 class Weapon(object):
     MIN_FIRE_INTERVAL = 0.5
 
-    def __init__(self, generator, car):
+    def __init__(self, generator, shooter):
         self.parent = generator
-        self.car = car
-        self.car.weapon = self
+        self.shooter = shooter
+        self.shooter.weapon = self
         self.last_shot = 0
 
     def deactivate(self):
@@ -283,27 +282,28 @@ class Weapon(object):
         return True
 
 
-class StaticTurret(Weapon):
+class Turret(Weapon):
     MIN_FIRE_INTERVAL = 0.2
     TURRET_ANGLE = 180
 
-    def __init__(self, generator, car, turret_rsc):
-        super().__init__(generator, car)
-        self.car.extra_drawers.add(self)
+    def __init__(self, generator, shooter, turret_rsc):
+        super().__init__(generator, shooter)
+        self.shooter.extra_drawers.add(self)
+        self.angle = 0
         self.turret_base = assets.load_image(assets.TURRET_BASE)
         self.turret = assets.load_image(turret_rsc)
         self.turret = pygame.transform.rotate(self.turret, self.TURRET_ANGLE)
 
-    def draw(self, screen, car):
+    def draw(self, screen, shooter):
         turret_base = self.turret_base
         turret_base_size = turret_base.get_size()
 
         turret = self.turret
-        turret = pygame.transform.rotate(turret, -car.angle)
+        turret = pygame.transform.rotate(turret, -self.angle)
         turret_size = turret.get_size()
 
-        car_parent_abs = car.parent.absolute
-        car_position = car.position
+        shooter_parent_abs = shooter.parent.absolute
+        shooter_position = shooter.position
 
         for (size, el) in [
                     (turret_base_size, turret_base),
@@ -312,10 +312,80 @@ class StaticTurret(Weapon):
             screen.blit(
                 el,
                 (
-                    car_parent_abs[0] + car_position[0] - (size[0] / 2),
-                    car_parent_abs[1] + car_position[1] - (size[1] / 2),
+                    shooter_parent_abs[0] + shooter_position[0] - (size[0] / 2),
+                    shooter_parent_abs[1] + shooter_position[1] - (size[1] / 2),
                 )
             )
 
     def deactivate(self):
-        self.car.extra_drawers.remove(self)
+        self.shooter.extra_drawers.remove(self)
+
+
+class StaticTurret(Turret):
+    def __init__(self, generator, shooter, turret_rsc):
+        super().__init__(generator, shooter, turret_rsc)
+
+    def draw(self, screen, shooter):
+        self.angle = shooter.angle
+        super().draw(screen, shooter)
+
+
+class CrossairDrawer(object):
+    def __init__(self, turret, crossair):
+        self.turret = turret
+        self.crossair = crossair
+
+    def draw(self, screen):
+        if self.turret.target is None:
+            return
+        cross_size = self.crossair.get_size()
+        target_absolute = self.turret.target.absolute
+        target_size = self.turret.target.image.get_size()
+        position = (
+            target_absolute[0] + ((target_size[0] - cross_size[0]) / 2),
+            target_absolute[1] + ((target_size[1] - cross_size[1]) / 2),
+        )
+        screen.blit(self.crossair, position)
+
+
+class AutomaticTurret(Turret):
+    def __init__(self, generator, race_track, shooter, turret_rsc):
+        super().__init__(generator, shooter, turret_rsc)
+        self.race_track = race_track
+        if shooter.color in assets.CROSSAIRS:
+            crossair = assets.load_image(
+                assets.CROSSAIRS[shooter.color][:2]
+            )
+        else:
+            crossair = assets.load_image(
+                assets.CROSSAIRS[(255, 255, 255)][:2]
+            )
+        self.target = None
+        self.crossair = CrossairDrawer(self, crossair)
+        util.register_drawer(assets.WEAPONS_LAYER, self.crossair)
+
+    @staticmethod
+    def find_closest_target(shooter, race_track):
+        best = (0xFFFFFFFF, None)
+        for car in race_track.cars:
+            if car is shooter:
+                continue
+            dist = util.distance_sq_pt_to_pt(shooter.position, car.position)
+            if dist < best[0]:
+                best = (dist, car)
+        return best[1]
+
+    def draw(self, screen, shooter):
+        self.target = self.find_closest_target(shooter, self.race_track)
+        if self.target is None:
+            self.angle = shooter.angle
+        else:
+            self.angle = math.atan2(
+                self.target.position[0] - shooter.position[0],
+                -(self.target.position[1] - shooter.position[1]),
+            ) * 180 / math.pi
+        super().draw(screen, shooter)
+
+    def deactivate(self):
+        super().deactivate()
+        util.unregister_drawer(self.crossair)

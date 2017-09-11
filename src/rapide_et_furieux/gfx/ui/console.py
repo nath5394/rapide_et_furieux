@@ -166,7 +166,7 @@ class Console(logging.Handler):
     ]
     FONT_SIZE = 24
     FONT_COLOR = (200, 255, 200, 255)
-    BG_COLOR = (64, 200, 64, 64)
+    BG_COLOR = (64, 200, 64, 128)
 
     CONSOLE_HEIGHT = 1 / 2  # of the screen height
     GOLDEN_RATIO = 1.61803398875

@@ -26,18 +26,18 @@ class TankGun(common.StaticTurret):
     category = common.CATEGORY_GUNS
     MIN_FIRE_INTERVAL = 1.0
 
-    def __init__(self, generator, race_track, car):
-        super().__init__(generator, car, assets.GUN_TANKSHELL)
+    def __init__(self, generator, race_track, shooter):
+        super().__init__(generator, shooter, assets.GUN_TANKSHELL)
         self.race_track = race_track
 
     def fire(self):
         if not super().fire():
             return False
-        TankShell(self.race_track, self.car)
+        TankShell(self.race_track, self.shooter, self.shooter.angle)
         return True
 
     def __hash__(self):
-        return hash(self.car) ^ hash("tankgun")
+        return hash(self.shooter) ^ hash("tankgun")
 
 
 class TankShellGenerator(object):
@@ -50,8 +50,8 @@ class TankShellGenerator(object):
         img_size = (img_size[0] * 2, img_size[1] * 2)
         self.image = pygame.transform.scale(self.image, img_size)
 
-    def activate(self, race_track, car):
-        return TankGun(self, race_track, car)
+    def activate(self, race_track, shooter):
+        return TankGun(self, race_track, shooter)
 
     def __str__(self):
         return "Tank shell"

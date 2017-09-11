@@ -30,18 +30,18 @@ class ForwardLaserGun(common.StaticTurret):
     MIN_FIRE_INTERVAL = 0.2
     TURRET_ANGLE = 0
 
-    def __init__(self, generator, race_track, car):
-        super().__init__(generator, car, assets.GUN_LASER)
+    def __init__(self, generator, race_track, shooter):
+        super().__init__(generator, shooter, assets.GUN_LASER)
         self.race_track = race_track
 
     def fire(self):
         if not super().fire():
             return False
-        Laser(self.race_track, self.car)
+        Laser(self.race_track, self.shooter, self.shooter.angle)
         return True
 
     def __hash__(self):
-        return hash(self.car) ^ hash("forwardlasergun")
+        return hash(self.shooter) ^ hash("forwardlasergun")
 
 
 class ForwardLaserGenerator(object):
@@ -51,8 +51,8 @@ class ForwardLaserGenerator(object):
         self.image = assets.load_image(assets.LASERS[(0, 0, 255)])
         self.image = pygame.transform.rotate(self.image, -90)
 
-    def activate(self, race_track, car):
-        return ForwardLaserGun(self, race_track, car)
+    def activate(self, race_track, shooter):
+        return ForwardLaserGun(self, race_track, shooter)
 
     def __str__(self):
         return "Laser"
@@ -64,14 +64,34 @@ class ForwardLaserGenerator(object):
         return isinstance(o, ForwardLaserGenerator)
 
 
+class AutomaticLaserGun(common.AutomaticTurret):
+    category = common.CATEGORY_GUIDED
+    MIN_FIRE_INTERVAL = 0.2
+    TURRET_ANGLE = 0
+
+    def __init__(self, generator, race_track, shooter):
+        super().__init__(generator, race_track, shooter, assets.GUN_LASER)
+        self.race_track = race_track
+
+    def fire(self):
+        if not super().fire():
+            return False
+        Laser(self.race_track, self.shooter, self.angle)
+        return True
+
+    def __hash__(self):
+        return hash(self.shooter) ^ hash("automaticlasergun")
+
+
 class AutomaticLaserGenerator(object):
+    category = common.CATEGORY_GUIDED
+
     def __init__(self):
         self.image = assets.load_image(assets.LASERS[(255, 0, 0)])
         self.image = pygame.transform.rotate(self.image, -90)
 
-    def activate(self, race_track, car):
-        # TODO
-        return
+    def activate(self, race_track, shooter):
+        return AutomaticLaserGun(self, race_track, shooter)
 
     def __str__(self):
         return "Targeted laser"
