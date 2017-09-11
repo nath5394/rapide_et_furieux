@@ -28,6 +28,7 @@ class Laser(common.Projectile):
 class ForwardLaserGun(common.StaticTurret):
     category = common.CATEGORY_GUNS
     MIN_FIRE_INTERVAL = 0.2
+    TURRET_ANGLE = 0
 
     def __init__(self, generator, race_track, car):
         super().__init__(generator, car, assets.GUN_LASER)

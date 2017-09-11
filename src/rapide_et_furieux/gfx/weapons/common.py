@@ -285,13 +285,14 @@ class Weapon(object):
 
 class StaticTurret(Weapon):
     MIN_FIRE_INTERVAL = 0.2
+    TURRET_ANGLE = 180
 
     def __init__(self, generator, car, turret_rsc):
         super().__init__(generator, car)
         self.car.extra_drawers.add(self)
         self.turret_base = assets.load_image(assets.TURRET_BASE)
         self.turret = assets.load_image(turret_rsc)
-        self.turret = pygame.transform.rotate(self.turret, 180)
+        self.turret = pygame.transform.rotate(self.turret, self.TURRET_ANGLE)
 
     def draw(self, screen, car):
         turret_base = self.turret_base
