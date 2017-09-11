@@ -255,12 +255,17 @@ class CollisionHandler(object):
         except KeyError:
             return []
 
-    def has_obstacle_in_path(self, moving, path):
+    def has_obstacle_in_path(self, moving, path, optim=True):
         """
         Figure out if an moving element has a moving obstacle on its path.
         Return *approximate* result
         """
-        for car in self.racetrack.cars:
+        car = self.racetrack.cars
+        if optim:
+            cars = self.get_possible_obstacle(
+                self.precomputed_moving, moving.position
+            )
+        for car in cars:
             if car is moving:
                 # ignore self
                 continue

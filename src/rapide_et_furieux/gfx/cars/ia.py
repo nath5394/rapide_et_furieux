@@ -121,6 +121,7 @@ class IACar(Car):
         g_number_gen += 1
         self.waypoints = waypoint_mgmt
         self.path = []
+        self.path_set = set()
 
         self.prev_position = (0, 0)
         self.stuck_since = None
@@ -226,7 +227,7 @@ class IACar(Car):
 
         # skip point too close to us
         to_skip = 0
-        for pt in self.path:
+        for pt in path:
             dist = util.distance_sq_pt_to_pt(pt, self.position)
             if dist < self.min_pt_dist:
                 to_skip += 1
@@ -237,6 +238,7 @@ class IACar(Car):
             self.path = path
         else:
             self.path = path[to_skip:]
+        self.path_set = set(self.path)
 
         self.compute_controls(frame_interval)
 
@@ -412,8 +414,10 @@ class WaypointManager(object):
         # we reuse some part of the previous path if possible, but it requires
         # having the same target
         car_path = list(reversed(car.path))
+        car_path_set = car.path_set
         if len(car_path) > 0 and car_path[0] != target.position:
             car_path = []
+            car_path_set = set()
 
         # ### simple A* algorithm to find the most likely best path
 
@@ -464,7 +468,7 @@ class WaypointManager(object):
                     current = wpt
             assert current is not None
 
-            if current.position in car_path:
+            if current.position in car_path_set:
                 idx = car_path.index(current.position)
                 end_of_path = car_path[:idx + 1]
                 break
