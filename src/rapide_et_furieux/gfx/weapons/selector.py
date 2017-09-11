@@ -227,6 +227,8 @@ class WeaponSelector(object):
 
         idx = -1
         if k != self.active_category or self.active_weapon is None:
+            if self.active_weapon is not None:
+                self.active_weapon.deactivate()
             self.active_category = k
             self.active_weapon = None
         else:
