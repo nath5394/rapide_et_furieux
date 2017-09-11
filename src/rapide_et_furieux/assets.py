@@ -113,7 +113,7 @@ GUNS = [
     for idx in range(0, 11)
 ]
 GUN_LASER = ("rapide_et_furieux.gfx.weapons", "gun02.png")
-GUN_MACHINGUN = ("rapide_et_furieux.gfx.weapons", "gun05.png")
+GUN_MACHINEGUN = ("rapide_et_furieux.gfx.weapons", "gun05.png")
 GUN_MISSILE = ("rapide_et_furieux.gfx.weapons", "gun01.png")
 GUN_TANKSHELL = ("rapide_et_furieux.gfx.weapons", "gun06.png")
 

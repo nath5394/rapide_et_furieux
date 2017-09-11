@@ -274,6 +274,32 @@ class CollisionHandler(object):
                 return True
         return False
 
+    def get_obstacles_on_segment(self, segment, limit=None):
+        found = 0
+        for (x, y) in util.raytrace(segment, grid_size=assets.TILE_SIZE[0]):
+            position = (
+                x * assets.TILE_SIZE[0],
+                y * assets.TILE_SIZE[1],
+            )
+            obstacles = [
+                self.get_possible_obstacle(self.precomputed_static, position),
+                self.get_possible_obstacle(self.precomputed_moving, position),
+            ]
+            for obstacle in itertools.chain(*obstacles):
+                for obstacle_line in util.pairwise(obstacle.pts):
+                    if not self.can_collide(segment, obstacle_line):
+                        continue
+                    collision_pt = self.get_collision_point(
+                        segment, obstacle_line
+                    )
+                    if collision_pt is None:
+                        continue
+                    yield((obstacle, collision_pt))
+                    found += 1
+                    break
+            if found >= limit:
+                return
+
     def get_collisions(self, moving, limit=None, optim=True, debug=False):
         collisions = []
         if optim:

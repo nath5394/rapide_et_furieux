@@ -238,9 +238,9 @@ class Projectile(RelativeSprite):
             return
 
         self.disappear()
-        common.Explosion(self.parent, position,
-                         self.EXPLOSION_SIZE,
-                         self.EXPLOSION_TIME)
+        Explosion(self.parent, position,
+                  self.EXPLOSION_SIZE,
+                  self.EXPLOSION_TIME)
 
         target = collisions[0].obstacle
         if hasattr(target, 'health'):
