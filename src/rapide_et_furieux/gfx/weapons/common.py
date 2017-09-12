@@ -130,14 +130,14 @@ class Projectile(RelativeSprite):
             projectile = self.DEFAULT_ASSET
         super().__init__(projectile)
         if self.SIZE_FACTOR != 1.0:
-            self.origin = self.image = pygame.transform.scale(
+            self.original = self.image = pygame.transform.scale(
                 self.image, (
                     int(self.size[0] * self.SIZE_FACTOR),
                     int(self.size[1] * self.SIZE_FACTOR),
                 )
             )
         if self.ASSET_ANGLE != 0:
-            self.origin = self.image = pygame.transform.rotate(
+            self.original = self.image = pygame.transform.rotate(
                 self.image, self.ASSET_ANGLE
             )
 

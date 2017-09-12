@@ -22,8 +22,8 @@ class Missile(common.Projectile):
     EXPLOSION_DAMAGE = 50
     ASSETS = None
     DEFAULT_ASSET = assets.MISSILE
-    ASSET_ANGLE = 90
-    SIZE_FACTOR = 1.0
+    ASSET_ANGLE = 0
+    SIZE_FACTOR = 0.75
     MAX_TURN_SPEED = math.pi * 4
 
     def __init__(self, target, *args, **kwargs):
