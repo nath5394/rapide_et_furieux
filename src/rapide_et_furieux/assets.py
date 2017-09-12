@@ -321,6 +321,13 @@ def load_resources():
     rsc.update({obj_rsc: load_image(obj_rsc) for obj_rsc in SHIELDS})
     rsc[TURRET_BASE] = load_image(TURRET_BASE)
     rsc[MINE] = load_image(MINE)
+    rsc[MINE] = pygame.transform.scale(
+        rsc[MINE],
+        (
+            int(rsc[MINE].get_size()[0] / 10),
+            int(rsc[MINE].get_size()[1] / 10),
+        )
+    )
     rsc[MISSILE] = load_image(MISSILE)
     g_resources = rsc
 
