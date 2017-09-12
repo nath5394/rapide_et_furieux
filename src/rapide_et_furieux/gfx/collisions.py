@@ -370,7 +370,9 @@ class CollisionHandler(object):
                 # did we collide with them, or did they collide with us ?
                 speed_polar_rel = util.to_polar(speed)
                 if speed[0] < self.MIN_SPEED_FOR_COLLISION_SOURCE:
-                    continue
+                    other_speed = util.to_polar(obstacle.speed)
+                    if other_speed[0] >= self.MIN_SPEED_FOR_COLLISION_SOURCE:
+                        continue
                 speed_angle_abs = speed_polar_rel[1] + radians
                 obstacle_pos = obstacle.position
                 collision_angle = -math.atan2(
@@ -379,9 +381,9 @@ class CollisionHandler(object):
                 )
                 diff = collision_angle - speed_angle_abs
                 diff %= 2 * math.pi
-                if (diff > self.MAX_ANGLE_FOR_COLLISION_SOURCE
-                        and diff < ((2 * math.pi) -
-                                    self.MAX_ANGLE_FOR_COLLISION_SOURCE)):
+                if (diff > self.MAX_ANGLE_FOR_COLLISION_SOURCE and
+                        diff < ((2 * math.pi) -
+                                self.MAX_ANGLE_FOR_COLLISION_SOURCE)):
                     continue
 
             collision_angle = self.get_collision_angle(
