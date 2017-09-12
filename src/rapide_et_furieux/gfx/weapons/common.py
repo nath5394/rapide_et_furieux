@@ -5,7 +5,6 @@ import time
 
 import pygame
 
-from . import common
 from .. import RelativeSprite
 from ... import assets
 from ... import util
@@ -117,6 +116,7 @@ class Projectile(RelativeSprite):
     EXPLOSION_DAMAGE = 0
     ASSETS = None
     DEFAULT_ASSET = None
+    ASSET_ANGLE = 0
     SIZE_FACTOR = 1.0
 
     def __init__(self, race_track, shooter, angle):
@@ -124,17 +124,21 @@ class Projectile(RelativeSprite):
         self.explosion_range_sq = (self.EXPLOSION_SIZE / 2) ** 2
 
         color = self.shooter.color
-        if color in self.ASSETS:
+        if self.ASSETS is not None and color in self.ASSETS:
             projectile = self.ASSETS[color]
         else:
             projectile = self.DEFAULT_ASSET
         super().__init__(projectile)
         if self.SIZE_FACTOR != 1.0:
-            self.image = pygame.transform.scale(
+            self.origin = self.image = pygame.transform.scale(
                 self.image, (
                     int(self.size[0] * self.SIZE_FACTOR),
                     int(self.size[1] * self.SIZE_FACTOR),
                 )
+            )
+        if self.ASSET_ANGLE != 0:
+            self.origin = self.image = pygame.transform.rotate(
+                self.image, self.ASSET_ANGLE
             )
 
         self.image = pygame.transform.rotate(self.image, -angle)
@@ -157,19 +161,26 @@ class Projectile(RelativeSprite):
             self.SPEED * cos,
             self.SPEED * sin,
         )
-        self.radians = 0  # to make collide() happy
+        self.radians = angle  # to make collide() happy
 
-        # TODO(Jflesch): very approximative ...
-        self._pts = (
-            (0, 0),
-            self.image.get_size()
-        )
+        self._pts = ()
+        self.recompute_pts()
 
         self.max_speed_sq = (
             ((self.image.get_size()[0] * 1.5) ** 2) +
             ((self.image.get_size()[1] * 1.5) ** 2)
         )
         self.max_speed = math.sqrt(self.max_speed_sq)
+
+    def recompute_pts(self):
+        # TODO(Jflesch): very approximative ...
+        s = self.image.get_size()
+        self._pts = (
+            (0, 0),
+            (0, s[1]),
+            (s[0], s[1]),
+            (s[0], 0),
+        )
 
     def disappear(self):
         util.unregister_drawer(self)
@@ -185,18 +196,19 @@ class Projectile(RelativeSprite):
     @property
     def pts(self):
         relative = self.relative
-        return [
-            (
-                relative[0] + self._pts[0][0],
-                relative[1] + self._pts[0][1],
-            ),
-            (
-                relative[0] + self._pts[1][0],
-                relative[1] + self._pts[1][1],
-            ),
-        ]
+        for pt in self._pts:
+            yield (
+                relative[0] + pt[0],
+                relative[1] + pt[1],
+            )
+
+    def turn(self, frame_interval):
+        # most projectiles actually don't turn
+        return
 
     def move(self, frame_interval):
+        self.turn(frame_interval)
+
         speed = (self.speed[0] * frame_interval, self.speed[1] * frame_interval)
         speed_sq = (speed[0] ** 2) + (speed[1] ** 2)
         if speed_sq > self.max_speed_sq:
