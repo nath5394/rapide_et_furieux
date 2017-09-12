@@ -93,11 +93,11 @@ BARRELS = [
     ]
 ]
 
-BULLET = ("rapide_et_furieux.gfx.weapons", "bulletBeigeSilver.png")
+BULLET = ("rapide_et_furieux.gfx.weapons", "bulletBeigeSilver_outline.png")
 BULLETS = {
     color[1]:
     ("rapide_et_furieux.gfx.weapons",
-     "bullet%sSilver.png" % (color[0]), color[1])
+     "bullet%sSilver_outline.png" % (color[0]), color[1])
     for color in [
         ('Blue', (0, 0, 255)),
         ('Green', (0, 255, 0)),

@@ -19,7 +19,7 @@ class TankShell(common.Projectile):
     EXPLOSION_DAMAGE = 50
     ASSETS = assets.BULLETS
     DEFAULT_ASSET = assets.BULLETS[(0, 0, 255)]
-    SIZE_FACTOR = 1.5
+    SIZE_FACTOR = 1.0
 
 
 class TankGun(common.StaticTurret):
