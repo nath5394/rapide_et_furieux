@@ -429,9 +429,6 @@ class Car(RelativeSprite, CollisionObject):
         for obs in self.weapon_observers:
             obs()
 
-    def __repr__(self):
-        return str(self)
-
 
 class ExplodedCar(Car):
     LIFE_LENGTH = 1.5
@@ -517,3 +514,9 @@ class ExplodedCar(Car):
                 pixels[x][y] = p
             imgs.append(img)
         return imgs
+
+    def __str__(self):
+        return "ExplodedCar ({}|{})".format(self.position, self.radians)
+
+    def __repr__(self):
+        return str(self)

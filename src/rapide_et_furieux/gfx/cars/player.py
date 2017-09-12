@@ -15,6 +15,9 @@ class PlayerCar(Car):
     def __str__(self):
         return "PlayerCar ({}|{})".format(self.position, self.radians)
 
+    def __repr__(self):
+        return str(self)
+
     def on_frame(self, frame_interval):
         keys = pygame.key.get_pressed()
 
