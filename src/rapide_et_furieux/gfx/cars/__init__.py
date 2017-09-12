@@ -443,6 +443,8 @@ class ExplodedCar(Car):
         )
         self.radians = parent_car.radians
         self.images = parent_car.base_exploded
+        self.speed = parent_car.speed
+        self.can_move = True
         self.original = self.images[0]
         self.update_image()
 
@@ -454,6 +456,7 @@ class ExplodedCar(Car):
         self.frame = 0
 
     def anim(self, frame_interval):
+        self.move(frame_interval)
         self.t += frame_interval
         if self.t >= self.LIFE_LENGTH:
             util.unregister_animator(self.anim)
