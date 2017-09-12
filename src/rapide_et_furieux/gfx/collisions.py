@@ -204,13 +204,13 @@ class CollisionHandler(object):
         speed_a_cart = util.to_cartesian(speed_a_pol)
         speed_a_cart = (speed_a_cart[0], -speed_a_cart[1])
         speed_a_cart = (
-            speed_a_cart[0] + speed_b_cart[0],
-            speed_a_cart[1] + speed_b_cart[1],
+            speed_a_cart[0] - speed_b_cart[0],
+            speed_a_cart[1] - speed_b_cart[1],
         )
         speed_a_pol = util.to_polar(speed_a_cart)
         speed_a_pol_rel = (speed_a_pol[0], speed_a_pol[1] - angle_a)
         speed_a_cart_rel = util.to_cartesian(speed_a_pol_rel)
-        return (speed_a_cart_rel[0], -speed_a_cart_rel[1])
+        return (speed_a_cart_rel[0], speed_a_cart_rel[1])
 
     def precompute_static(self):
         self.precomputed_static = {}
@@ -373,11 +373,10 @@ class CollisionHandler(object):
                     continue
                 speed_angle_abs = speed_polar_rel[1] + radians
                 obstacle_pos = obstacle.position
-                collision_angle = math.atan2(
+                collision_angle = -math.atan2(
                     obstacle_pos[1] - position[1],
                     obstacle_pos[0] - position[0]
                 )
-                # TODO(JFlesch): this is a bit too approximative ... :/
                 diff = collision_angle - speed_angle_abs
                 diff %= 2 * math.pi
                 if (diff > self.MAX_ANGLE_FOR_COLLISION_SOURCE
