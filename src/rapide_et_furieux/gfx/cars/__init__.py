@@ -90,6 +90,7 @@ class Car(RelativeSprite, CollisionObject):
         self.weapon = None  # active weapon
 
         self.oily = 0
+        self.shield = (0, 0)
 
         self.base_exploded = ExplodedCar.generate_base_exploded(self.original)
 
@@ -296,6 +297,14 @@ class Car(RelativeSprite, CollisionObject):
         ExplodedCar(self)
         common.Explosion(self.parent, self.position, assets.TILE_SIZE[0], 1.0)
 
+    def damage(self, damage):
+        if self.shield[0] > 0:
+            self.shield = (self.shield[0], self.shield[1] - damage)
+            if self.shield[1] <= 0:
+                self.shield = (0, 0)
+            return
+        self.health -= damage
+
     def respawn(self):
         self.health = 100
         self.speed = (0, 0)
@@ -330,6 +339,11 @@ class Car(RelativeSprite, CollisionObject):
         self.parent.collisions.precompute_moving()
 
     def move(self, frame_interval):
+        if self.shield[0] > 0:
+            self.shield = (self.shield[0] - frame_interval, self.shield[1])
+        else:
+            self.shield = (0, 0)
+
         if self.health <= 0:
             self.explode()
             self.respawn()
@@ -413,6 +427,21 @@ class Car(RelativeSprite, CollisionObject):
 
         for drawer in self.extra_drawers:
             drawer.draw(screen, self)
+
+        if self.shield[0] > 0:
+            absolute = self.parent.absolute
+            frame = int(self.shield[0] * 5 % len(assets.SHIELDS))
+            shield = assets.load_image(assets.SHIELDS[frame])
+            shield = pygame.transform.rotate(shield, -self.angle)
+            screen.blit(
+                shield,
+                (
+                    (absolute[0] + self.position[0] -
+                     (shield.get_size()[0] / 2)),
+                    (absolute[1] + self.position[1] -
+                     (shield.get_size()[1] / 2)),
+                )
+            )
 
         if not self.parent.debug:
             return

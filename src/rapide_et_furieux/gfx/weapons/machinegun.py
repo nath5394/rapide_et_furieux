@@ -108,10 +108,10 @@ class MachineGun(common.AutomaticTurret):
                 self.race_track, closest[2],
                 self.EXPLOSION_SIZE, self.EXPLOSION_TIME
             )
-            if hasattr(target, 'health'):
-                target.health -= self.DAMAGE
-                logger.info("Hit: {} ; health: {}".format(
-                    target, target.health
+            if hasattr(target, 'damage'):
+                target.damage(self.DAMAGE)
+                logger.info("Hit: {} ; health: {} ; shield : {}".format(
+                    target, target.health, target.shield
                 ))
 
         GunFire(self.race_track, line, self.shooter.color)

@@ -255,9 +255,11 @@ class Projectile(RelativeSprite):
                   self.EXPLOSION_TIME)
 
         target = collisions[0].obstacle
-        if hasattr(target, 'health'):
-            target.health -= self.DAMAGE
-            logger.info("Hit: {} ; health: {}".format(target, target.health))
+        if hasattr(target, 'damage'):
+            target.damage(self.DAMAGE)
+            logger.info("Hit: {} ; health: {} ; shield : {}".format(
+                target, target.health, target.shield
+            ))
 
         if self.EXPLOSION_DAMAGE > 0:
             self.parent.collisions.collide(
@@ -266,8 +268,10 @@ class Projectile(RelativeSprite):
             for car in self.parent.cars:
                 dist = util.distance_sq_pt_to_pt(car.position, position)
                 if dist < self.explosion_range_sq:
-                    car.health -= self.EXPLOSION_DAMAGE
-                    logger.info("Hit: {} ; health: {}".format(car, car.health))
+                    car.damage(self.EXPLOSION_DAMAGE)
+                    logger.info("Hit: {} ; health: {} ; shield : {}".format(
+                        target, target.health, target.shield
+                    ))
 
 
 class Weapon(object):
