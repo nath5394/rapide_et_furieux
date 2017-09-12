@@ -96,10 +96,7 @@ class CrapArea(object):
     def matches(self, position):
         pts = self.normalized_points
         for pt in pts:
-            if abs(
-                        ((pt[0] - position[0]) ** 2) +
-                        ((pt[1] - position[1]) ** 2)
-                    ) <= SELECTION_MARGIN:
+            if util.distance_sq_pt_to_pt(pt, position) <= SELECTION_MARGIN:
                 return True
         return False
 
@@ -197,10 +194,7 @@ class Checkpoint(object):
             )
 
     def matches(self, pt):
-        return abs(
-            ((pt[0] - self.pt[0]) ** 2) +
-            ((pt[1] - self.pt[1]) ** 2)
-        ) <= SELECTION_MARGIN
+        return util.distance_sq_pt_to_pt(pt, self.pt) <= SELECTION_MARGIN
 
 
 class TrackBorder(CollisionObject):
@@ -248,10 +242,7 @@ class TrackBorder(CollisionObject):
 
     def matches(self, position):
         for pt in self.pts:
-            if abs(
-                        ((pt[0] - position[0]) ** 2) +
-                        ((pt[1] - position[1]) ** 2)
-                    ) <= SELECTION_MARGIN:
+            if util.distance_sq_pt_to_pt(pt, position) <= SELECTION_MARGIN:
                 return True
         return False
 

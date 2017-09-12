@@ -62,10 +62,7 @@ class Path(object):
         self.score = score  # bigger is worst
 
     def compute_score_length(self):
-        self.score = (
-            ((self.a.position[0] - self.b.position[0]) ** 2) +
-            ((self.a.position[1] - self.b.position[1]) ** 2)
-        )
+        self.score = util.distance_sq_pt_to_pt(self.a.position, self.b.position)
 
     def __str__(self):
         return ("Path({}): {} | {}".format(
@@ -132,9 +129,6 @@ class IACar(Car):
 
     def __str__(self):
         return "IA{} ({}|{})".format(self.number, self.position, self.radians)
-
-    def __repr__(self):
-        return str(self)
 
     def compute_controls(self, frame_interval):
         next_pt = self.path[0]

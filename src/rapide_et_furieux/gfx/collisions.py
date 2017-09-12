@@ -30,9 +30,6 @@ class CollisionObject(object):
     def update_image(self):
         pass
 
-    def apply_speed(self, frame_interval, position):
-        pass
-
 
 Collision = collections.namedtuple(
     typename="collision",
@@ -96,7 +93,7 @@ class CollisionHandler(object):
         angle += math.pi / 2
 
         # cross product will tell us if the angle is on the same side
-        # than the cat or not
+        # than the car_position or not
         v1 = (
             line_obstacle[1][0] - line_obstacle[0][0],
             (-line_obstacle[1][1]) - (-line_obstacle[0][1])

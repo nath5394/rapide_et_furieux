@@ -429,6 +429,9 @@ class Car(RelativeSprite, CollisionObject):
         for obs in self.weapon_observers:
             obs()
 
+    def __repr__(self):
+        return str(self)
+
 
 class ExplodedCar(Car):
     LIFE_LENGTH = 1.5

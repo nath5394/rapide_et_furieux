@@ -12,6 +12,9 @@ class PlayerCar(Car):
         super().__init__(*args, **kwargs)
         util.register_animator(self.on_frame)
 
+    def __str__(self):
+        return "PlayerCar ({}|{})".format(self.position, self.radians)
+
     def on_frame(self, frame_interval):
         keys = pygame.key.get_pressed()
 
