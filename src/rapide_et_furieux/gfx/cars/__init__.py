@@ -89,6 +89,8 @@ class Car(RelativeSprite, CollisionObject):
         self.weapon_observers = set()
         self.weapon = None  # active weapon
 
+        self.oily = 0
+
         self.base_exploded = ExplodedCar.generate_base_exploded(self.original)
 
         self.recompute_pts()
@@ -196,9 +198,13 @@ class Car(RelativeSprite, CollisionObject):
         return speed
 
     def compute_lateral_speed(self, speed, frame_interval, terrain):
-        slowdown = self.game_settings['lateral_speed_slowdown'][terrain]
         if speed == 0:
             return speed
+
+        slowdown = self.game_settings['lateral_speed_slowdown'][terrain]
+        if self.oily > 0:
+            slowdown /= 10
+            self.oily -= frame_interval
 
         # TODO(Jflesch): we may be burning tires
 
