@@ -44,6 +44,8 @@ Collision = collections.namedtuple(
 
 class CollisionHandler(object):
     MIN_SQ_DISTANCE_FOR_MOVING_COLLISION = (assets.TILE_SIZE[0] * 2) ** 2
+    MIN_SPEED_FOR_COLLISION_SOURCE = 0.00001
+    MAX_ANGLE_FOR_COLLISION_SOURCE = 2 * math.pi / 3
 
     def __init__(self, racetrack, game_settings):
         self.game_settings = game_settings
@@ -138,8 +140,10 @@ class CollisionHandler(object):
                        math.cos(speed_car_pol[1] - collision_angle),
                        collision_angle)
         to_nullify_pol = (removed_pol[0] * factor, removed_pol[1])
-        to_nullify_cart = removed_cart = util.to_cartesian(to_nullify_pol)
-        to_nullify_cart = (to_nullify_cart[0], -to_nullify_cart[1])
+        to_nullify_cart = util.to_cartesian(to_nullify_pol)
+        to_nullify_cart = removed_cart = (
+            to_nullify_cart[0], -to_nullify_cart[1]
+        )
 
         speed_car_cart = (
             speed_car_cart[0] - to_nullify_cart[0],
@@ -199,14 +203,12 @@ class CollisionHandler(object):
         )
         speed_a_cart = util.to_cartesian(speed_a_pol)
         speed_a_cart = (speed_a_cart[0], -speed_a_cart[1])
-        speed_a_pol = util.to_polar((
+        speed_a_cart = (
             speed_a_cart[0] + speed_b_cart[0],
             speed_a_cart[1] + speed_b_cart[1],
-        ))
-        speed_a_pol_rel = (
-            speed_a_pol[0],
-            speed_a_pol[1] - angle_a,
         )
+        speed_a_pol = util.to_polar(speed_a_cart)
+        speed_a_pol_rel = (speed_a_pol[0], speed_a_pol[1] - angle_a)
         speed_a_cart_rel = util.to_cartesian(speed_a_pol_rel)
         return (speed_a_cart_rel[0], -speed_a_cart_rel[1])
 
@@ -364,10 +366,30 @@ class CollisionHandler(object):
             obstacle = collision.obstacle
             obstacle_line = collision.obstacle_line
 
-            # we did collide --> compute correction
+            if not obstacle.static:
+                # did we collide with them, or did they collide with us ?
+                speed_polar_rel = util.to_polar(speed)
+                if speed[0] < self.MIN_SPEED_FOR_COLLISION_SOURCE:
+                    continue
+                speed_angle_abs = speed_polar_rel[1] + radians
+                obstacle_pos = obstacle.position
+                collision_angle = math.atan2(
+                    obstacle_pos[1] - position[1],
+                    obstacle_pos[0] - position[0]
+                )
+                # TODO(JFlesch): this is a bit too approximative ... :/
+                diff = collision_angle - speed_angle_abs
+                diff %= 2 * math.pi
+                if (diff > self.MAX_ANGLE_FOR_COLLISION_SOURCE
+                        and diff < ((2 * math.pi) -
+                                    self.MAX_ANGLE_FOR_COLLISION_SOURCE)):
+                    continue
+
             collision_angle = self.get_collision_angle(
                 moving_line, obstacle_line, position
             )
+
+            # we did collide --> compute correction
             obstacle_angle = self.get_obstacle_angle(
                 obstacle_line, radians
             )
