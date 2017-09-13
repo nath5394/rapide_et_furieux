@@ -3,6 +3,7 @@
 import itertools
 import json
 import logging
+import math
 import sys
 import threading
 
@@ -248,8 +249,7 @@ class FindReachableWaypointsThread(threading.Thread):
                 if origin is dest:
                     continue
 
-                # drop path too close to borders or
-                # crossing a border
+                # drop path too close to borders
                 keep = True
                 m_dist = 0xFFFFFFFF
                 for border in borders:
@@ -266,7 +266,7 @@ class FindReachableWaypointsThread(threading.Thread):
                 if not keep:
                     continue
 
-                keep = True
+                # drop paths too close to other waypoints
                 for wpt in wpts:
                     if wpt is origin or wpt is dest:
                         continue
@@ -339,6 +339,11 @@ class ComputeScoreThread(threading.Thread):
                     score,
                     util.distance_sq_pt_to_segment(border.pts, wpt.position)
                 )
+            terrain = self.racetrack.get_terrain(wpt.position)
+            if terrain != 'normal':
+                score = math.sqrt(score)
+                score /= 4
+                score **= 2
             wpt.score = score
 
         print("Computing {} path scores ...".format(len(paths)))
