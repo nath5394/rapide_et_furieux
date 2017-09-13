@@ -28,6 +28,7 @@ class Controls(object):
 class Car(RelativeSprite, CollisionObject):
     DEFAULT_HEALTH = 100
     ALIVE = True
+    SHIELD_ON_RESPAWN = (5, 200)
 
     def __init__(self, resource, race_track, game_settings,
                  spawn_point, spawn_orientation, image=None):
@@ -314,6 +315,7 @@ class Car(RelativeSprite, CollisionObject):
             obs()
         self.health = 100
         self.speed = (0, 0)
+        self.shield = self.SHIELD_ON_RESPAWN
 
         has_collision = True
         while has_collision:
