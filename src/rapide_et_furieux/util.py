@@ -193,34 +193,41 @@ def get_segment_intersect_point(line_a, line_b):
     (p1, p2) = line_a
     (p3, p4) = line_b
     intersects = _get_line_intersect_points(line_a, line_b)
-
     if intersects is None:
         return None
+
+    (p1, p2) = (
+        (
+            min(p1[0], p2[0]) - 1,
+            min(p1[1], p2[1]) - 1,
+        ),
+        (
+            max(p1[0], p2[0]) + 2,
+            max(p1[1], p2[1]) + 2,
+        )
+    )
+    (p3, p4) = (
+        (
+            min(p3[0], p4[0]) - 1,
+            min(p3[1], p4[1]) - 1,
+        ),
+        (
+            max(p3[0], p4[0]) + 2,
+            max(p3[1], p4[1]) + 2,
+        )
+    )
 
     width = p2[0] - p1[0]
     height = p2[1] - p1[1]
     # approximate because _get_line_intersect_points
     # may reply with crappy numbers like 0.9999
-    r1 = pygame.Rect(
-        (p1[0] - 1, p1[1] - 1),
-        (width + 3, height + 3)
-    )
-    r1.normalize()
+    r1 = pygame.Rect(p1, (width, height))
 
     width = p4[0] - p3[0]
     height = p4[1] - p3[1]
     # approximate because _get_line_intersect_points
     # may reply with crappy numbers like 0.9999
-    r2 = pygame.Rect(
-        (p3[0] - 1, p3[1] - 1),
-        (width + 3, height + 3)
-    )
-    r2.normalize()
-
-    r1.width += 1
-    r1.height += 1
-    r2.width += 1
-    r2.height += 1
+    r2 = pygame.Rect(p3, (width, height))
 
     for point in intersects:
         point = (int(point[0]), int(point[1]))
