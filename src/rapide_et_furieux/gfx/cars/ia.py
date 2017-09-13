@@ -239,7 +239,7 @@ class IACar(Car):
         obstacles = self.parent.collisions.get_obstacles_on_segment(
             line, limit=1
         )
-        obstacles = list(obstacles)
+        obstacles = [x for x in obstacles]
         return len(obstacles) <= 0
 
     def can_use_forward(self):
