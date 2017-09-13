@@ -232,6 +232,13 @@ class Car(RelativeSprite, CollisionObject):
         if speed is None:
             speed = self.speed
         speed = (speed[0] * frame_interval, speed[1] * frame_interval)
+        # make sure speed isn't too big for collision detection
+        speed = (
+            util.clamp(speed[0],
+                       -assets.TILE_SIZE[0] / 4, assets.TILE_SIZE[0] / 4),
+            util.clamp(speed[1],
+                       -assets.TILE_SIZE[0] / 4, assets.TILE_SIZE[0] / 4),
+        )
         # max speed to avoid issues with low frame rate + collision detection
         # optim
         nspeed = (
