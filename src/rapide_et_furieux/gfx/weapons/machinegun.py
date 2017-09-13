@@ -110,9 +110,6 @@ class MachineGun(common.AutomaticTurret):
             )
             if hasattr(target, 'damage'):
                 target.damage(self.DAMAGE)
-                logger.info("Hit: {} ; health: {} ; shield : {}".format(
-                    target, target.health, target.shield
-                ))
 
         GunFire(self.race_track, line, self.shooter.color)
         return True

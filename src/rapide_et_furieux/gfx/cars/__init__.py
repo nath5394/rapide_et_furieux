@@ -28,6 +28,7 @@ class Controls(object):
 class Car(RelativeSprite, CollisionObject):
     DEFAULT_HEALTH = 100
     ALIVE = True
+    SHIELD_ON_RESPAWN = (5, 200)
 
     def __init__(self, resource, race_track, game_settings,
                  spawn_point, spawn_orientation, image=None):
@@ -231,6 +232,13 @@ class Car(RelativeSprite, CollisionObject):
         if speed is None:
             speed = self.speed
         speed = (speed[0] * frame_interval, speed[1] * frame_interval)
+        # make sure speed isn't too big for collision detection
+        speed = (
+            util.clamp(speed[0],
+                       -assets.TILE_SIZE[0] / 4, assets.TILE_SIZE[0] / 4),
+            util.clamp(speed[1],
+                       -assets.TILE_SIZE[0] / 4, assets.TILE_SIZE[0] / 4),
+        )
         # max speed to avoid issues with low frame rate + collision detection
         # optim
         nspeed = (
@@ -314,6 +322,7 @@ class Car(RelativeSprite, CollisionObject):
             obs()
         self.health = 100
         self.speed = (0, 0)
+        self.shield = self.SHIELD_ON_RESPAWN
 
         has_collision = True
         while has_collision:
@@ -334,8 +343,7 @@ class Car(RelativeSprite, CollisionObject):
                 self.next_checkpoint.pt[0] - prev_cp.pt[0],
                 self.next_checkpoint.pt[1] - prev_cp.pt[1],
             )
-            self.radians = math.atan2(pos_diff[0], pos_diff[1])
-            self.radians += math.pi
+            self.radians = math.atan2(-pos_diff[1], pos_diff[0])
 
             self.recompute_pts()
             collisions = self.parent.collisions.get_collisions(

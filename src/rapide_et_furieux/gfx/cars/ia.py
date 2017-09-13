@@ -235,11 +235,14 @@ class IACar(Car):
     def can_use_guided(self):
         # can we shoot the closest target ?
         (dist, closest) = self.get_closest_target()
+        if closest is None:
+            return False
         line = (self.position, closest.position)
-        obstacles = self.parent.collisions.get_obstacles_on_segment(
-            line, limit=1
-        )
-        obstacles = [x for x in obstacles]
+        obstacles = self.parent.collisions.get_obstacles_on_segment(line)
+        obstacles = {
+            x[0] for x in obstacles
+            if x[0] is not closest and x[0] is not self
+        }
         return len(obstacles) <= 0
 
     def can_use_forward(self):

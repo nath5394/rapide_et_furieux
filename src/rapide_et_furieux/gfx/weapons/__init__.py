@@ -37,7 +37,7 @@ def get_weapons_probabilities():
         (1.0, laser.ForwardLaserGenerator, 100),
         (1.0, shell.TankShellGenerator, 10),
         (1.0, laser.AutomaticLaserGenerator, 50),
-        (1.0, machinegun.MachineGunGenerator, 300),
+        (1.0, machinegun.MachineGunGenerator, 150),
         (0.5, missile.GuidedMissileGenerator, 3),
         (1.0, shield.ShieldGenerator, 1),
         (1.0, mine.MineGenerator, 3),
