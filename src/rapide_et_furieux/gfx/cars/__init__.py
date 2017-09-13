@@ -334,7 +334,7 @@ class Car(RelativeSprite, CollisionObject):
                 self.next_checkpoint.pt[0] - prev_cp.pt[0],
                 self.next_checkpoint.pt[1] - prev_cp.pt[1],
             )
-            self.radians = math.atan2(pos_diff[1], pos_diff[0])
+            self.radians = math.atan2(-pos_diff[1], pos_diff[0])
 
             self.recompute_pts()
             collisions = self.parent.collisions.get_collisions(
