@@ -22,3 +22,15 @@ class TestIntersect(unittest.TestCase):
         line_b = ((1023, 694), (1158, 693))
         pt = util.get_segment_intersect_point(line_a, line_b)
         self.assertIsNotNone(pt)
+
+
+class TestRaytrace(unittest.TestCase):
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        pass
+
+    def test_raytrace(self):
+        r = list(util.raytrace(((256, 635), (322, 815)), 128))
+        self.assertEqual(r, [(2, 4), (2, 5), (2, 6)])

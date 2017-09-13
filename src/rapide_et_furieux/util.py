@@ -225,8 +225,6 @@ def get_segment_intersect_point(line_a, line_b):
 
 
 def raytrace(line, grid_size=1):
-    # TODO(Jflesch): This algo tends to go too far ...
-    inc = grid_size
     ((x0, y0), (x1, y1)) = line
     x0 = int(x0)
     y0 = int(y0)
@@ -235,19 +233,21 @@ def raytrace(line, grid_size=1):
 
     dx = abs(x1 - x0)
     dy = abs(y1 - y0)
-    dx /= inc
-    dy /= inc
     x = x0
     y = y0
     n = 1 + dx + dy
-    x_inc = inc if (x1 > x0) else -inc
-    y_inc = inc if (y1 > y0) else -inc
+    x_inc = 1 if (x1 > x0) else -1
+    y_inc = 1 if (y1 > y0) else -1
     error = dx - dy
     dx *= 2
     dy *= 2
 
-    for n in range(0, int(n)):
-        yield(int(x / inc), int(y / inc))
+    last_pos = None
+    for n in range(0, round(n)):
+        new_pos = (int(x / grid_size), int(y / grid_size))
+        if new_pos != last_pos:
+            yield(new_pos)
+            last_pos = new_pos
 
         if error > 0:
             x += x_inc
