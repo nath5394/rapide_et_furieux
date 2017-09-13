@@ -42,20 +42,19 @@ class WeaponSelector(object):
             )
 
         self.active_category = -1
-        self.active_weapon = None
 
         self.player_car.weapon_observers.add(self.refresh)
         self.refresh()
 
     def refresh(self):
-        if self.active_weapon is not None:
-            self.active_category = self.active_weapon.category
+        if self.player_car.weapon is not None:
+            self.active_category = self.player_car.weapon.category
 
-        if (self.active_weapon is None and
+        if (self.player_car.weapon is None and
                 len(self.player_car.weapons.keys()) > 0):
             weapon = list(self.player_car.weapons.keys())[0]
             if self.player_car.weapons[weapon] > 0:
-                self.active_weapon = weapon.activate(
+                self.player_car.weapon = weapon.activate(
                     self.race_track, self.player_car
                 )
                 for category_idx in range(0, common.NB_CATEGORIES):
@@ -145,8 +144,8 @@ class WeaponSelector(object):
                     'none'
                     if nb <= 0 else
                     'selected'
-                    if (self.active_weapon is None or
-                        weapon == self.active_weapon.parent)
+                    if (self.player_car.weapon is None or
+                        weapon == self.player_car.weapon.parent)
                     else
                     'unselected'
                 ]
@@ -226,16 +225,16 @@ class WeaponSelector(object):
             return
 
         idx = -1
-        if k != self.active_category or self.active_weapon is None:
-            if self.active_weapon is not None:
-                self.active_weapon.deactivate()
+        if k != self.active_category or self.player_car.weapon is None:
+            if self.player_car.weapon is not None:
+                self.player_car.weapon.deactivate()
             self.active_category = k
-            self.active_weapon = None
+            self.player_car.weapon = None
         else:
             self.active_category = k
             wps = self.weapons[self.active_category]
             for (idx, weapon) in enumerate(wps):
-                if weapon == self.active_weapon.parent:
+                if weapon == self.player_car.weapon.parent:
                     break
             else:
                 assert False
@@ -243,17 +242,17 @@ class WeaponSelector(object):
         wps = self.weapons[self.active_category]
         wps = wps[idx + 1:] + wps[:idx]
         if idx >= 0:
-            wps.append(self.active_weapon.parent)
+            wps.append(self.player_car.weapon.parent)
 
-        if self.active_weapon is not None:
-            self.active_weapon.deactivate()
-            self.active_weapon = None
+        if self.player_car.weapon is not None:
+            self.player_car.weapon.deactivate()
+            self.player_car.weapon = None
         for weapon in wps:
             if weapon not in self.player_car.weapons:
                 continue
             nb = self.player_car.weapons[weapon]
             if nb > 0:
-                self.active_weapon = weapon.activate(
+                self.player_car.weapon = weapon.activate(
                     self.race_track, self.player_car
                 )
                 break

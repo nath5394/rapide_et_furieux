@@ -56,7 +56,7 @@ class Oil(RelativeSprite):
 
 
 class OilGun(common.Weapon):
-    MIN_FIRE_INTERVAL = 0.2
+    MIN_FIRE_INTERVAL = 1.0
     category = common.CATEGORY_COUNTER_MEASURES
 
     def __init__(self, generator, race_track, shooter):

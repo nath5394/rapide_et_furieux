@@ -306,6 +306,12 @@ class Car(RelativeSprite, CollisionObject):
         self.health -= damage
 
     def respawn(self):
+        if self.weapon is not None:
+            self.weapon.deactivate()
+            self.weapon = None
+        self.weapons = {}
+        for obs in self.weapon_observers:
+            obs()
         self.health = 100
         self.speed = (0, 0)
 
@@ -329,6 +335,7 @@ class Car(RelativeSprite, CollisionObject):
                 self.next_checkpoint.pt[1] - prev_cp.pt[1],
             )
             self.radians = math.atan2(pos_diff[0], pos_diff[1])
+            self.radians += math.pi
 
             self.recompute_pts()
             collisions = self.parent.collisions.get_collisions(

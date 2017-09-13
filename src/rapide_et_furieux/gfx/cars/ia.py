@@ -11,6 +11,10 @@ import pygame
 
 from . import Car
 from . import Controls
+from ..weapons.common import CATEGORY_COUNTER_MEASURES
+from ..weapons.common import CATEGORY_GUIDED
+from ..weapons.common import CATEGORY_GUNS
+from ..weapons.common import NB_CATEGORIES
 from ... import assets
 from ... import util
 
@@ -105,6 +109,7 @@ class IACar(Car):
     MIN_TIME_STUCK = 2.0
     BACKWARD_TIME = (1.5, 4.0)  # time we try to go backward if we are stuck
     SLOW_DOWN_IF_BOGIE = 0.5
+    FIRE_DELAY = 1.0  # simulate ~human reaction time
 
     def __init__(self, *args, waypoint_mgmt, **kwargs):
         global g_number_gen
@@ -124,6 +129,8 @@ class IACar(Car):
         self.stuck_since = None
         self.reverse_since = None
         self.backward_time = None
+
+        self.fire_delay = self.FIRE_DELAY
 
         util.register_animator(self.ia_move)
 
@@ -211,6 +218,94 @@ class IACar(Car):
             steer_right=steering > 0,
         )
 
+    def can_use_counter_measures(self):
+        # can always use them
+        return True
+
+    def get_closest_target(self):
+        closest = (0xFFFFFFFF, None)
+        for car in self.parent.cars:
+            if car is self:
+                continue
+            dist = util.distance_sq_pt_to_pt(self.position, car.position)
+            if dist < closest[0]:
+                closest = (dist, car)
+        return closest
+
+    def can_use_guided(self):
+        # can we shoot the closest target ?
+        (dist, closest) = self.get_closest_target()
+        line = (self.position, closest.position)
+        obstacles = self.parent.collisions.get_obstacles_on_segment(
+            line, limit=1
+        )
+        obstacles = list(obstacles)
+        return len(obstacles) <= 0
+
+    def can_use_forward(self):
+        TOLERANCE = math.pi / 8
+
+        # do we have someone in front of us ?
+        radians = -self.radians
+        for car in self.parent.cars:
+            target_angle = math.atan2(
+                car.position[1] - self.position[1],
+                car.position[0] - self.position[0],
+            )
+            diff = (target_angle - radians) % (2 * math.pi)
+            if diff < TOLERANCE and diff > -TOLERANCE:
+                return True
+        return False
+
+    def compute_weapons(self, frame_interval):
+        # sort by categories
+        weapons = {}
+        for (weapon, count) in self.weapons.items():
+            if count <= 0:
+                continue
+            if weapon.category not in weapons:
+                weapons[weapon.category] = set()
+            weapons[weapon.category].add(weapon)
+
+        if len(weapons) <= 0:
+            # no usable weapon at all
+            if self.weapon is not None:
+                self.weapon.deactivate()
+                self.weapon = None
+            return
+
+        CAN_USE = {
+            CATEGORY_GUNS: self.can_use_forward,
+            CATEGORY_GUIDED: self.can_use_guided,
+            CATEGORY_COUNTER_MEASURES: self.can_use_counter_measures,
+        }
+
+        # starts by using counter-measures, then guided, then forward guns
+        for category_idx in range(NB_CATEGORIES, -1, -1):
+            if category_idx not in weapons:
+                continue
+            if CAN_USE[category_idx]():
+                break
+        else:
+            # no usable weapon category
+            return
+
+        weapon = weapons[category_idx].pop()
+        if self.weapon is None or weapon != self.weapon.parent:
+            # switch weapon
+            if self.weapon is not None:
+                self.weapon.deactivate()
+            self.weapon = weapon.activate(self.parent, self)
+            self.fire_delay = self.FIRE_DELAY
+        else:
+            self.fire_delay -= frame_interval
+            if self.fire_delay > 0:
+                return
+            if self.weapon.fire():
+                self.weapons[self.weapon.parent] -= 1
+                if self.weapons[self.weapon.parent] <= 0:
+                    self.weapons.pop(self.weapon.parent)
+
     def ia_move(self, frame_interval):
         if not self.can_move:
             return
@@ -235,6 +330,7 @@ class IACar(Car):
         self.path_set = set(self.path)
 
         self.compute_controls(frame_interval)
+        self.compute_weapons(frame_interval)
 
     def draw(self, screen):
         super().draw(screen)

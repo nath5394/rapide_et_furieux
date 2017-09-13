@@ -270,7 +270,7 @@ class Projectile(RelativeSprite):
                 if dist < self.explosion_range_sq:
                     car.damage(self.EXPLOSION_DAMAGE)
                     logger.info("Hit: {} ; health: {} ; shield : {}".format(
-                        target, target.health, target.shield
+                        car, car.health, car.shield
                     ))
 
 
