@@ -55,9 +55,9 @@ class GunFire(RelativeSprite):
 
 class MachineGun(common.AutomaticTurret):
     category = common.CATEGORY_GUIDED
-    MIN_FIRE_INTERVAL = 0.02
+    MIN_FIRE_INTERVAL = 0.2
     TURRET_ANGLE = 180
-    DAMAGE = 5
+    DAMAGE = 15
     EXPLOSION_SIZE = 20
     EXPLOSION_TIME = 0.5
 

@@ -16,7 +16,7 @@ class Oil(RelativeSprite):
         assets.CAR_SCALE_FACTOR
     ) ** 2
     ASSET = assets.OIL
-    OILY_TIME = 3.0
+    OILY_TIME = 2.0
     LIFE_LENGTH = 15
 
     def __init__(self, race_track, shooter):

@@ -238,7 +238,9 @@ class IACar(Car):
         if closest is None:
             return False
         line = (self.position, closest.position)
-        obstacles = self.parent.collisions.get_obstacles_on_segment(line)
+        obstacles = self.parent.collisions.get_obstacles_on_segment(
+            line, limit=2
+        )
         obstacles = {
             x[0] for x in obstacles
             if x[0] is not closest and x[0] is not self
@@ -363,7 +365,7 @@ class WaypointManager(object):
     COLOR_UNREACHABLE = pygame.Color(200, 200, 200, 255)
     COLOR_REACHABLE = pygame.Color(0, 255, 0, 255)
     COLOR_PATH = pygame.Color(0, 255, 0, 255)
-    MAX_PATH_PTS = 5
+    MAX_PATH_PTS = 3
 
     def __init__(self, game_settings, race_track):
         self.parent = race_track
