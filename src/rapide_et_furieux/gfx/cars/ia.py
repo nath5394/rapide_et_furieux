@@ -491,11 +491,31 @@ class WaypointManager(object):
             self.grid_waypoints[tile_pos] = set()
             self.grid_waypoints[tile_pos].add(closest[1])
 
-    def pathfinding_heuristic(self, car, origin, point, target):
-        h = util.distance_pt_to_pt(point, target)
-        if self.parent.collisions.has_obstacle_in_path(car, (point, target)):
-            h += assets.TILE_SIZE[0] * 2
-        return h
+    def g_score(self, car, old_score, old_pt, new_pt, target):
+        if old_score is not None:
+            (x, y, g_score) = old_score[:3]
+        else:
+            (x, y, g_score) = (0, 0, 0)
+        x += abs(new_pt[0] - old_pt[0])
+        y += abs(new_pt[1] - old_pt[1])
+        # g_score is the cost to reach this point
+        g_score = x ** 2 + y ** 2
+        return (x, y, g_score)
+
+    def f_score(self, car, old_score, old_pt, new_pt, target, g_score=None):
+        if g_score is None:
+            (x, y, g_score) = self.g_score(car, old_score, old_pt, new_pt,
+                                           target)
+        else:
+            (x, y, g_score) = g_score
+        extra_cost = 0
+        if self.parent.collisions.has_obstacle_in_path(car, (new_pt, target)):
+            extra_cost = assets.TILE_SIZE[0] / 2
+        f_score = (
+            (x + abs(target[0] - new_pt[0]) + extra_cost) ** 2 +
+            (y + abs(target[1] - new_pt[1]) + extra_cost) ** 2
+        )
+        return (x, y, g_score, f_score)
 
     def compute_path(self, car, origin, target):
         # turn the target checkpoint into a waypoint
@@ -526,22 +546,14 @@ class WaypointManager(object):
 
         examined = set()
         to_examine = set([first[1]])
-        f_scores = {
+        scores = {
             pt:
             # known cost to go to the node + estimated cost to go to the
             # target
             (
-                (util.distance_pt_to_pt(origin, pt.position) +
-                 self.pathfinding_heuristic(
-                     car, origin, pt.position, target.position
-                 )),
+                self.f_score(car, None, origin, pt.position, target.position),
                 0
             )
-            for pt in to_examine
-        }
-        g_scores = {
-            # pt --> actual best cost found to reach each node
-            pt: util.distance_pt_to_pt(origin, pt.position)
             for pt in to_examine
         }
         came_from = {}
@@ -552,9 +564,9 @@ class WaypointManager(object):
             lowest_score = 0xFFFFFFF
             current = None
             for wpt in to_examine:
-                (score, nb_pts) = f_scores[wpt]
-                if score < lowest_score:
-                    lowest_score = score
+                (score, nb_pts) = scores[wpt]
+                if score[3] < lowest_score:
+                    lowest_score = score[3]
                     current = wpt
             assert current is not None
 
@@ -580,20 +592,23 @@ class WaypointManager(object):
                     continue
                 to_examine.add(neighbor)
 
-                g_score = g_scores[current] + util.distance_pt_to_pt(
-                    current.position, neighbor.position
-                )
-                if neighbor in g_scores and g_score > g_scores[neighbor]:
+                g_score = self.g_score(
+                    car, scores[current][0], current.position,
+                    neighbor.position, target.position)
+                if neighbor in scores and g_score[2] > scores[neighbor][0][2]:
                     # we already know a better path
                     continue
 
                 # best path up to now
                 came_from[neighbor] = current
-                g_scores[neighbor] = g_score
-
-                f_scores[neighbor] = (g_score + self.pathfinding_heuristic(
-                    car, origin, neighbor.position, target.position
-                ), nb_pts + 1)
+                scores[neighbor] = (
+                    self.f_score(
+                        car, scores[current][0], current.position,
+                        neighbor.position, target.position,
+                        g_score=g_score
+                    ),
+                    nb_pts + 1
+                )
 
         if end_of_path is None:
             raise Exception("[{}] Failed to found path from {} to {}".format(
