@@ -23,6 +23,10 @@ class Oil(RelativeSprite):
         super().__init__(self.ASSET)
 
         self.angle = random.randint(0, 360)
+        self.image = pygame.transform.scale(self.image, (
+            int(self.image.get_size()[0] * 0.75),
+            int(self.image.get_size()[1] * 0.75),
+        ))
         self.image = pygame.transform.rotate(self.image, self.angle)
         self.size = self.image.get_size()
 

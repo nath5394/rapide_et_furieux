@@ -97,6 +97,8 @@ class Explosion(object):
 
     def draw(self, screen):
         frame_idx = int(len(self.frames) * self.t / self.anim_length)
+        if frame_idx > len(self.frames):
+            frame_idx = len(self.frames) - 1
         screen.blit(
             self.frames[frame_idx],
             self.absolute
