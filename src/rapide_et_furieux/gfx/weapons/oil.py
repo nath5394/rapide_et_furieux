@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import random
+
 import pygame
 
 from . import common
@@ -15,9 +17,15 @@ class Oil(RelativeSprite):
     ) ** 2
     ASSET = assets.OIL
     OILY_TIME = 3.0
+    LIFE_LENGTH = 15
 
     def __init__(self, race_track, shooter):
         super().__init__(self.ASSET)
+
+        self.angle = random.randint(0, 360)
+        self.image = pygame.transform.rotate(self.image, self.angle)
+        self.size = self.image.get_size()
+
         self.parent = race_track
         self.shooter = shooter
         self.position = shooter.position
@@ -26,14 +34,19 @@ class Oil(RelativeSprite):
             shooter.position[1] - (self.size[1] / 2),
         )
         self.shooter = shooter
+        self.time_remaining = self.LIFE_LENGTH
         util.register_drawer(assets.WEAPONS_LAYER, self)
-        util.register_animator(self.check_collision)
+        util.register_animator(self.anim)
 
     def disappear(self):
         util.unregister_drawer(self)
-        util.unregister_animator(self.check_collision)
+        util.unregister_animator(self.anim)
 
-    def check_collision(self, frame_interval):
+    def anim(self, frame_interval):
+        self.time_remaining -= frame_interval
+        if self.time_remaining <= 0:
+            self.disappear()
+            return
         for car in self.parent.cars:
             if car is self.shooter:
                 continue
