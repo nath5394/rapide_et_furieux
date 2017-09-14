@@ -34,32 +34,14 @@ UI = {
     BLUE_DOT,
 }
 
-MUSICS = {
-    ("rapide_et_furieux.music", "Mission Plausible.ogg"),
-    ("rapide_et_furieux.music", "Game Over.ogg"),
-    ("rapide_et_furieux.music", "Italian Mom.ogg"),
-    ("rapide_et_furieux.music", "Wacky Waiting.ogg"),
-    ("rapide_et_furieux.music", "Retro Mystic.ogg"),
-    ("rapide_et_furieux.music", "Retro Polka.ogg"),
-    ("rapide_et_furieux.music", "Retro Beat.ogg"),
-    ("rapide_et_furieux.music", "Infinite Descent.ogg"),
-    ("rapide_et_furieux.music", "Flowing Rocks.ogg"),
-    ("rapide_et_furieux.music", "Time Driving.ogg"),
-    ("rapide_et_furieux.music", "Polka Train.ogg"),
-    ("rapide_et_furieux.music", "German Virtue.ogg"),
-    ("rapide_et_furieux.music", "Night at the Beach.ogg"),
-    ("rapide_et_furieux.music", "Retro Comedy.ogg"),
-    ("rapide_et_furieux.music", "Retro Reggae.ogg"),
-    ("rapide_et_furieux.music", "Mishief Stroll.ogg"),
-    ("rapide_et_furieux.music", "Alpha Dance.ogg"),
-    ("rapide_et_furieux.music", "Swinging Pants.ogg"),
-    ("rapide_et_furieux.music", "Drumming Sticks.ogg"),
-    ("rapide_et_furieux.music", "Sad Descent.ogg"),
-    ("rapide_et_furieux.music", "Cheerful Annoyance.ogg"),
-    ("rapide_et_furieux.music", "Farm Frolics.ogg"),
-    ("rapide_et_furieux.music", "Space Cadet.ogg"),
-    ("rapide_et_furieux.music", "Sad Town.ogg"),
-}
+MUSICS = [
+    ("rapide_et_furieux.music", "251461__joshuaempyre__arcade-music-loop.ogg",
+     0.5),
+    ("rapide_et_furieux.music", "398640__jammerboy70__cyber-race.ogg",
+     0.5),
+    ("rapide_et_furieux.music", "51239__rutgermuller__8-bit-electrohouse.ogg",
+     0.5),
+]
 
 SOUNDS = {
     'laser': {
@@ -331,6 +313,11 @@ def load_sound(rsc):
     return snd
 
 
+def load_music(rsc):
+    # simply make sure the file is available and get its path
+    return resource_filename(*(rsc[:2]))
+
+
 def load_resources():
     global g_resources
     rsc = {}
@@ -370,18 +357,21 @@ def load_resources():
     rsc[MISSILE] = load_image(MISSILE)
 
     # sounds
-    sounds = {
+    rsc.update({
         snd_rsc[:2]: load_sound(snd_rsc)
         for snds in SOUNDS.values()
         for snd_rsc in snds
-    }
-    from pprint import pprint
-    pprint(sounds)
-    rsc.update(sounds)
+    })
     rsc.update({
         snd_rsc[:2]: load_sound(snd_rsc)
         for snds in COUNTDOWNS.values()
         for snd_rsc in snds.values()
+    })
+
+    # musics
+    rsc.update({
+        music_rsc[:2]: load_music(music_rsc)
+        for music_rsc in MUSICS
     })
 
     g_resources = rsc

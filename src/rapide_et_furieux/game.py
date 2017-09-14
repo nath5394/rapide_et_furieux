@@ -10,6 +10,7 @@ import time
 import pygame
 
 from . import assets
+from . import music
 from . import sounds
 from . import util
 from .gfx import ui
@@ -56,6 +57,8 @@ class Game(object):
 
         self.font = pygame.font.Font(None, 32)
 
+        self.music = None
+
         self.race_track = None
         self.player = None
         self.race_track_miniature = None
@@ -69,6 +72,9 @@ class Game(object):
     def _init(self):
         assets.load_resources()
         load_explosions()
+
+        self.music = music.MusicPlayer()
+        self.music.play_next()
 
         if DEBUG:
             fps_counter = ui.FPSCounter(self.font, position=(
