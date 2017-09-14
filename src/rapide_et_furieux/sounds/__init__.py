@@ -53,15 +53,23 @@ def play(sound, balance=(1.0, 1.0)):
 
 def play_from_screen(sound, relative_sprite):
     global g_screen_size
-
-    w = g_screen_size[0]
+    MAX_DIST = g_screen_size[0] ** 2 + g_screen_size[1] ** 2
 
     pos = relative_sprite.absolute
     size = relative_sprite.size
-    pos = pos[0] + (size[0] / 2)
+    pos = (pos[0] + (size[0] / 2), pos[1] + (size[1] / 2))
+
+    dist = util.distance_sq_pt_to_pt(
+        (g_screen_size[0] / 2, g_screen_size[1] / 2),
+        pos
+    )
+    if dist > MAX_DIST:
+        return
+
+    w = g_screen_size[0]
 
     balance_r = util.clamp(
-        (pos + (w / 2)) / (2 * w),
+        (pos[0] + (w / 2)) / (2 * w),
         0.0, 1.0
     )
     balance_l = 1.0 - balance_r
