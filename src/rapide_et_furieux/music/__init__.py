@@ -1,4 +1,5 @@
 import logging
+import random
 
 import pygame
 
@@ -11,16 +12,12 @@ logger = logging.getLogger(__name__)
 
 class MusicPlayer(object):
     def __init__(self, change_interval=90):
-        self.music_idx = -1
         self.change_interval = change_interval
         self.t = 0
         util.register_animator(self._change_track)
 
     def play_next(self):
-        self.music_idx += 1
-        if self.music_idx >= len(assets.MUSICS):
-            self.music_idx = 0
-        asset_music = assets.MUSICS[self.music_idx]
+        asset_music = random.sample(assets.MUSICS, 1)[0]
         logger.info("Playing: {}".format(asset_music))
         music = assets.get_resource(asset_music)
 

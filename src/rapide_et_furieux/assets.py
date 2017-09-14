@@ -34,14 +34,12 @@ UI = {
     BLUE_DOT,
 }
 
-MUSICS = [
-    ("rapide_et_furieux.music", "251461__joshuaempyre__arcade-music-loop.ogg",
-     0.5),
+MUSICS = {
     ("rapide_et_furieux.music", "398640__jammerboy70__cyber-race.ogg",
      0.5),
-    ("rapide_et_furieux.music", "51239__rutgermuller__8-bit-electrohouse.ogg",
-     0.5),
-]
+    ("rapide_et_furieux.music", "Title Theme.ogg", 0.5),
+    ("rapide_et_furieux.music", "Great Boss.ogg", 0.5),
+}
 
 SOUNDS = {
     'laser': {
