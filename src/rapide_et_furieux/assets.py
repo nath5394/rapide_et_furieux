@@ -49,9 +49,8 @@ SOUNDS = {
         for idx in range(1, 10)
     },
     'machinegun': {
-        # TODO(JFlesch): those sounds are bad
-        ("rapide_et_furieux.sounds", "click%d.ogg" % idx, 1.0)
-        for idx in range(1, 2)
+        ("rapide_et_furieux.sounds",
+         "170167__timgormly__8-bit-machine-gun.ogg", 0.3),
     },
     'click': {
         ("rapide_et_furieux.sounds", "click%d.ogg" % idx, 1.0)
@@ -61,10 +60,19 @@ SOUNDS = {
         ("rapide_et_furieux.sounds", "powerUp%d.ogg" % idx, 1.0)
         for idx in range(1, 10)
     },
-    'explosion': {
+    'explosion': [
         ("rapide_et_furieux.sounds", "rumble%d.ogg" % idx, 0.3)
         for idx in range(1, 4)
-    },
+    ] + [
+        ("rapide_et_furieux.sounds", "170146__timgormly__8-bit-explosion.ogg",
+         0.5),
+        ("rapide_et_furieux.sounds",
+         "259962__thehorriblejoke__8-bit-explosion.ogg", 0.5),
+        ("rapide_et_furieux.sounds",
+         "8bit_bomb_explosion.ogg", 0.5),
+        ("rapide_et_furieux.sounds",
+         "synthetic_explosion_1.ogg", 0.5),
+    ],
 }
 
 COUNTDOWNS = {
