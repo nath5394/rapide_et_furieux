@@ -10,6 +10,7 @@ import time
 import pygame
 
 from . import assets
+from . import sounds
 from . import util
 from .gfx import ui
 from .gfx.bonuses import BonusGenerator
@@ -197,9 +198,12 @@ def main():
         sys.exit(1)
 
     logger.info("Loading ...")
+    sounds.pre_init()
     pygame.init()
+
     screen = util.set_default_resolution()
     pygame.display.set_caption(CAPTION)
+    sounds.init(screen.get_size())
 
     game = Game(screen, sys.argv[1])
     util.idle_add(game.load)

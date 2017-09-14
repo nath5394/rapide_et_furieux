@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 
 import logging
+import random
 
 import pygame
 
 from . import common
 from ... import assets
+from ... import sounds
 
 
 logger = logging.getLogger(__name__)
@@ -33,11 +35,13 @@ class ForwardLaserGun(common.StaticTurret):
     def __init__(self, generator, race_track, shooter):
         super().__init__(generator, shooter, assets.GUN_LASER)
         self.race_track = race_track
+        self.sound = random.sample(assets.SOUNDS['laser'], 1)[0]
 
     def fire(self):
         if not super().fire():
             return False
         Laser(self.race_track, self.shooter, self.shooter.angle)
+        sounds.play_from_screen(self.sound, self.shooter)
         return True
 
     def __hash__(self):
@@ -72,11 +76,13 @@ class AutomaticLaserGun(common.AutomaticTurret):
     def __init__(self, generator, race_track, shooter):
         super().__init__(generator, race_track, shooter, assets.GUN_LASER)
         self.race_track = race_track
+        self.sound = random.sample(assets.SOUNDS['laser'], 1)[0]
 
     def fire(self):
         if not super().fire():
             return False
         Laser(self.race_track, self.shooter, self.angle)
+        sounds.play_from_screen(self.sound, self.shooter)
         return True
 
     def __hash__(self):

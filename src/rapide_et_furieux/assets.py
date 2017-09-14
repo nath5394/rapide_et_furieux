@@ -62,10 +62,34 @@ MUSICS = {
 }
 
 SOUNDS = {
-    'shoot': {
+    'laser': {
         ("rapide_et_furieux.sounds", "laser%d.ogg" % idx)
         for idx in range(1, 10)
     },
+    'click': {
+        ("rapide_et_furieux.sounds", "click%d.ogg" % idx)
+        for idx in range(1, 6)
+    },
+    'powerUp': {
+        ("rapide_et_furieux.sounds", "powerUp%d.ogg" % idx)
+        for idx in range(1, 10)
+    },
+    'explosions': {
+        ("rapide_et_furieux.sounds", "rumble%d.ogg" % idx)
+        for idx in range(1, 4)
+    },
+}
+
+COUNTDOWNS = {
+    sex: {
+        idx:
+        (
+            "rapide_et_furieux.sounds.%s" % sex,
+            "%d.ogg" % idx if idx > 0 else "go.ogg"
+        )
+        for idx in range(0, 11)
+    }
+    for sex in ['male', 'female']
 }
 
 CAR_SCALE_FACTOR = 0.66
@@ -294,9 +318,17 @@ def load_image(rsc):
     return img
 
 
+def load_sound(rsc):
+    snd_path = resource_filename(*rsc)
+    snd = pygame.mixer.Sound(file=snd_path)
+    return snd
+
+
 def load_resources():
     global g_resources
     rsc = {}
+
+    # images
     rsc.update({ui_rsc: load_image(ui_rsc) for ui_rsc in UI})
     rsc.update({tile_rsc: load_image(tile_rsc) for tile_rsc in TILES})
     rsc.update({obj_rsc: load_image(obj_rsc) for obj_rsc in OBJECTS})
@@ -329,6 +361,19 @@ def load_resources():
         )
     )
     rsc[MISSILE] = load_image(MISSILE)
+
+    # sounds
+    rsc.update({
+        snd_rsc: load_sound(snd_rsc)
+        for snds in SOUNDS.values()
+        for snd_rsc in snds
+    })
+    rsc.update({
+        snd_rsc: load_sound(snd_rsc)
+        for snds in COUNTDOWNS.values()
+        for snd_rsc in snds.values()
+    })
+
     g_resources = rsc
 
 
