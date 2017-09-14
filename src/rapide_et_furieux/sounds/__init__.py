@@ -31,7 +31,7 @@ def play(sound, balance=(1.0, 1.0)):
     global g_channels
     global g_channel_idx
 
-    sound = assets.get_resource(sound)
+    sound = assets.get_resource(sound[:2])
 
     for g_channel_idx in itertools.chain(
                 range(g_channel_idx, len(g_channels)),

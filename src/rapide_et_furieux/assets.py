@@ -63,19 +63,24 @@ MUSICS = {
 
 SOUNDS = {
     'laser': {
-        ("rapide_et_furieux.sounds", "laser%d.ogg" % idx)
+        ("rapide_et_furieux.sounds", "laser%d.ogg" % idx, 1.0)
         for idx in range(1, 10)
     },
+    'machinegun': {
+        # TODO(JFlesch): those sounds are bad
+        ("rapide_et_furieux.sounds", "click%d.ogg" % idx, 1.0)
+        for idx in range(1, 2)
+    },
     'click': {
-        ("rapide_et_furieux.sounds", "click%d.ogg" % idx)
+        ("rapide_et_furieux.sounds", "click%d.ogg" % idx, 1.0)
         for idx in range(1, 6)
     },
     'powerUp': {
-        ("rapide_et_furieux.sounds", "powerUp%d.ogg" % idx)
+        ("rapide_et_furieux.sounds", "powerUp%d.ogg" % idx, 1.0)
         for idx in range(1, 10)
     },
-    'explosions': {
-        ("rapide_et_furieux.sounds", "rumble%d.ogg" % idx)
+    'explosion': {
+        ("rapide_et_furieux.sounds", "rumble%d.ogg" % idx, 0.3)
         for idx in range(1, 4)
     },
 }
@@ -85,7 +90,8 @@ COUNTDOWNS = {
         idx:
         (
             "rapide_et_furieux.sounds.%s" % sex,
-            "%d.ogg" % idx if idx > 0 else "go.ogg"
+            "%d.ogg" % idx if idx > 0 else "go.ogg",
+            1.0
         )
         for idx in range(0, 11)
     }
@@ -319,8 +325,9 @@ def load_image(rsc):
 
 
 def load_sound(rsc):
-    snd_path = resource_filename(*rsc)
+    snd_path = resource_filename(*(rsc[:2]))
     snd = pygame.mixer.Sound(file=snd_path)
+    snd.set_volume(rsc[2])
     return snd
 
 
@@ -363,13 +370,16 @@ def load_resources():
     rsc[MISSILE] = load_image(MISSILE)
 
     # sounds
-    rsc.update({
-        snd_rsc: load_sound(snd_rsc)
+    sounds = {
+        snd_rsc[:2]: load_sound(snd_rsc)
         for snds in SOUNDS.values()
         for snd_rsc in snds
-    })
+    }
+    from pprint import pprint
+    pprint(sounds)
+    rsc.update(sounds)
     rsc.update({
-        snd_rsc: load_sound(snd_rsc)
+        snd_rsc[:2]: load_sound(snd_rsc)
         for snds in COUNTDOWNS.values()
         for snd_rsc in snds.values()
     })
@@ -378,4 +388,6 @@ def load_resources():
 
 
 def get_resource(rsc):
-    return g_resources[tuple(rsc[:2])]
+    rsc = rsc[:2]
+    rsc = tuple(rsc)
+    return g_resources[rsc]

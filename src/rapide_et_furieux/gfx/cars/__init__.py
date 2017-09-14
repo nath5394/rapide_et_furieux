@@ -3,11 +3,13 @@
 import itertools
 import logging
 import math
+import random
 
 import pygame
 
 from .. import RelativeSprite
 from ... import assets
+from ... import sounds
 from ... import util
 from ..collisions import CollisionObject
 from ..weapons import common
@@ -304,6 +306,10 @@ class Car(RelativeSprite, CollisionObject):
     def explode(self):
         ExplodedCar(self)
         common.Explosion(self.parent, self.position, assets.TILE_SIZE[0], 1.0)
+        sounds.play_from_screen(
+            random.sample(assets.SOUNDS['explosion'], 1)[0],
+            self
+        )
 
     def damage(self, damage):
         if self.shield[0] > 0:
@@ -564,6 +570,10 @@ class ExplodedCar(Car):
                 pixels[x][y] = p
             imgs.append(img)
         return imgs
+
+    def damange(self, *args, **kwargs):
+        # cannot be damaged
+        pass
 
     def __str__(self):
         return "ExplodedCar ({}|{})".format(self.position, self.radians)

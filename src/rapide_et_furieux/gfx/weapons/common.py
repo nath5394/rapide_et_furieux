@@ -7,6 +7,7 @@ import pygame
 
 from .. import RelativeSprite
 from ... import assets
+from ... import sounds
 from ... import util
 
 
@@ -74,6 +75,7 @@ class Explosion(object):
         self.parent = race_track
         self.relative = (position[0] - (size / 2), position[1] - (size / 2))
         self.anim_length = anim_length
+        self.size = (size, size)
         self.t = 0
         util.register_drawer(assets.WEAPONS_LAYER, self)
         util.register_animator(self.anim)
@@ -211,37 +213,41 @@ class Projectile(RelativeSprite):
     def move(self, frame_interval):
         self.turn(frame_interval)
 
-        speed = (self.speed[0] * frame_interval, self.speed[1] * frame_interval)
-        speed_sq = (speed[0] ** 2) + (speed[1] ** 2)
-        if speed_sq > self.max_speed_sq:
-            ratio = math.sqrt(speed_sq) / self.max_speed
-            speed = (speed[0] / ratio, speed[1] / ratio)
+        if self.speed[0] == 0 and self.speed[1] == 0:
+            position = self.position
+        else:
+            speed = (self.speed[0] * frame_interval,
+                     self.speed[1] * frame_interval)
+            speed_sq = (speed[0] ** 2) + (speed[1] ** 2)
+            if speed_sq > self.max_speed_sq:
+                ratio = math.sqrt(speed_sq) / self.max_speed
+                speed = (speed[0] / ratio, speed[1] / ratio)
 
-        self.relative = (
-            int(self.relative[0] + speed[0]),
-            int(self.relative[1] + speed[1]),
-        )
-        position = self.position
+            self.relative = (
+                int(self.relative[0] + speed[0]),
+                int(self.relative[1] + speed[1]),
+            )
+            position = self.position
 
-        # are we still in the game ?
-        grid_pos = (
-            position[0] / assets.TILE_SIZE[0],
-            position[1] / assets.TILE_SIZE[1],
-        )
-        grid_min = self.parent.tiles.grid_min
-        grid_min = (
-            grid_min[0] - self.GRID_MARGE,
-            grid_min[1] - self.GRID_MARGE,
-        )
-        grid_max = self.parent.tiles.grid_max
-        grid_max = (
-            grid_max[0] + self.GRID_MARGE,
-            grid_max[1] + self.GRID_MARGE,
-        )
-        if (grid_pos[0] < grid_min[0] or grid_pos[1] < grid_min[1] or
-                grid_pos[0] > grid_max[0] or grid_pos[1] > grid_max[1]):
-            self.disappear()
-            return
+            # are we still in the game ?
+            grid_pos = (
+                position[0] / assets.TILE_SIZE[0],
+                position[1] / assets.TILE_SIZE[1],
+            )
+            grid_min = self.parent.tiles.grid_min
+            grid_min = (
+                grid_min[0] - self.GRID_MARGE,
+                grid_min[1] - self.GRID_MARGE,
+            )
+            grid_max = self.parent.tiles.grid_max
+            grid_max = (
+                grid_max[0] + self.GRID_MARGE,
+                grid_max[1] + self.GRID_MARGE,
+            )
+            if (grid_pos[0] < grid_min[0] or grid_pos[1] < grid_min[1] or
+                    grid_pos[0] > grid_max[0] or grid_pos[1] > grid_max[1]):
+                self.disappear()
+                return
 
         collisions = self.parent.collisions.get_collisions(self)
         collisions = [
@@ -252,15 +258,19 @@ class Projectile(RelativeSprite):
             return
 
         self.disappear()
-        Explosion(self.parent, position,
-                  self.EXPLOSION_SIZE,
-                  self.EXPLOSION_TIME)
+        explosion = Explosion(self.parent, position,
+                              self.EXPLOSION_SIZE,
+                              self.EXPLOSION_TIME)
 
         target = collisions[0].obstacle
         if hasattr(target, 'damage'):
             target.damage(self.DAMAGE)
 
         if self.EXPLOSION_DAMAGE > 0:
+            sounds.play_from_screen(
+                random.sample(assets.SOUNDS['explosion'], 1)[0], explosion
+            )
+
             self.parent.collisions.collide(
                 self, collisions, frame_interval
             )

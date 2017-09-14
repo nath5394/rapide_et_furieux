@@ -96,8 +96,6 @@ class Game(object):
             self.race_track = None
 
     def _load(self):
-        assets.load_resources()
-
         self.unload()
 
         # load map / race track

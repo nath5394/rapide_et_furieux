@@ -2,12 +2,14 @@
 
 import logging
 import math
+import random
 
 import pygame
 
 from . import common
 from .. import RelativeSprite
 from ... import assets
+from ... import sounds
 from ... import util
 
 
@@ -64,6 +66,7 @@ class MachineGun(common.AutomaticTurret):
     def __init__(self, generator, race_track, shooter):
         super().__init__(generator, race_track, shooter, assets.GUN_MACHINEGUN)
         self.race_track = race_track
+        self.sound = random.sample(assets.SOUNDS['machinegun'], 1)[0]
 
         # make sure to cross the whole race track
         self.max_length = util.distance_pt_to_pt(
@@ -112,6 +115,8 @@ class MachineGun(common.AutomaticTurret):
                 target.damage(self.DAMAGE)
 
         GunFire(self.race_track, line, self.shooter.color)
+
+        sounds.play_from_screen(self.sound, self.shooter)
         return True
 
     def __hash__(self):
