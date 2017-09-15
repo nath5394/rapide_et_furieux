@@ -43,7 +43,11 @@ MUSICS = {
 }
 
 ENGINE = ("rapide_et_furieux.sounds", "loop_5.ogg", 0.5)
-TIRES = ("rapide_et_furieux.sounds", "tires.ogg", 0.5)
+TIRES = ("rapide_et_furieux.sounds", "tires.ogg", 0.3)
+SKIDMARKS = {
+    ("rapide_et_furieux.gfx.cars", "skidmark_long_%d.png" % idx)
+    for idx in range(1, 4)
+}
 
 SOUNDS = {
     'laser': {
@@ -355,6 +359,7 @@ def load_resources():
     rsc.update({obj_rsc: load_image(obj_rsc) for obj_rsc in GUNS})
     rsc.update({obj_rsc: load_image(obj_rsc) for obj_rsc in SCRATCHS})
     rsc.update({obj_rsc: load_image(obj_rsc) for obj_rsc in SHIELDS})
+    rsc.update({obj_rsc: load_image(obj_rsc) for obj_rsc in SKIDMARKS})
     rsc[TURRET_BASE] = load_image(TURRET_BASE)
     rsc[MINE] = load_image(MINE)
     rsc[MINE] = pygame.transform.scale(

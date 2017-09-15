@@ -306,7 +306,7 @@ class Turret(Weapon):
 
     def __init__(self, generator, shooter, turret_rsc):
         super().__init__(generator, shooter)
-        self.shooter.extra_drawers.add(self)
+        self.shooter.extra_drawers_above.add(self)
         self.angle = 0
         self.turret_base = assets.load_image(assets.TURRET_BASE)
         self.turret = assets.load_image(turret_rsc)
@@ -336,7 +336,7 @@ class Turret(Weapon):
             )
 
     def deactivate(self):
-        self.shooter.extra_drawers.remove(self)
+        self.shooter.extra_drawers_above.remove(self)
 
 
 class StaticTurret(Turret):

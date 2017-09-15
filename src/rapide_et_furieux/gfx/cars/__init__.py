@@ -27,6 +27,62 @@ class Controls(object):
         self.steer_right = steer_right
 
 
+class SkidMark(RelativeSprite):
+    HEIGHT = 24
+    LIFE_LENGTH = 2.0
+    OFFSET = 16
+
+    def __init__(self, racetrack, car, resource=None, image=None):
+        scale = False
+        if resource is None:
+            scale = True
+            resource = random.sample(assets.SKIDMARKS, 1)[0]
+        super().__init__(resource, image)
+
+        if scale:
+            self.original = self.image = self.original.subsurface(
+                (0, 0), (self.original.get_size()[0], self.HEIGHT)
+            )
+            self.original = self.image = pygame.transform.scale(
+                self.original,
+                (
+                    int(self.original.get_size()[0] * assets.CAR_SCALE_FACTOR),
+                    int(self.original.get_size()[1] * assets.CAR_SCALE_FACTOR),
+                )
+            )
+
+        self.t = self.LIFE_LENGTH
+        self.parent = racetrack
+        self.car = car
+
+        # TODO(Jflesch): could be optimized
+
+        car_size = car.original.get_size()
+        img = pygame.Surface(car_size, pygame.SRCALPHA)
+
+        pos = (0, self.OFFSET)
+        img.blit(self.original, pos)
+        pos = (0, car_size[1] - self.original.get_size()[1] - self.OFFSET)
+        img.blit(self.original, pos)
+
+        self.angle = car.angle
+        self.image = pygame.transform.rotate(img, -self.angle)
+        self.size = self.image.get_size()
+        self.relative = car.relative
+
+    def copy(self):
+        return SkidMark(self.parent, self.car, self.resource, self.original)
+
+    def anim(self, frame_interval):
+        self.t -= frame_interval
+        if self.t < 0:
+            self.car.extra_drawers_below.remove(self)
+            util.unregister_animator(self.anim)
+
+    def draw(self, screen, car):
+        super().draw(screen)
+
+
 class Car(RelativeSprite, CollisionObject):
     DEFAULT_HEALTH = 100
     ALIVE = True
@@ -93,7 +149,8 @@ class Car(RelativeSprite, CollisionObject):
 
         self.can_move = False
 
-        self.extra_drawers = set()
+        self.extra_drawers_below = set()
+        self.extra_drawers_above = set()
         self.weapons = {}  # weapon --> number of ammos
         self.weapon_observers = set()
         self.weapon = None  # active weapon
@@ -107,6 +164,8 @@ class Car(RelativeSprite, CollisionObject):
         self.has_engine_sound = has_engine_sound
         if self.has_engine_sound:
             self.engine_sound_channel = sounds.reserve_channel()
+
+        self.skidmark = SkidMark(self.parent, self)
 
         self.recompute_pts()
         self.update_image()
@@ -397,6 +456,11 @@ class Car(RelativeSprite, CollisionObject):
         else:
             self.drift = self.DRIFT_FIRST_FRAME
 
+        if self.drift != self.DRIFT_NONE:
+            skidmark = self.skidmark.copy()
+            self.extra_drawers_below.add(skidmark)
+            util.register_animator(skidmark.anim)
+
         self.update_sound(frame_interval)
 
         if self.shield[0] > 0:
@@ -483,9 +547,12 @@ class Car(RelativeSprite, CollisionObject):
         self.check_checkpoint()
 
     def draw(self, screen):
+        for drawer in self.extra_drawers_below:
+            drawer.draw(screen, self)
+
         super().draw(screen)
 
-        for drawer in self.extra_drawers:
+        for drawer in self.extra_drawers_above:
             drawer.draw(screen, self)
 
         if self.shield[0] > 0:
