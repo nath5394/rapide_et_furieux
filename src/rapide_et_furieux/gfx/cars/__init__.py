@@ -33,7 +33,8 @@ class Car(RelativeSprite, CollisionObject):
     SHIELD_ON_RESPAWN = (5, 200)
 
     def __init__(self, resource, race_track, game_settings,
-                 spawn_point, spawn_orientation, image=None):
+                 spawn_point, spawn_orientation, image=None,
+                 has_sound=False):
         global UNIQUE
 
         super().__init__(resource, image)
@@ -96,6 +97,10 @@ class Car(RelativeSprite, CollisionObject):
         self.shield = (0, 0)
 
         self.base_exploded = ExplodedCar.generate_base_exploded(self.original)
+
+        self.has_sound = has_sound
+        if self.has_sound:
+            self.engine_sound_channel = sounds.reserve_channel()
 
         self.recompute_pts()
         self.update_image()
@@ -359,7 +364,27 @@ class Car(RelativeSprite, CollisionObject):
 
         self.parent.collisions.precompute_moving()
 
+    def update_engine_sound(self, frame_interval):
+        if not self.has_sound:
+            return
+
+        MIN_SPEED = -250
+        MAX_SPEED = 770
+
+        speed = abs(self.speed[0])
+        self.engine_sound_channel.set_volume(
+            (speed - MIN_SPEED) / (MAX_SPEED - MIN_SPEED)
+        )
+
+        if self.engine_sound_channel.get_busy():
+            return
+
+        snd = assets.get_resource(assets.ENGINE[:2])
+        self.engine_sound_channel.play(snd, -1)
+
     def move(self, frame_interval):
+        self.update_engine_sound(frame_interval)
+
         if self.shield[0] > 0:
             self.shield = (self.shield[0] - frame_interval, self.shield[1])
         else:

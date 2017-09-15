@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 from pkg_resources import resource_filename
 
 import pygame
@@ -36,12 +35,14 @@ UI = {
 
 MUSICS = {
     ("rapide_et_furieux.music", "398640__jammerboy70__cyber-race.ogg",
-     0.5),
-    ("rapide_et_furieux.music", "Title Theme.ogg", 0.5),
-    ("rapide_et_furieux.music", "Great Boss.ogg", 0.5),
-    ("rapide_et_furieux.music", "fight_looped.ogg", 0.5),
-    ("rapide_et_furieux.music", "S31-Winning the Race.ogg", 0.5),
+     0.1),
+    ("rapide_et_furieux.music", "Title Theme.ogg", 0.1),
+    ("rapide_et_furieux.music", "Great Boss.ogg", 0.1),
+    ("rapide_et_furieux.music", "fight_looped.ogg", 0.1),
+    ("rapide_et_furieux.music", "S31-Winning the Race.ogg", 0.1),
 }
+
+ENGINE = ("rapide_et_furieux.sounds", "loop_5.ogg", 0.7)
 
 SOUNDS = {
     'laser': {
@@ -375,6 +376,7 @@ def load_resources():
         for snds in COUNTDOWNS.values()
         for snd_rsc in snds.values()
     })
+    rsc[ENGINE[:2]] = load_sound(ENGINE)
 
     # musics
     rsc.update({
