@@ -39,6 +39,8 @@ MUSICS = {
      0.5),
     ("rapide_et_furieux.music", "Title Theme.ogg", 0.5),
     ("rapide_et_furieux.music", "Great Boss.ogg", 0.5),
+    ("rapide_et_furieux.music", "fight_looped.ogg", 0.5),
+    ("rapide_et_furieux.music", "S31-Winning the Race.ogg", 0.5),
 }
 
 SOUNDS = {
