@@ -48,6 +48,7 @@ SKIDMARKS = {
     ("rapide_et_furieux.gfx.cars", "skidmark_long_%d.png" % idx)
     for idx in range(1, 4)
 }
+SKIDMARK_OIL = ("rapide_et_furieux.gfx.cars", "skidmark_oil.png")
 
 SOUNDS = {
     'laser': {
@@ -370,6 +371,7 @@ def load_resources():
         )
     )
     rsc[MISSILE] = load_image(MISSILE)
+    rsc[SKIDMARK_OIL] = load_image(SKIDMARK_OIL)
 
     # sounds
     rsc.update({

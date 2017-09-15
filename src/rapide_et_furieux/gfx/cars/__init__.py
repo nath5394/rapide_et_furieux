@@ -166,6 +166,9 @@ class Car(RelativeSprite, CollisionObject):
             self.engine_sound_channel = sounds.reserve_channel()
 
         self.skidmark = SkidMark(self.parent, self)
+        self.skidmark_oil = SkidMark(
+            self.parent, self, assets.SKIDMARK_OIL
+        )
 
         self.recompute_pts()
         self.update_image()
@@ -456,8 +459,11 @@ class Car(RelativeSprite, CollisionObject):
         else:
             self.drift = self.DRIFT_FIRST_FRAME
 
-        if self.drift != self.DRIFT_NONE:
-            skidmark = self.skidmark.copy()
+        if self.oily > 0 or self.drift != self.DRIFT_NONE:
+            if self.oily > 0:
+                skidmark = self.skidmark_oil.copy()
+            elif self.drift != self.DRIFT_NONE:
+                skidmark = self.skidmark.copy()
             self.extra_drawers_below.add(skidmark)
             util.register_animator(skidmark.anim)
 
