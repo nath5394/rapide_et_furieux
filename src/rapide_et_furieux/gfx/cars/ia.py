@@ -365,7 +365,7 @@ class WaypointManager(object):
     COLOR_UNREACHABLE = pygame.Color(200, 200, 200, 255)
     COLOR_REACHABLE = pygame.Color(0, 255, 0, 255)
     COLOR_PATH = pygame.Color(0, 255, 0, 255)
-    MAX_PATH_PTS = 3
+    MAX_PATH_PTS = 30
 
     def __init__(self, game_settings, race_track):
         self.parent = race_track
