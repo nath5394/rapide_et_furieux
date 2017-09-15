@@ -31,10 +31,15 @@ class Car(RelativeSprite, CollisionObject):
     DEFAULT_HEALTH = 100
     ALIVE = True
     SHIELD_ON_RESPAWN = (5, 200)
+    DRIFT_SPEED = 256
+
+    DRIFT_NONE = 0
+    DRIFT_FIRST_FRAME = 1
+    DRIFT_NEXT_FRAMES = 2
 
     def __init__(self, resource, race_track, game_settings,
                  spawn_point, spawn_orientation, image=None,
-                 has_sound=False):
+                 has_engine_sound=False):
         global UNIQUE
 
         super().__init__(resource, image)
@@ -98,8 +103,9 @@ class Car(RelativeSprite, CollisionObject):
 
         self.base_exploded = ExplodedCar.generate_base_exploded(self.original)
 
-        self.has_sound = has_sound
-        if self.has_sound:
+        self.drift = self.DRIFT_NONE
+        self.has_engine_sound = has_engine_sound
+        if self.has_engine_sound:
             self.engine_sound_channel = sounds.reserve_channel()
 
         self.recompute_pts()
@@ -214,8 +220,6 @@ class Car(RelativeSprite, CollisionObject):
         if self.oily > 0:
             slowdown /= 10
             self.oily -= frame_interval
-
-        # TODO(Jflesch): we may be burning tires
 
         if speed > 0:
             speed -= slowdown * frame_interval
@@ -364,8 +368,11 @@ class Car(RelativeSprite, CollisionObject):
 
         self.parent.collisions.precompute_moving()
 
-    def update_engine_sound(self, frame_interval):
-        if not self.has_sound:
+    def update_sound(self, frame_interval):
+        if self.drift == self.DRIFT_FIRST_FRAME:
+            sounds.play_from_screen(assets.TIRES, self)
+
+        if not self.has_engine_sound:
             return
 
         MIN_SPEED = -250
@@ -383,7 +390,14 @@ class Car(RelativeSprite, CollisionObject):
         self.engine_sound_channel.play(snd, -1)
 
     def move(self, frame_interval):
-        self.update_engine_sound(frame_interval)
+        if abs(self.speed[1]) < self.DRIFT_SPEED:
+            self.drift = self.DRIFT_NONE
+        elif self.drift == self.DRIFT_FIRST_FRAME:
+            self.drift = self.DRIFT_NEXT_FRAMES
+        else:
+            self.drift = self.DRIFT_FIRST_FRAME
+
+        self.update_sound(frame_interval)
 
         if self.shield[0] > 0:
             self.shield = (self.shield[0] - frame_interval, self.shield[1])

@@ -9,7 +9,7 @@ from ... import util
 
 class PlayerCar(Car):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs, has_sound=True)
+        super().__init__(*args, **kwargs, has_engine_sound=True)
         util.register_animator(self.on_frame)
 
     def __str__(self):

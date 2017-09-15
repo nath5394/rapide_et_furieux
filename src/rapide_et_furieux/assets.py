@@ -42,7 +42,8 @@ MUSICS = {
     ("rapide_et_furieux.music", "S31-Winning the Race.ogg", 0.1),
 }
 
-ENGINE = ("rapide_et_furieux.sounds", "loop_5.ogg", 0.7)
+ENGINE = ("rapide_et_furieux.sounds", "loop_5.ogg", 0.5)
+TIRES = ("rapide_et_furieux.sounds", "tires.ogg", 0.5)
 
 SOUNDS = {
     'laser': {
@@ -377,6 +378,7 @@ def load_resources():
         for snd_rsc in snds.values()
     })
     rsc[ENGINE[:2]] = load_sound(ENGINE)
+    rsc[TIRES[:2]] = load_sound(TIRES)
 
     # musics
     rsc.update({
