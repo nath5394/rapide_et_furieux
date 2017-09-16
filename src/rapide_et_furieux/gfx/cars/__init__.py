@@ -93,6 +93,8 @@ class Car(RelativeSprite, CollisionObject):
     DRIFT_FIRST_FRAME = 1
     DRIFT_NEXT_FRAMES = 2
 
+    SKIDMARK_SOUND_INTERVAL = 0.2
+
     def __init__(self, resource, race_track, game_settings,
                  spawn_point, spawn_orientation, image=None,
                  has_engine_sound=False):
@@ -165,6 +167,7 @@ class Car(RelativeSprite, CollisionObject):
         if self.has_engine_sound:
             self.engine_sound_channel = sounds.reserve_channel()
 
+        self.skidmark_sound = 0
         self.skidmark = SkidMark(self.parent, self)
         self.skidmark_oil = SkidMark(
             self.parent, self, assets.SKIDMARK_OIL
@@ -431,8 +434,10 @@ class Car(RelativeSprite, CollisionObject):
         self.parent.collisions.precompute_moving()
 
     def update_sound(self, frame_interval):
-        if self.drift == self.DRIFT_FIRST_FRAME:
+        self.skidmark_sound -= frame_interval
+        if self.drift == self.DRIFT_FIRST_FRAME and self.skidmark_sound <= 0:
             sounds.play_from_screen(assets.TIRES, self)
+            self.skidmark_sound = self.SKIDMARK_SOUND_INTERVAL
 
         if not self.has_engine_sound:
             return

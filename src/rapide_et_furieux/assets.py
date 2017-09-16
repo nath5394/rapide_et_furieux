@@ -42,7 +42,7 @@ MUSICS = {
     ("rapide_et_furieux.music", "S31-Winning the Race.ogg", 0.1),
 }
 
-ENGINE = ("rapide_et_furieux.sounds", "loop_5.ogg", 0.5)
+ENGINE = ("rapide_et_furieux.sounds", "loop_5.ogg", 0.7)
 TIRES = ("rapide_et_furieux.sounds", "tires.ogg", 0.3)
 SKIDMARKS = {
     ("rapide_et_furieux.gfx.cars", "skidmark_long_%d.png" % idx)
