@@ -28,6 +28,8 @@ from .gfx.ui.console import (
     CommandKillAll,
     CommandList,
     CommandListBonuses,
+    CommandMusicNext,
+    CommandMusicStop,
     CommandQuit,
     CommandShowFPS,
     Console,
@@ -159,6 +161,8 @@ class Game(object):
             'killall': CommandKillAll(self.race_track, player_car),
             'list': CommandList(),
             'list_bonuses': CommandListBonuses(),
+            'music_next': CommandMusicNext(self.music),
+            'music_stop': CommandMusicStop(self.music),
             'show_fps': CommandShowFPS(self.font, self.screen_size),
         }
         console = Console(commands)

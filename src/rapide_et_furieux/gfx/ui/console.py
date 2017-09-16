@@ -64,6 +64,24 @@ class CommandList(object):
             self.console.add_line(" {}".format(cmd))
 
 
+class CommandMusicNext(object):
+    def __init__(self, music):
+        self.console = None
+        self.music = music
+
+    def run(self, cmd, args):
+        self.music.play_next()
+
+
+class CommandMusicStop(object):
+    def __init__(self, music):
+        self.console = None
+        self.music = music
+
+    def run(self, cmd, args):
+        self.music.stop()
+
+
 class CommandKillAll(object):
     def __init__(self, race_track, player_car):
         self.console = None
