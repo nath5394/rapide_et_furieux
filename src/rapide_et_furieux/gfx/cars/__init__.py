@@ -32,8 +32,7 @@ class SkidMark(RelativeSprite):
     LIFE_LENGTH = 2.0
     OFFSET = 16
 
-    def __init__(self, racetrack, car, resource=None, image=None):
-        scale = False
+    def __init__(self, racetrack, car, resource=None, image=None, scale=True):
         if resource is None:
             scale = True
             resource = random.sample(assets.SKIDMARKS, 1)[0]
@@ -50,6 +49,14 @@ class SkidMark(RelativeSprite):
                     int(self.original.get_size()[1] * assets.CAR_SCALE_FACTOR),
                 )
             )
+            car_size = car.original.get_size()
+            img = pygame.Surface(car_size, pygame.SRCALPHA)
+
+            pos = (0, self.OFFSET)
+            img.blit(self.original, pos)
+            pos = (0, car_size[1] - self.original.get_size()[1] - self.OFFSET)
+            img.blit(self.original, pos)
+            self.image = self.original = img
 
         self.t = self.LIFE_LENGTH
         self.parent = racetrack
@@ -57,21 +64,14 @@ class SkidMark(RelativeSprite):
 
         # TODO(Jflesch): could be optimized
 
-        car_size = car.original.get_size()
-        img = pygame.Surface(car_size, pygame.SRCALPHA)
-
-        pos = (0, self.OFFSET)
-        img.blit(self.original, pos)
-        pos = (0, car_size[1] - self.original.get_size()[1] - self.OFFSET)
-        img.blit(self.original, pos)
-
         self.angle = car.angle
-        self.image = pygame.transform.rotate(img, -self.angle)
+        self.image = pygame.transform.rotate(self.image, -self.angle)
         self.size = self.image.get_size()
         self.relative = car.relative
 
     def copy(self):
-        return SkidMark(self.parent, self.car, self.resource, self.original)
+        return SkidMark(self.parent, self.car, self.resource, self.original,
+                        scale=False)
 
     def anim(self, frame_interval):
         self.t -= frame_interval
@@ -87,7 +87,7 @@ class Car(RelativeSprite, CollisionObject):
     DEFAULT_HEALTH = 100
     ALIVE = True
     SHIELD_ON_RESPAWN = (5, 200)
-    DRIFT_SPEED = 256
+    DRIFT_SPEED = 350
 
     DRIFT_NONE = 0
     DRIFT_FIRST_FRAME = 1
