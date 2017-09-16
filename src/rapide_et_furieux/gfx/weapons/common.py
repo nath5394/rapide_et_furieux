@@ -140,6 +140,12 @@ class Projectile(RelativeSprite):
                     int(self.size[1] * self.SIZE_FACTOR),
                 )
             )
+        self.original = self.image = pygame.transform.scale(
+            self.image, (
+                int(self.size[0] * assets.CAR_SCALE_FACTOR),
+                int(self.size[1] * assets.CAR_SCALE_FACTOR),
+            )
+        )
         if self.ASSET_ANGLE != 0:
             self.original = self.image = pygame.transform.rotate(
                 self.image, self.ASSET_ANGLE
@@ -309,7 +315,21 @@ class Turret(Weapon):
         self.shooter.extra_drawers_above.add(self)
         self.angle = 0
         self.turret_base = assets.load_image(assets.TURRET_BASE)
+        self.turret_base = pygame.transform.scale(
+            self.turret_base,
+            (
+                int(self.turret_base.get_size()[0] * assets.CAR_SCALE_FACTOR),
+                int(self.turret_base.get_size()[1] * assets.CAR_SCALE_FACTOR),
+            ),
+        )
         self.turret = assets.load_image(turret_rsc)
+        self.turret = pygame.transform.scale(
+            self.turret,
+            (
+                int(self.turret.get_size()[0] * assets.CAR_SCALE_FACTOR),
+                int(self.turret.get_size()[1] * assets.CAR_SCALE_FACTOR),
+            ),
+        )
         self.turret = pygame.transform.rotate(self.turret, self.TURRET_ANGLE)
 
     def draw(self, screen, shooter):
