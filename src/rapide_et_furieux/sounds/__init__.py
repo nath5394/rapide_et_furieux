@@ -102,7 +102,7 @@ def play(snd, balance=(1.0, 1.0), channel=None, queue=False, loops=0,
 def play_from_screen(sound, relative_sprite, channel=None, queue=False,
                      loops=0, fadeout=0):
     global g_screen_size
-    MAX_DIST = max(g_screen_size[1] / 2, g_screen_size[0] / 2)
+    MAX_DIST = max(g_screen_size[1] * 2, g_screen_size[0] * 2)
 
     pos = relative_sprite.absolute
     size = relative_sprite.size
