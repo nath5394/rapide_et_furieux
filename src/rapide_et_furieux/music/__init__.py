@@ -11,8 +11,9 @@ logger = logging.getLogger(__name__)
 
 
 class MusicPlayer(object):
-    def __init__(self, change_interval=90):
-        self.change_interval = change_interval
+    def __init__(self, change_interval=40):
+        self.min_change_interval = change_interval
+        self.change_interval = 0
         self.t = 0
         self.playing = None
         util.register_animator(self._change_track)
@@ -21,6 +22,7 @@ class MusicPlayer(object):
         asset_music = random.sample(assets.MUSICS, 1)[0]
         logger.info("Playing: {}".format(asset_music))
         self.playing = assets.get_resource(asset_music)
+        self.change_interval = max(self.min_change_interval, asset_music[3])
 
         if pygame.mixer.music.get_busy():
             pygame.mixer.music.stop()

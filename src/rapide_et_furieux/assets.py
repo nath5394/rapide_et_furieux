@@ -35,11 +35,11 @@ UI = {
 
 MUSICS = {
     ("rapide_et_furieux.music", "398640__jammerboy70__cyber-race.ogg",
-     0.1),
-    ("rapide_et_furieux.music", "Title Theme.ogg", 0.1),
-    ("rapide_et_furieux.music", "Great Boss.ogg", 0.1),
-    ("rapide_et_furieux.music", "fight_looped.ogg", 0.1),
-    ("rapide_et_furieux.music", "S31-Winning the Race.ogg", 0.1),
+     0.1, 126),
+    ("rapide_et_furieux.music", "Title Theme.ogg", 0.1, 43),
+    ("rapide_et_furieux.music", "Great Boss.ogg", 0.1, 110),
+    ("rapide_et_furieux.music", "fight_looped.ogg", 0.1, 24),
+    ("rapide_et_furieux.music", "S31-Winning the Race.ogg", 0.1, 139),
 }
 
 ENGINE = ("rapide_et_furieux.sounds", "loop_5.ogg", 0.7)
