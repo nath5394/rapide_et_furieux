@@ -11,7 +11,7 @@ no end to the race, no .. well .. it's probably easier to tell you what there is
 - Collision detection (buggy at times)
 
 
-## Screenshots & Videos
+## Screenshot & Video
 
 <a href="https://youtu.be/8cooFgPPiwI">
  <img src="screenshots/shot0001.jpg" width="640" height="480" />
