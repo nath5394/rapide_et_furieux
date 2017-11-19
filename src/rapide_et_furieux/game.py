@@ -15,8 +15,8 @@ from . import sounds
 from . import util
 from .gfx import ui
 from .gfx.bonuses import BonusGenerator
-from .gfx.cars.ia import IACar
-from .gfx.cars.ia import WaypointManager
+from .gfx.cars.ai import IACar
+from .gfx.cars.ai import WaypointManager
 from .gfx.cars.player import PlayerCar
 from .gfx.racetrack import RaceTrack
 from .gfx.racetrack import RaceTrackMiniature

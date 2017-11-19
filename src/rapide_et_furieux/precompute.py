@@ -12,7 +12,7 @@ import pygame
 from . import assets
 from . import util
 from .gfx import ui
-from .gfx.cars import ia
+from .gfx.cars import ai
 from .gfx.racetrack import RaceTrack
 
 RUNNING = True
@@ -54,7 +54,7 @@ class FindAllWaypointsThread(threading.Thread):
     def run(self):
         wpts = set()
         for (spawn, _) in self.racetrack.tiles.get_spawn_points():
-            wpt = ia.Waypoint(
+            wpt = ai.Waypoint(
                 position=spawn,
                 reachable=True,
             )
@@ -62,7 +62,7 @@ class FindAllWaypointsThread(threading.Thread):
             wpts.add(wpt)
 
         for cp in self.racetrack.checkpoints:
-            wpt = ia.Waypoint(
+            wpt = ai.Waypoint(
                 position=cp.pt,
                 reachable=True,
             )
@@ -86,7 +86,7 @@ class FindAllWaypointsThread(threading.Thread):
                             (assets.TILE_SIZE[1] / 2)
                         ),
                     ]:
-                wpt = ia.Waypoint(
+                wpt = ai.Waypoint(
                     position=pos,
                     reachable=False,  # unknown yet
                 )
@@ -109,7 +109,7 @@ class FindAllWaypointsThread(threading.Thread):
                         int(((pt_b[1] - pt_a[1]) / 2) + pt_a[1]),
                     )
                     wpts.add(
-                        ia.Waypoint(
+                        ai.Waypoint(
                             position=middle,
                             reachable=False,
                         )
@@ -281,7 +281,7 @@ class FindReachableWaypointsThread(threading.Thread):
                 if not keep:
                     continue
 
-                path = ia.Path(origin, dest, m_dist)
+                path = ai.Path(origin, dest, m_dist)
                 path.compute_score_length()
                 new_paths.append(path)
             if len(new_paths) <= 0:
@@ -404,7 +404,7 @@ class Precomputing(object):
                                     game_settings=game_settings)
         self.race_track.unserialize(data['race_track'])
         util.register_drawer(RACE_TRACK_LAYER, self.race_track)
-        self.waypoint_mgmt = ia.WaypointManager(game_settings, self.race_track)
+        self.waypoint_mgmt = ai.WaypointManager(game_settings, self.race_track)
         util.register_drawer(WAYPOINTS_LAYER, self.waypoint_mgmt)
         self.osd_message.show("Done")
         logger.info("Done")

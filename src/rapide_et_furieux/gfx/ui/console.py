@@ -7,7 +7,7 @@ import pygame
 from . import FPSCounter
 from ... import assets
 from ... import util
-from ..cars.ia import IACar
+from ..cars.ai import IACar
 from ..weapons import get_weapons
 
 
