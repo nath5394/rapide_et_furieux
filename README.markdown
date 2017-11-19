@@ -46,6 +46,7 @@ W - up arrow - accelerate
 S - down arrow - brake / reverse
 Ctrl left - Ctrl Right - fire
 1, 2 and 3 - switch weapon category / switch weapon
+` (top-left of the keyboard, just below escape) - Console
 ```
 
 ## Race track editor
