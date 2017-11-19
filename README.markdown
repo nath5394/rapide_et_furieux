@@ -6,7 +6,7 @@ This game is NOT complete. You can race, but there is no menu, no lap counter,
 no end to the race, no .. well .. it's probably easier to tell you what there is:
 
 - Race track editor
-- IAs
+- Artificial Intelligence
 - Weapons
 - Collision detection (buggy at times)
 
